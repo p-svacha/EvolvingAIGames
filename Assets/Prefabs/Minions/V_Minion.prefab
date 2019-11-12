@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8360737395126351677}
   - component: {fileID: 5860237866227488996}
   m_Layer: 0
-  m_Name: RedMinion
+  m_Name: V_Minion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59,7 +59,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2a048658b33cf0e4aba49c7744c69168, type: 2}
+  - {fileID: 2100000, guid: eaf65e892e46eb04984d21930cbc7b09, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

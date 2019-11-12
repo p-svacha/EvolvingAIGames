@@ -10,6 +10,7 @@ public abstract class Creature
     public string Name;
     public Player Enemy;
     public VisualEntity Visual;
+    public Color Color;
 
 
     public Creature(MatchModel model)

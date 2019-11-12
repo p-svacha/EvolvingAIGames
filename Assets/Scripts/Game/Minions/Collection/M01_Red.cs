@@ -10,6 +10,7 @@ public class M01_Red : Minion
         Name = "Red";
         Text = "Deals 3 damage to the enemy.";
         Type = MinionType.Red;
+        Color = Color.red;
     }
 
     public override void Action()

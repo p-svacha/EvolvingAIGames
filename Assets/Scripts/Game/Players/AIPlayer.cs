@@ -14,7 +14,7 @@ public class AIPlayer : Player
         string optionString = "";
         foreach (Card c in options) optionString += c.Name + ", ";
         optionString = optionString.TrimEnd(new char[] { ',', ' ' });
-        Debug.Log(Name + " chose " + ChosenCard.Name + " from " + optionString);
+        //Debug.Log(Name + " chose " + ChosenCard.Name + " from " + optionString);
     }
 
     // Start is called before the first frame update

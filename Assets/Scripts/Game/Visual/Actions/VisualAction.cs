@@ -14,6 +14,9 @@ public class VisualAction
         if(CurrentFrame >= Frames)
         {
             Done = true;
+            OnDone();
         }
     }
+
+    public virtual void OnDone() { }
 }

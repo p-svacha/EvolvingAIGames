@@ -8,6 +8,7 @@ public abstract class Minion : Creature
     public int OrderNum;
     public Player Owner;
     public MinionType Type;
+    public bool Destroyed;
 
     public Minion(MatchModel model, Player owner, Player enemy, int orderNum) : base(model)
     {

@@ -11,7 +11,7 @@ public class VA_SummonMinion : VisualAction
 
     public VA_SummonMinion(VisualEntity visual, Vector3 sourcePosition, Vector3 targetPosition, float targetScale)
     {
-        Frames = 200;
+        Frames = 100;
         Visual = visual;
         Visual.transform.localScale = new Vector3(0, 0, 0);
         SourcePosition = sourcePosition;

@@ -10,8 +10,10 @@ public static class CardList
     {
         Cards = new List<Card>();
 
-        Cards.Add(new C001_SummonRed(model));
-        Cards.Add(new C002_Summon2Reds(model));
-        Cards.Add(new C003_Summon3Reds(model));
+        Cards.Add(new C001_DoNothing(model));
+        Cards.Add(new C002_SummonYellow(model));
+        Cards.Add(new C003_SummonRed(model));
+        Cards.Add(new C004_SummonBlue(model));
+        Cards.Add(new C005_SummonGreen(model));
     }
 }

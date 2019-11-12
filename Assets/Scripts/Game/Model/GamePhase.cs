@@ -7,6 +7,8 @@ public enum GamePhase
     GameReady,
     CardPick,
     CardEffect,
+    MinionsToAction,
     MinionEffect,
+    MinionsToPlan,
     GameEnded
 }

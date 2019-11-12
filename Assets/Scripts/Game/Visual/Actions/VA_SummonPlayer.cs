@@ -6,10 +6,11 @@ public class VA_SummonPlayer : VisualAction
 {
     public VisualEntity Visual;
 
-    public VA_SummonPlayer(VisualEntity visual)
+    public VA_SummonPlayer(VisualEntity visual, Color color)
     {
-        Frames = 100;
+        Frames = 50;
         Visual = visual;
+        Visual.GetComponent<Renderer>().material.color = color;
         Visual.transform.localScale = new Vector3(0, 0, 0);
     }
 
