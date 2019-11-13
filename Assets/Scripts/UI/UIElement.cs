@@ -34,7 +34,7 @@ public class UIElement : MonoBehaviour
         panel.transform.SetParent(parent, false);
 
         Image image = panel.AddComponent<Image>();
-        image.color = backgroundColor;
+        panel.GetComponent<Image>().color = backgroundColor;
 
         RectTransform rectTransform = panel.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = new Vector2(0, 0);

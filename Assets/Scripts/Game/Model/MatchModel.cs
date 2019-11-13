@@ -7,6 +7,9 @@ using System.Linq;
 
 public class MatchModel : MonoBehaviour
 {
+    // Rules
+    public int MaxMinions = 10;
+
     // Players
     public Player Player1;
     public Player Player2;
@@ -69,7 +72,7 @@ public class MatchModel : MonoBehaviour
         Visual = visual;
         VisualBoardWidth = visualBoardWidth;
         VisualBoardHeight = visualBoardHeight;
-        if (visual)
+        if (Visual)
         {
             // UI
             MatchUI = matchUI;
@@ -83,6 +86,10 @@ public class MatchModel : MonoBehaviour
             Player2.Color = PlayerColor;
             VisualActions.Add(new VA_SummonPlayer(Player1.Visual, PlayerColor));
             VisualActions.Add(new VA_SummonPlayer(Player2.Visual, PlayerColor));
+
+            // UI Elements
+            MatchUI.Player1GV.VisualizeSubject(Player1.Brain.Genome);
+            MatchUI.Player2GV.VisualizeSubject(Player2.Brain.Genome);
         }
 
         // Init cards
@@ -367,9 +374,14 @@ public class MatchModel : MonoBehaviour
 
 
     // LINQ
-    private int NumMinions(Player player)
+    public int NumMinions(Player player)
     {
         return Minions.Where(x => x.Owner == player).Count();
+    }
+
+    public int NumMinions(Player player, MinionType type)
+    {
+        return Minions.Where(x => x.Owner == player && x.Type == type).Count();
     }
 
     private Minion RandomMinionFromPlayer(Player player)

@@ -5,7 +5,7 @@ using UnityEngine;
 public class C004_SummonBlue : Card
 {
 
-    public C004_SummonBlue(MatchModel model) : base(model)
+    public C004_SummonBlue(MatchModel model, int id) : base(model, id)
     {
         Name = "Blue+";
         Text = "Summon a Blue";

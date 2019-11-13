@@ -7,13 +7,20 @@ public class MatchUI : MonoBehaviour
 {
     public MatchModel Model;
 
+    // Dimensions
     public float CanvasWidth;
     public float CanvasHeight;
 
+    // Elements
     public VisualCard VisualCard;
     public Text Player1Health;
     public Text Player2Health;
+    public CardValues Player1CV;
+    public CardValues Player2CV;
+    public GenomeVisualizer Player1GV;
+    public GenomeVisualizer Player2GV;
 
+    // Card Display
     public List<VisualCard> DisplayedCards;
     private float CardBorderXMarginRel = 0.3f;
     public float CardBorderXMargin;

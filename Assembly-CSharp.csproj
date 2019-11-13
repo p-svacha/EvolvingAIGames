@@ -107,9 +107,9 @@
     <Compile Include="Assets\Scripts\Game\Visual\Entities\VisualPlayer.cs" />
     <Compile Include="Assets\Scripts\Game\Visual\UI\MatchUI.cs" />
     <Compile Include="Assets\Scripts\Simulation\SimulationModel.cs" />
+    <Compile Include="Assets\Scripts\UI\CardValues.cs" />
     <Compile Include="Assets\Scripts\UI\EvolutionStatistics.cs" />
     <Compile Include="Assets\Scripts\UI\GenomeVisualizer.cs" />
-    <Compile Include="Assets\Scripts\UI\SimulationUI.cs" />
     <Compile Include="Assets\Scripts\UI\SpeciesDistribution.cs" />
     <Compile Include="Assets\Scripts\UI\SpeciesScoreboard.cs" />
     <Compile Include="Assets\Scripts\UI\UIElement.cs" />

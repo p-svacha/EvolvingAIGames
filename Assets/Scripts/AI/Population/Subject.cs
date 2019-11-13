@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Subject : MonoBehaviour {
+public class Subject {
 
     public string Name;
     public int OverallRank;
     public Genome Genome;
     public bool ImmunteToMutation;
 
-	public virtual void Initialize(Genome g)
+	public Subject(Genome g)
     {
         Genome = g;
     }

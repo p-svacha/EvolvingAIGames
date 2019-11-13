@@ -9,7 +9,6 @@ public class Population {
     public System.Random Random = new System.Random();
 
     // Genomes
-    public Subject Subject;
     public List<Species> Species;
     public List<Subject> Subjects;
 
@@ -38,7 +37,7 @@ public class Population {
     // Debug
     public bool showTimestamps = false;
 
-    public Population(Subject subject, int size, int numInputs, int numOutputs, bool startWithConnections)
+    public Population(int size, int numInputs, int numOutputs, bool startWithConnections)
     {
         Subjects = new List<Subject>();
         Species = new List<Species>();
@@ -46,12 +45,11 @@ public class Population {
         TopologyMutator = new TopologyMutator();
         WeightMutator = new WeightMutator();
         MutateAlgorithm = new MutateAlgorithm(TopologyMutator, WeightMutator);
-        CreateInitialPopulation(subject, size, numInputs, numOutputs, startWithConnections);
+        CreateInitialPopulation(size, numInputs, numOutputs, startWithConnections);
     }
 
-    private void CreateInitialPopulation(Subject subject, int size, int numInputs, int numOutputs, bool startWithConnections)
+    private void CreateInitialPopulation(int size, int numInputs, int numOutputs, bool startWithConnections)
     {
-        Subject = subject;
         for (int g = 0; g < size; g++)
         {
             List<Node> inputs = new List<Node>();
@@ -84,8 +82,7 @@ public class Population {
 
             // Create genome and add it to the subject
             Genome newGenome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections);
-            Subject newSubject = GameObject.Instantiate(Subject, new Vector3(-999, -999, -999), Quaternion.Euler(0, 0, 0));
-            newSubject.Initialize(newGenome);
+            Subject newSubject = new Subject(newGenome);
             newSubject.Name = Generation + "-" + g;
             Subjects.Add(newSubject);
 
@@ -183,8 +180,7 @@ public class Population {
             List<Subject> subjectsToTakeOver = s.Subjects.OrderByDescending(x => x.Genome.AdjustedFitness).Take(numSubjectsToTakeOver).ToList();
             foreach(Subject sub in subjectsToTakeOver)
             {
-                Subject newSubject = GameObject.Instantiate(Subject, new Vector3(-999, -999, -999), Quaternion.Euler(0, 0, 0));
-                newSubject.Initialize(sub.Genome.Copy());
+                Subject newSubject = new Subject(sub.Genome.Copy());
                 newSubject.Genome.Species = s;
                 newSubject.Name = sub.Name;
                 newSubject.ImmunteToMutation = immuneToMutation;
@@ -213,8 +209,7 @@ public class Population {
                 while(luckyOne == null || newSubjects.Exists(x => x.Name == luckyOne.Name)) {
                     luckyOne = s.Subjects[Random.Next(s.Subjects.Count)];
                 }
-                Subject newSubject = GameObject.Instantiate(Subject, new Vector3(-999, -999, -999), Quaternion.Euler(0, 0, 0));
-                newSubject.Initialize(luckyOne.Genome.Copy());
+                Subject newSubject = new Subject(luckyOne.Genome.Copy());
                 newSubject.Genome.Species = s;
                 newSubject.Name = luckyOne.Name;
                 newSubject.ImmunteToMutation = immuneToMutation;
@@ -257,8 +252,7 @@ public class Population {
             for (int i = 0; i < s.OffspringCount; i++)
             {
                 Genome newGenome = s.CreateOffspring(IgnoreRatio);
-                Subject newSubject = GameObject.Instantiate(Subject, new Vector3(-999, -999, -999), Quaternion.Euler(0, 0, 0));
-                newSubject.Initialize(newGenome);
+                Subject newSubject = new Subject(newGenome);
                 if (Random.NextDouble() >= AdoptionRate) newSubject.Genome.Species = s;
                 else toSpeciate.Add(newSubject);
                 newSubjects.Add(newSubject);
@@ -269,7 +263,6 @@ public class Population {
 
     public void ReplaceSubjects(List<Subject> newSubjects)
     {
-        foreach (Subject sub in Subjects) GameObject.Destroy(sub.gameObject);
         Subjects.Clear();
         foreach (Subject subject in newSubjects) Subjects.Add(subject);
     }
