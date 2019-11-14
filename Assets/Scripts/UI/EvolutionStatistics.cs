@@ -11,14 +11,14 @@ public class EvolutionStatistics : UIElement
 
         // Title
         float titleSize = 1f / 6f;
-        int fontSize = (int)(titleSize * ContainerHeight / 2);
+        int fontSize = 16;
         AddText("Evolution Information for Generation " + info.Generation, fontSize, Color.black, FontStyle.Bold, 0, 0, 1, titleSize, Container, TextAnchor.MiddleCenter);
 
         float numColumns = 6;
         int nRows = 7;
         float yStep = 0;
 
-        AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true, 
+        AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
             new string[] { "# Subjects: " + info.NumSubjects, "# Offsprings: " + info.NumOffsprings, "# Best: " + info.NumBestSubjectsTakenOver, "# Random: " + info.NumRandomSubjectsTakenOver });
         yStep += 1f / numColumns;
 
@@ -46,7 +46,7 @@ public class EvolutionStatistics : UIElement
     private void AddColumn(int nRows, float xStart, float yStart, float xEnd, float yEnd, bool hasTitle, string[] content)
     {
         float step = 1f / nRows;
-        int fontSize = Mathf.Min((int)(ContainerWidth / 40), (int)(step * ContainerHeight / 2));
+        int fontSize = 16;
         RectTransform column = AddPanel("column", Color.grey, xStart, yStart, xEnd, yEnd, Container);
         for(int i = 0; i < content.Length; i++)
             AddText(content[i], fontSize, Color.black, (i == 0 && hasTitle) ? FontStyle.Bold : FontStyle.Normal, 0, i * step, 1, (i + 1) * step, column, TextAnchor.MiddleLeft);

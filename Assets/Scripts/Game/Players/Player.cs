@@ -12,7 +12,7 @@ public abstract class Player : Creature
     public int NumCardOptions;
     public Card ChosenCard;
 
-    public Player(MatchModel model, string name, Subject brain) : base(model)
+    public Player(Match model, string name, Subject brain) : base(model)
     {
         Name = name;
         Brain = brain;

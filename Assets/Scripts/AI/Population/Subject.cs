@@ -9,7 +9,13 @@ public class Subject {
     public Genome Genome;
     public bool ImmunteToMutation;
 
-	public Subject(Genome g)
+    // Match specific (delete this when copying projects)
+    public int Wins;
+    public int Losses;
+    public int DamageDealt;
+    public int DamageReceived;
+
+    public Subject(Genome g)
     {
         Genome = g;
     }
@@ -29,7 +35,7 @@ public class Subject {
     // This method returns the fitness of a subject at the point of the evolution of the next generation.
     public virtual float GetFitness()
     {
-        return 0;
+        return Wins * 10;
     }
 
     public void CalculateFitnessValues()

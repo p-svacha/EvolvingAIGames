@@ -10,7 +10,7 @@ public abstract class Minion : Creature
     public MinionType Type;
     public bool Destroyed;
 
-    public Minion(MatchModel model, Player owner, Player enemy, int orderNum) : base(model)
+    public Minion(Match model, Player owner, Player enemy, int orderNum) : base(model)
     {
         Owner = owner;
         Enemy = enemy;

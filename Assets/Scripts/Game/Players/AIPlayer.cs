@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AIPlayer : Player
 {
-    public AIPlayer(MatchModel model, string name, Subject brain) : base(model, name, brain)
+    public AIPlayer(Match model, Subject brain) : base(model, brain.Name, brain)
     {
     }
 
@@ -29,11 +29,14 @@ public class AIPlayer : Player
             ((float)(Model.NumMinions(Enemy, MinionType.Red)) / Model.MaxMinions),
             ((float)(Model.NumMinions(Enemy, MinionType.Yellow)) / Model.MaxMinions),
             ((float)(Model.NumMinions(Enemy, MinionType.Blue)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinions)
+            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinions),
+            ((float)(Health))/MaxHealth,
+            ((float)(Enemy.Health))/Enemy.MaxHealth,
+            ((float)(Model.Turn))/50
         };
         string s = "";
         foreach (float f in inputs) s += " " + f;
-        Debug.Log("{" + s + "}");
+        //Debug.Log("{" + s + " }");
         float[] outputs = Brain.Genome.FeedForward(inputs);
 
         // Visualize
@@ -61,12 +64,6 @@ public class AIPlayer : Player
         KeyValuePair<int, float> bestOption = optionValues.First(x => x.Value == optionValues.Max(y => y.Value));
 
         ChosenCard = options.First(x => x.Id == bestOption.Key);
-
-        // Debug
-        string optionString = "";
-        foreach (Card c in options) optionString += c.Name + ", ";
-        optionString = optionString.TrimEnd(new char[] { ',', ' ' });
-        Debug.Log(Name + " chose " + ChosenCard.Name + " from " + optionString);
     }
 
     // Start is called before the first frame update

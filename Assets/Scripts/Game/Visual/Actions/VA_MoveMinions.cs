@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class VA_MoveMinions : VisualAction
 {
-    public MatchModel Model;
+    public Match Model;
     public bool ToAction;
 
-    public VA_MoveMinions(MatchModel model, bool toAction)
+    public VA_MoveMinions(Match model, bool toAction)
     {
         Frames = 80;
         Model = model;

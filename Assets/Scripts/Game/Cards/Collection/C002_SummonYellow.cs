@@ -1,18 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System;
 
 public class C002_SummonYellow : Card
 {
 
-    public C002_SummonYellow(MatchModel model, int id) : base(model, id)
+    public C002_SummonYellow(int id) : base(id)
     {
-        Name = "Yellow+";
-        Text = "Summon a Yellow";
+        Name = "Yellow Duo";
+        Text = "Summon two Yellows.";
     }
 
-    public override void Action(Player self, Player enemy)
+    public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.SummonMinion(self, MinionType.Yellow, self);
+        Model.SummonMultipleMinions(self, new List<Tuple<MinionType, Player>>() {
+            new Tuple<MinionType, Player>(MinionType.Yellow, self),
+            new Tuple<MinionType, Player>(MinionType.Yellow, self),
+        });
     }
 }

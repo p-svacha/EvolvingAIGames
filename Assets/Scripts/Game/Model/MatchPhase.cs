@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum GamePhase
+public enum MatchPhase
 {
+    GameInitialized,
     GameReady,
     CardPick,
     CardEffect,

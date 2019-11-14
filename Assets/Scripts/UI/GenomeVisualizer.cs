@@ -11,15 +11,18 @@ public class GenomeVisualizer : UIElement {
     public Sprite CircleSprite;
     public Text FitnessText;
 
-    public float CircleSize;
+    private float CircleSize = 0.05f;
 
 
     public void VisualizeSubject(Genome g)
     {
-        ClearVisualization();
+        Clear();
+
+        float circleSizeX = CircleSize; // Todo: adjust for factor
+        float circleSizeY = CircleSize; // Todo: adjust for factor
 
         // Set background according to species
-        if(g.Species != null) gameObject.GetComponent<Image>().color = g.Species.Color;
+        if (g.Species != null) SetBackgroundColor(g.Species.Color);
 
         // Set fitness text
         if(FitnessText!= null) FitnessText.text = g.Fitness.ToString("0.#") + " / " + g.AdjustedFitness.ToString("0.#");
@@ -27,19 +30,19 @@ public class GenomeVisualizer : UIElement {
         // Set fixed y positions of inputs and outputs
         for (int i = 0; i < g.InputNodes.Count; i++)
         {
-            if(g.InputNodes.Count == 1) g.InputNodes[i].VisualYPosition = Margin + (ContainerHeight / (g.InputNodes.Count + 1)) * (i + 1);
-            else g.InputNodes[i].VisualYPosition = Margin + (ContainerHeight / (g.InputNodes.Count - 1)) * i;
+            if (g.InputNodes.Count == 1) g.InputNodes[i].VisualYPosition = 0.5f;
+            else g.InputNodes[i].VisualYPosition = circleSizeY + ((1f - 3 * circleSizeY) / (g.InputNodes.Count - 1) * i);
         }
         for (int i = 0; i < g.OutputNodes.Count; i++)
         {
-            if (g.OutputNodes.Count == 1) g.OutputNodes[i].VisualYPosition = Margin + (ContainerHeight / (g.OutputNodes.Count + 1)) * (i + 1);
-            else g.OutputNodes[i].VisualYPosition = Margin + (ContainerHeight / (g.OutputNodes.Count - 1)) * i;
+            if (g.OutputNodes.Count == 1) g.OutputNodes[i].VisualYPosition = 0.5f;
+            else g.OutputNodes[i].VisualYPosition = circleSizeY + ((1f - 3 * circleSizeY) / (g.OutputNodes.Count - 1) * i);
         }
 
         // Set position of all nodes
         for (int i = 0; i < g.Depth + 1; i++)
         {
-            float xPosition = Margin + (ContainerWidth / g.Depth) * i;
+            float xPosition = circleSizeX + ((1f - 3 * circleSizeX) / g.Depth * i);
             List<Node> depthLayerNodes = g.Nodes.Where(x => x.Depth == i).ToList();
             for(int j = 0; j < depthLayerNodes.Count; j++)
             {
@@ -49,14 +52,23 @@ public class GenomeVisualizer : UIElement {
                     List<Node> connectedNodes = node.InConnections.Select(x => x.In).Concat(node.OutConnections.Select(x => x.Out)).ToList();
                     node.VisualYPosition = connectedNodes.Average(x => x.VisualYPosition);
                 }
-                node.VisualNode = CreateCircle(new Vector2(xPosition, node.VisualYPosition), Color.black, node.Id + ""); //node.Value.ToString("0.##")
+
+                float xStart = xPosition;
+                float xEnd = xPosition + circleSizeX;
+                float yStart = node.VisualYPosition;
+                float yEnd = node.VisualYPosition + circleSizeY;
+
+                RectTransform circle = AddPanel("Node", Color.black, xStart, yStart, xEnd, yEnd, Container, CircleSprite);
+                GameObject textElement = AddText(node.Id + "", (int)(CircleSize * 0.75), Color.red, FontStyle.Normal, xStart, yStart, xEnd, yEnd, circle);
+
+                node.VisualNode = circle.gameObject;
             }
         }
 
         foreach (Connection c in g.Connections.Where(x => x.Enabled)) c.VisualConnection = CreateDotConnection(c.In.VisualNode.transform.localPosition, c.Out.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, "");
     }
 
-    public void ClearVisualization()
+    protected override void Clear()
     {
         foreach (GameObject go in objects) GameObject.Destroy(go);
         objects.Clear();
@@ -75,39 +87,6 @@ public class GenomeVisualizer : UIElement {
             else
                 n.VisualNode.GetComponent<Image>().color = new Color(n.Value, n.Value, n.Value);
         }
-    }
-
-    private GameObject CreateCircle(Vector2 anchoredPosition, Color color, string nodeText)
-    {
-        GameObject gameObject = new GameObject("circle", typeof(Image));
-        gameObject.transform.SetParent(Container, false);
-        gameObject.GetComponent<Image>().sprite = CircleSprite;
-        gameObject.GetComponent<Image>().color = color;
-        RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = anchoredPosition;
-        rectTransform.sizeDelta = new Vector2(CircleSize, CircleSize);
-        rectTransform.anchorMin = new Vector2(0, 0);
-        rectTransform.anchorMax = new Vector2(0, 0);
-        objects.Add(gameObject);
-
-        GameObject textElement = new GameObject("circleText");
-        textElement.transform.SetParent(Container, false);
-        Text text = textElement.AddComponent<Text>();
-        text.text = nodeText;
-        Font ArialFont = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
-        text.font = ArialFont;
-        text.material = ArialFont.material;
-        text.color = Color.red;
-        text.fontSize = (int)(CircleSize * 0.75);
-        text.alignment = TextAnchor.MiddleCenter;
-        RectTransform textRect = textElement.GetComponent<RectTransform>();
-        textRect.anchoredPosition = anchoredPosition;
-        textRect.sizeDelta = new Vector2(CircleSize * 2, CircleSize * 2);
-        textRect.anchorMin = new Vector2(0, 0);
-        textRect.anchorMax = new Vector2(0, 0);
-        objects.Add(textElement);
-
-        return gameObject;
     }
 
     private GameObject CreateDotConnection(Vector2 dotPositionA, Vector2 dotPositionB, Color color, float thickness, string conText)

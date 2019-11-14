@@ -11,7 +11,7 @@ public class SpeciesScoreboard : UIElement
     public void UpdateScoreboard(Population p)
     {
         Clear();
-        
+
         // Get best subjects of population
         int rows = Mathf.Max(NumSpecies, p.Species.Count);
         int amount = Mathf.Min(rows, p.Species.Count);
@@ -19,7 +19,7 @@ public class SpeciesScoreboard : UIElement
 
         // Calculate step size
         float step = (float)(1 / ((float)rows + 1));
-        int fontSize = (int)(step * ContainerHeight / 2);
+        int fontSize = 16;
 
         // Add title
         AddText("Species Standings", fontSize, Color.black, FontStyle.Bold, 0, 0, 1, 1f / (NumSpecies + 1), Container);

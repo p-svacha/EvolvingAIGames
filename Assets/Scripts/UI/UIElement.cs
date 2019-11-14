@@ -4,37 +4,34 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// !!!!!!Elements holding this script must have a rect transform preset (like center middle or whatever)!!!!!
+/// !!!!!!Elements holding this script must have the anchors set (left, right, top, bottom) and NOT width, height!!!!
 /// </summary>
 public class UIElement : MonoBehaviour
 {
     protected List<GameObject> objects;
 
     protected RectTransform Container;
-    public float ContainerWidth, ContainerHeight, ContainerX, ContainerY, Margin;
-
 
     public void Awake()
     {
+
         objects = new List<GameObject>();
         Container = gameObject.GetComponent<RectTransform>();
-        ContainerWidth = Container.sizeDelta.x - 2 * Margin;
-        ContainerHeight = Container.sizeDelta.y - 2 * Margin;
-        ContainerX = Container.anchoredPosition.x;
-        ContainerY = Container.anchoredPosition.y;
     }
 
 
     /// <summary>
     /// Add a panel element. xStart, xEnd, yStart, yEnd are percentage values (between 0 and 1).
     /// </summary>
-    protected RectTransform AddPanel(string name, Color backgroundColor, float xStart, float yStart, float xEnd, float yEnd, RectTransform parent)
+    protected RectTransform AddPanel(string name, Color backgroundColor, float xStart, float yStart, float xEnd, float yEnd, RectTransform parent, Sprite shape = null)
     {
         GameObject panel = new GameObject(name);
         panel.transform.SetParent(parent, false);
 
         Image image = panel.AddComponent<Image>();
-        panel.GetComponent<Image>().color = backgroundColor;
+        image.color = backgroundColor;
+        image.raycastTarget = false;
+        if (shape != null) image.sprite = shape;
 
         RectTransform rectTransform = panel.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = new Vector2(0, 0);
@@ -63,6 +60,7 @@ public class UIElement : MonoBehaviour
         text.color = fontColor;
         text.fontSize = fontSize;
         text.alignment = textAnchor;
+        text.raycastTarget = false;
 
         RectTransform textRect = textElement.GetComponent<RectTransform>();
         textRect.anchoredPosition = new Vector2(0, 0);
@@ -77,9 +75,17 @@ public class UIElement : MonoBehaviour
     /// <summary>
     /// Destroys all elements in this UI Element.
     /// </summary>
-    protected void Clear()
+    protected virtual void Clear()
     {
         foreach (GameObject go in objects) GameObject.Destroy(go);
         objects.Clear();
+    }
+
+    /// <summary>
+    /// Sets the background color of the panel.
+    /// </summary>
+    protected void SetBackgroundColor(Color color)
+    {
+        gameObject.GetComponent<Image>().color = color;
     }
 }

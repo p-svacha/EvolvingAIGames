@@ -5,7 +5,7 @@ using UnityEngine;
 public class M02_Yellow : Minion
 {
 
-    public M02_Yellow(MatchModel model, Player owner, Player enemy, int orderNum) : base(model, owner, enemy, orderNum)
+    public M02_Yellow(Match model, Player owner, Player enemy, int orderNum) : base(model, owner, enemy, orderNum)
     {
         Name = "Yellow";
         Text = "Restore 2 health.";

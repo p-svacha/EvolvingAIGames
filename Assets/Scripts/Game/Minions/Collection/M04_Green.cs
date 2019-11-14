@@ -5,7 +5,7 @@ using UnityEngine;
 public class M04_Green : Minion
 {
 
-    public M04_Green(MatchModel model, Player owner, Player enemy, int orderNum) : base(model, owner, enemy, orderNum)
+    public M04_Green(Match model, Player owner, Player enemy, int orderNum) : base(model, owner, enemy, orderNum)
     {
         Name = "Green";
         Text = "Summon a random minion.";

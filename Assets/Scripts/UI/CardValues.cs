@@ -13,7 +13,6 @@ public class CardValues : UIElement {
         Clear();
 
         float yStep = 1f / ((allCards.Length * 2) + 1);
-        RectTransform parent = GetComponent<RectTransform>();
 
         for (int i = 0; i < allCards.Length; i++)
         {
@@ -23,9 +22,9 @@ public class CardValues : UIElement {
             float xEnd = xMargin + allCards[i]*0.8f;
             float yStart = ((i*2)+1) * yStep;
             float yEnd = ((i*2)+2) * yStep;
-            AddPanel(CardList.Cards[i].Name, options.Contains(i+1) ? Color.grey: Color.white, xStart, yStart, xEnd, yEnd, parent);
-            AddText(CardList.Cards[i].Name, (int)(yStep * 300), Color.black, FontStyle.Normal, xMargin + (0.1f*xMargin), yStart, 0.5f, yEnd, parent, TextAnchor.MiddleLeft);
-            AddText(((int)(allCards[i] * 1000)) + "", (int)(yStep * 300), Color.black, FontStyle.Normal, 0.5f, yStart, 1f - xMargin - (0.1f*xMargin), yEnd, parent, TextAnchor.MiddleRight);
+            AddPanel(CardList.Cards[i].Name, options.Contains(i+1) ? Color.grey: Color.white, xStart, yStart, xEnd, yEnd, Container);
+            AddText(CardList.Cards[i].Name, (int)(yStep * 200), Color.black, FontStyle.Normal, xMargin + (0.1f*xMargin), yStart, 0.5f, yEnd, Container, TextAnchor.MiddleLeft);
+            AddText(allCards[i].ToString("0.0%"), (int)(yStep * 200), Color.black, FontStyle.Normal, 0.5f, yStart, 1f - xMargin - (0.1f*xMargin), yEnd, Container, TextAnchor.MiddleRight);
         }
 
     }

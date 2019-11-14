@@ -5,7 +5,7 @@ using UnityEngine;
 public class M01_Red : Minion
 {
 
-    public M01_Red(MatchModel model, Player owner, Player enemy, int orderNum) : base(model, owner, enemy, orderNum)
+    public M01_Red(Match model, Player owner, Player enemy, int orderNum) : base(model, owner, enemy, orderNum)
     {
         Name = "Red";
         Text = "Deals 3 damage to the enemy.";
