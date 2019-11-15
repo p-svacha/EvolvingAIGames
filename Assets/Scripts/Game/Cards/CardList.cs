@@ -18,5 +18,6 @@ public static class CardList
         Cards.Add(new C004_SummonBlue(counter++));
         Cards.Add(new C005_SummonGreen(counter++));
         Cards.Add(new C006_DestroyThree(counter++));
+        Cards.Add(new C007_DealEight(counter++));
     }
 }

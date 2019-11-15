@@ -12,20 +12,19 @@ public class SimulationModel : MonoBehaviour
     public int MatchesPlayed;
 
     private int PopulationSize = 1000;
-    private int MatchesPerGeneration = 10;
-    private int MinGenerationToWatch = 15;
+    private int MatchesPerGeneration = 15;
+    private int MinGenerationToWatch = 25;
 
     // Matches
     public List<Match> Matches;
 
     // Match rules
     public Match MatchModel;
-    public int StartHealth = 40;
-    public int StartCardOptions = 3;
+    private int StartHealth = 40;
+    private int StartCardOptions = 3;
 
     // UI
     public MatchUI MatchUI;
-    private int VisualBoardWidth = 10;
     private int VisualBoardHeight = 8;
 
     // Visuals
@@ -92,7 +91,7 @@ public class SimulationModel : MonoBehaviour
                 {
                     if (MatchesPlayed == MatchesPerGeneration - 1 && Population.Generation >= MinGenerationToWatch && m == bestMatch)
                     {
-                        m.StartMatch(true, VisualPlayer, VisualMinion, VisualBoardWidth, VisualBoardHeight, MatchUI);
+                        m.StartMatch(true, VisualPlayer, VisualMinion, VisualBoardHeight, MatchUI);
                     }
                     else m.StartMatch();
                 }

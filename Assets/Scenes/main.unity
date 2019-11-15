@@ -519,6 +519,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 4c07df4c0b0172e4fb7a62b5c609555b, type: 3}
   - {fileID: 21300000, guid: e235e515c2623e249991f5e15801f1df, type: 3}
   - {fileID: 21300000, guid: 63994d82a20c9d44985763eb2fcbb549, type: 3}
+  - {fileID: 21300000, guid: 91b2d1fa2e1bfdc448c12d49d06f9d11, type: 3}
   DisplayedCards: []
 --- !u!222 &317861973
 CanvasRenderer:
@@ -883,8 +884,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SimulationPhase: 0
   MatchesPlayed: 0
-  StartHealth: 50
-  StartCardOptions: 3
   MatchUI: {fileID: 317861972}
   VisualPlayer: {fileID: 504373183744028191, guid: bc721028bceff9e4a8f4a759e75d4e94,
     type: 3}

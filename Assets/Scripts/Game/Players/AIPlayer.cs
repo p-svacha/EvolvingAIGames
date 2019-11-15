@@ -34,9 +34,6 @@ public class AIPlayer : Player
             ((float)(Enemy.Health))/Enemy.MaxHealth,
             ((float)(Model.Turn))/50
         };
-        string s = "";
-        foreach (float f in inputs) s += " " + f;
-        //Debug.Log("{" + s + " }");
         float[] outputs = Brain.Genome.FeedForward(inputs);
 
         // Visualize

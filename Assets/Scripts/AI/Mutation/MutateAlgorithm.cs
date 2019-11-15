@@ -8,9 +8,8 @@ public class MutateAlgorithm {
 
     System.Random Random;
 
-    // Topology mutations
-    public float AddNodeChance = 0.04f;
-    public float AddConnectionChance = 0.12f;
+    // Topology mutations (the ratio between new node and new connection mutations is dependant on the possible mutations of each type)
+    public float TopologyMutationChance = 0.16f;
 
     // Weight mutations
     public float WeightMutationChancePerGenome = 0.35f;
@@ -59,24 +58,18 @@ public class MutateAlgorithm {
     public void MutateTopology(Genome g, List<NewNodeMutation> newNodeMutations, List<NewConnectionMutation> newConnectionMutations, float mutationScaleFactor, MutationInformation info)
     {
         double rng = Random.NextDouble();
-        if (rng <= AddNodeChance * mutationScaleFactor)
+
+        if (rng <= TopologyMutationChance)
         {
-            if (!TopologyMutator.CanAddNode(g))
-            {
-                NewConnectionMutation mutation = TopologyMutator.AddConnection(g, newConnectionMutations);
-                if (newConnectionMutations.Where(x => x.SourceNodeId == mutation.SourceNodeId && x.TargetNodeId == mutation.TargetNodeId).Count() == 0) newConnectionMutations.Add(mutation);
-                info.NumNewConnectionsMutations++;
-            }
-            else
-            {
-                NewNodeMutation mutation = TopologyMutator.AddNode(g, newNodeMutations);
-                if (newNodeMutations.Where(x => x.SplittedConnectionId == mutation.SplittedConnectionId).Count() == 0) newNodeMutations.Add(mutation);
-                info.NumNewNodeMutations++;
-            }
-        }
-        else if (rng <= ((AddNodeChance * mutationScaleFactor) + (AddConnectionChance * mutationScaleFactor)))
-        {
-            if (!TopologyMutator.CanAddConnection(g))
+            int possibleNewNodeMutations = TopologyMutator.FindCandidateConnectionsForNewNode(g).Count;
+            int possibleNewConnectionMutations = TopologyMutator.FindCandidateConnections(g).Count;
+            int allPossibleMutations = possibleNewNodeMutations + possibleNewConnectionMutations;
+
+            float addNewNodeChance = (float)possibleNewNodeMutations / (float)allPossibleMutations;
+
+            double rng2 = Random.NextDouble();
+
+            if (rng2 <= addNewNodeChance)
             {
                 NewNodeMutation mutation = TopologyMutator.AddNode(g, newNodeMutations);
                 if (newNodeMutations.Where(x => x.SplittedConnectionId == mutation.SplittedConnectionId).Count() == 0) newNodeMutations.Add(mutation);

@@ -10,7 +10,7 @@ public class Match
     // Rules
     public int StartHealth;
     public int MaxMinionsPerType = 10;
-    public int MaxMinions = 20;
+    public int MaxMinions = 30;
     public int FatigueDamageStartTurn = 20;
 
     // Players
@@ -38,16 +38,15 @@ public class Match
     public MatchUI MatchUI;
     public List<VisualAction> VisualActions;
 
-    public int VisualBoardWidth;
     public int VisualBoardHeight;
 
     private VisualPlayer V_Player;
     private VisualMinion V_Minion;
 
     private float MinionScale = 0.4f;
-    private float MinionXGapPlan = 0.8f;
-    private float MinionXGapAction = 0.5f;
-    private float MinionYGapPlan = 0.5f;
+    private float MinionXGapPlan = 0.4f;
+    private float MinionXGapAction = 0.1f;
+    private float MinionYGapPlan = 0.1f;
     private float MinionYStartPlan = 0.35f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
     private float MinionYStartAction = 0.1f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
 
@@ -72,12 +71,11 @@ public class Match
         Phase = MatchPhase.GameInitialized;
     }
 
-    public void StartMatch(bool visual = false, VisualPlayer v_player = null, VisualMinion v_minion = null, int visualBoardWidth = 0, int visualBoardHeight = 0, MatchUI matchUI = null)
+    public void StartMatch(bool visual = false, VisualPlayer v_player = null, VisualMinion v_minion = null, int visualBoardHeight = 0, MatchUI matchUI = null)
     {
         Visual = visual;
         V_Player = v_player;
         V_Minion = v_minion;
-        VisualBoardWidth = visualBoardWidth;
         VisualBoardHeight = visualBoardHeight;
 
         if (Visual)
@@ -281,6 +279,8 @@ public class Match
             MatchUI.ShowCards(Player1RandomCards, Player1);
             MatchUI.ShowCards(Player2RandomCards, Player2);
             MatchUI.UpdateTurnText();
+            MatchUI.Player1GV.UpdateValues(Player1.Brain.Genome, false);
+            MatchUI.Player1GV.UpdateValues(Player2.Brain.Genome, false);
         }
         if(Log)
         {
@@ -331,8 +331,9 @@ public class Match
             if (Effects.Count > 0 && (VisualActions.Count == 0 || VisualActions[0].Done))
             {
                 MatchUI.UpdatePlayerHealth();
-                Effects.Dequeue().Invoke();
                 CheckGameOver();
+
+                if(Phase != MatchPhase.GameEnded) Effects.Dequeue().Invoke();
             }
             else if (VisualActions.Count > 0 && !VisualActions[0].Done)
             {
@@ -433,7 +434,7 @@ public class Match
                 minion.Visual = GameObject.Instantiate(V_Minion);
                 minion.Visual.GetComponent<Renderer>().material.color = minion.Color;
                 Vector3 targetPosition = GetPlanPosition(minion);
-                VisualActions.Add(new VA_SummonMinion(minion.Visual, source.Visual.transform.position, targetPosition, MinionScale));
+                VisualActions.Add(new VA_SummonMinions(new List<VisualEntity>() { minion.Visual }, source.Visual, new List<Vector3>() { targetPosition }, MinionScale));
             }
             if (Log)
             {
@@ -467,7 +468,7 @@ public class Match
                 minion.Visual.GetComponent<Renderer>().material.color = minion.Color;
                 targetPositions.Add(GetPlanPosition(minion));
             }
-            VisualActions.Add(new VA_SummonMultipleMinions(createdMinions.Select(x => x.Visual).ToList(), source.Visual.transform.position, targetPositions, MinionScale));
+            VisualActions.Add(new VA_SummonMinions(createdMinions.Select(x => x.Visual).ToList(), source.Visual, targetPositions, MinionScale));
         }
         if(Log)
         {
@@ -487,7 +488,7 @@ public class Match
 
             if (Visual)
             {
-                VisualActions.Add(new VA_DestroyMinion(source.Visual, target.Visual, Color.black));
+                VisualActions.Add(new VA_DestroyMinions(source.Visual, new List<VisualEntity>() { target.Visual }, Color.black));
             }
             if (Log)
             {
@@ -498,23 +499,26 @@ public class Match
 
     public void DestroyMultipleRandomMinions(Creature source, List<Minion> targets)
     {
-        foreach(Minion target in targets)
+        if (targets.Count > 0)
         {
-            target.Destroyed = true;
-            Minions.Remove(target);
-        }
+            foreach (Minion target in targets)
+            {
+                target.Destroyed = true;
+                Minions.Remove(target);
+            }
 
-        if(Visual)
-        {
-            VisualActions.Add(new VA_DestroyMultipleMinions(source.Visual, targets.Select(x => x.Visual).ToList(), Color.black));
-        }
+            if (Visual)
+            {
+                VisualActions.Add(new VA_DestroyMinions(source.Visual, targets.Select(x => x.Visual).ToList(), Color.black));
+            }
 
-        if (Log)
-        {
-            string names = "";
-            foreach (Minion minion in targets) names += minion.Name + ", ";
-            names = names.TrimEnd(new char[] { ',', ' ' });
-            Debug.Log(source.Name + " destroyed " + names);
+            if (Log)
+            {
+                string names = "";
+                foreach (Minion minion in targets) names += minion.Name + ", ";
+                names = names.TrimEnd(new char[] { ',', ' ' });
+                Debug.Log(source.Name + " destroyed " + names);
+            }
         }
     }
 
@@ -633,18 +637,19 @@ public class Match
         float yPos;
         bool secondColumn = (position + 1) > MaxMinionsPerType / 2;
 
-        float xPos = -(VisualBoardWidth / 2) + ((float)m.Type * (MinionXGapPlan + MinionScale));
+        float visualWidth = (Enum.GetNames(typeof(MinionType)).Length * (2 * MinionScale + MinionXGapPlan)) - MinionXGapPlan;
+            float xPos = -(visualWidth / 2) + ((float)(m.Type - 1) * (MinionXGapPlan + 2 * MinionScale)) + MinionScale / 2;
         if (secondColumn) xPos += MinionScale;
 
         if (m.Owner == Player1)
         {
-            if(secondColumn) yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - (MaxMinionsPerType / 2) - 1) * MinionYGapPlan);
-            else yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - 1) * MinionYGapPlan);
+            if (secondColumn) yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - (MaxMinionsPerType / 2) - 1) * (MinionYGapPlan + MinionScale));
+            else yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - 1) * (MinionYGapPlan + MinionScale));
         }
         else
         {
-            if (secondColumn) yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - MaxMinionsPerType / 2 - 1) * MinionYGapPlan);
-            else yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - 1) * MinionYGapPlan);
+            if (secondColumn) yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - MaxMinionsPerType / 2 - 1) * (MinionYGapPlan + MinionScale));
+            else yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - 1) * (MinionYGapPlan + MinionScale));
         }
 
         return new Vector3(xPos, 0, yPos);
@@ -653,7 +658,8 @@ public class Match
     public Vector3 GetActionPosition(Minion m)
     {
         List<Minion> orderedTypeList = Minions.OrderBy(x => x.OrderNum).ToList();
-        float xPos = -(VisualBoardWidth / 2) + orderedTypeList.IndexOf(m) * MinionXGapAction;
+        float visualWidth = (Minions.Count * (MinionScale + MinionXGapAction)) - MinionXGapAction;
+        float xPos = -(visualWidth / 2) + (orderedTypeList.IndexOf(m) * (MinionXGapAction + MinionScale)) + MinionScale / 2;
         float yPos = m.Owner == Player1 ? -(VisualBoardHeight * MinionYStartAction) : (VisualBoardHeight * MinionYStartAction);
         return new Vector3(xPos, 0, yPos);
     }

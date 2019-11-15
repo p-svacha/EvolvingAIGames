@@ -16,17 +16,6 @@ public class TopologyMutator {
         Random = new System.Random();
     }
 
-    public bool CanAddConnection(Genome g)
-    {
-        List<Connection> candidateConnections = FindCandidateConnections(g);
-        return candidateConnections.Count > 0;
-    }
-
-    public bool CanAddNode(Genome g)
-    {
-        return g.Connections.Where(x => x.Enabled).Count() > 0;
-    }
-
     public NewConnectionMutation AddConnection(Genome genome, List<NewConnectionMutation> mutations)
     {
         List<Connection> candidateConnections = FindCandidateConnections(genome);
@@ -59,7 +48,7 @@ public class TopologyMutator {
 
     public NewNodeMutation AddNode(Genome genome, List<NewNodeMutation> mutations)
     {
-        List<Connection> candidateConnections = genome.Connections.Where(x => x.Enabled).ToList();
+        List<Connection> candidateConnections = FindCandidateConnectionsForNewNode(genome);
         Connection connectionToSplit = candidateConnections[Random.Next(candidateConnections.Count)];
         connectionToSplit.Enabled = false;
 
@@ -110,7 +99,7 @@ public class TopologyMutator {
         };
     }
 
-    private List<Connection> FindCandidateConnections(Genome g)
+    public List<Connection> FindCandidateConnections(Genome g)
     {
         List<Node> sourceCandidates = g.InputNodes.Concat(g.HiddenNodes).ToList();
         List<Node> targetCandidates = g.HiddenNodes.Concat(g.OutputNodes).ToList();
@@ -137,6 +126,11 @@ public class TopologyMutator {
             }
         }
         return candidateConnections;
+    }
+
+    public List<Connection> FindCandidateConnectionsForNewNode(Genome g)
+    {
+        return g.Connections.Where(x => x.Enabled).ToList();
     }
 
 }
