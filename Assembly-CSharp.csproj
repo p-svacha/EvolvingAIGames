@@ -85,6 +85,8 @@
     <Compile Include="Assets\Scripts\Game\Cards\Collection\C005_SummonGreen.cs" />
     <Compile Include="Assets\Scripts\Game\Cards\Collection\C006_DestroyThree.cs" />
     <Compile Include="Assets\Scripts\Game\Cards\Collection\C007_DealEight.cs" />
+    <Compile Include="Assets\Scripts\Game\Cards\Collection\C008_DestroyAllBlue.cs" />
+    <Compile Include="Assets\Scripts\Game\Cards\Collection\C009_DestroyGreen.cs" />
     <Compile Include="Assets\Scripts\Game\Minions\Collection\M01_Red.cs" />
     <Compile Include="Assets\Scripts\Game\Minions\Collection\M02_Yellow.cs" />
     <Compile Include="Assets\Scripts\Game\Minions\Collection\M03_Blue.cs" />
@@ -108,12 +110,14 @@
     <Compile Include="Assets\Scripts\Game\Visual\Entities\VisualEntity.cs" />
     <Compile Include="Assets\Scripts\Game\Visual\Entities\VisualMinion.cs" />
     <Compile Include="Assets\Scripts\Game\Visual\Entities\VisualPlayer.cs" />
-    <Compile Include="Assets\Scripts\Game\Visual\UI\MatchUI.cs" />
     <Compile Include="Assets\Scripts\Simulation\SimulationModel.cs" />
     <Compile Include="Assets\Scripts\Simulation\SimulationPhase.cs" />
+    <Compile Include="Assets\Scripts\UI\CardStatistics.cs" />
     <Compile Include="Assets\Scripts\UI\CardValues.cs" />
     <Compile Include="Assets\Scripts\UI\EvolutionStatistics.cs" />
     <Compile Include="Assets\Scripts\UI\GenomeVisualizer.cs" />
+    <Compile Include="Assets\Scripts\UI\MatchUI.cs" />
+    <Compile Include="Assets\Scripts\UI\SimulationUI.cs" />
     <Compile Include="Assets\Scripts\UI\SpeciesScoreboard.cs" />
     <Compile Include="Assets\Scripts\UI\UIElement.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">

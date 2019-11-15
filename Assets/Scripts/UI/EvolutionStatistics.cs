@@ -31,7 +31,7 @@ public class EvolutionStatistics : UIElement
         yStep += 1f / numColumns;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
-            new string[] { "Misc", "# AdpChecks: " + info.NumSubjectsCheckedForAdoption, "# Immune: " + info.NumImmuneToMutationSubjects });
+            new string[] { "Misc", "# AdpChecks: " + info.NumSubjectsCheckedForAdoption, "# Immune: " + info.NumImmuneToMutationSubjects, "Rank Limit: " + info.RankLimit, "#Gens <Limit: " + info.GensAllowedBelowLimit });
         yStep += 1f / numColumns;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
@@ -46,7 +46,7 @@ public class EvolutionStatistics : UIElement
     private void AddColumn(int nRows, float xStart, float yStart, float xEnd, float yEnd, bool hasTitle, string[] content)
     {
         float step = 1f / nRows;
-        int fontSize = 16;
+        int fontSize = 12;
         RectTransform column = AddPanel("column", Color.grey, xStart, yStart, xEnd, yEnd, Container);
         for(int i = 0; i < content.Length; i++)
             AddText(content[i], fontSize, Color.black, (i == 0 && hasTitle) ? FontStyle.Bold : FontStyle.Normal, 0, i * step, 1, (i + 1) * step, column, TextAnchor.MiddleLeft);

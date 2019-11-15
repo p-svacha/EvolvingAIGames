@@ -13,8 +13,8 @@ public class VA_DestroyMinions : VisualAction
     public List<GameObject> Projectiles;
     public float ProjectileSize = 0.3f;
 
-    public float BobDurationRel;
-    public float BobExtraScale;
+    public float BobDurationRel = 0.5f;
+    public float BobExtraScale = 1.5f;
     public float BobDuration;
     public Vector3 BobSourceScale;
     public Vector3 BobTargetScale;
@@ -57,14 +57,14 @@ public class VA_DestroyMinions : VisualAction
 
             for (int i = 0; i < Projectiles.Count; i++)
             {
-                Projectiles[i].transform.position = Vector3.Lerp(SourcePosition, TargetPositions[i], CurrentFrame / Frames);
+                Projectiles[i].transform.position = Vector3.Lerp(SourcePosition, TargetPositions[i], (CurrentFrame - (BobDuration / 2)) / (Frames - (BobDuration / 2)));
             }
         }
         else
         {
             for (int i = 0; i < Projectiles.Count; i++)
             {
-                Projectiles[i].transform.position = Vector3.Lerp(SourcePosition, TargetPositions[i], CurrentFrame / Frames);
+                Projectiles[i].transform.position = Vector3.Lerp(SourcePosition, TargetPositions[i], (CurrentFrame - (BobDuration / 2)) / (Frames - (BobDuration / 2)));
             }
         }
     }

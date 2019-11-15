@@ -22,14 +22,14 @@ public class AIPlayer : Player
         float[] inputs = new float[]
         {
             1,
-            ((float)(Model.NumMinions(this, MinionType.Red)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(this, MinionType.Yellow)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(this, MinionType.Blue)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(this, MinionType.Green)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(Enemy, MinionType.Red)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(Enemy, MinionType.Yellow)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(Enemy, MinionType.Blue)) / Model.MaxMinions),
-            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinions),
+            ((float)(Model.NumMinions(this, MinionType.Red)) / Model.MaxMinionsPerType),
+            ((float)(Model.NumMinions(this, MinionType.Yellow)) / Model.MaxMinionsPerType),
+            ((float)(Model.NumMinions(this, MinionType.Blue)) / Model.MaxMinionsPerType),
+            ((float)(Model.NumMinions(this, MinionType.Green)) / Model.MaxMinionsPerType),
+            ((float)(Model.NumMinions(Enemy, MinionType.Red)) / Model.MaxMinionsPerType),
+            ((float)(Model.NumMinions(Enemy, MinionType.Yellow)) / Model.MaxMinionsPerType),
+            ((float)(Model.NumMinions(Enemy, MinionType.Blue)) / Model.MaxMinionsPerType),
+            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinionsPerType),
             ((float)(Health))/MaxHealth,
             ((float)(Enemy.Health))/Enemy.MaxHealth,
             ((float)(Model.Turn))/50
@@ -61,6 +61,13 @@ public class AIPlayer : Player
         KeyValuePair<int, float> bestOption = optionValues.First(x => x.Value == optionValues.Max(y => y.Value));
 
         ChosenCard = options.First(x => x.Id == bestOption.Key);
+
+        // Update players card statistics
+        foreach(Card c in options)
+        {
+            if (c == ChosenCard) CardsPicked[c.Id]++;
+            else CardsNotPicked[c.Id]++;
+        }
     }
 
     // Start is called before the first frame update

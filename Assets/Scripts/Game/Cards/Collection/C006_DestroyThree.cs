@@ -13,6 +13,6 @@ public class C006_DestroyThree : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.DestroyMultipleRandomMinions(self, Model.RandomMinionsFromPlayer(enemy, 3));
+        Model.DestroyMultipleMinions(self, Model.RandomMinionsFromPlayer(enemy, 3));
     }
 }

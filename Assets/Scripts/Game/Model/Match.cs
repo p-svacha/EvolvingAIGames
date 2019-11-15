@@ -50,7 +50,6 @@ public class Match
     private float MinionYStartPlan = 0.35f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
     private float MinionYStartAction = 0.1f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
 
-
     public void InitGame(Player player1, Player player2, int health, int options, bool log)
     {
         // Set players
@@ -70,6 +69,8 @@ public class Match
 
         Phase = MatchPhase.GameInitialized;
     }
+
+    #region gamecycle
 
     public void StartMatch(bool visual = false, VisualPlayer v_player = null, VisualMinion v_minion = null, int visualBoardHeight = 0, MatchUI matchUI = null)
     {
@@ -342,6 +343,8 @@ public class Match
             else
             {
                 MatchUI.UpdatePlayerHealth();
+                CheckGameOver();
+
                 NextPhaseReady = true;
             }
         }
@@ -421,6 +424,10 @@ public class Match
         }
     }
 
+    #endregion
+
+    #region gamecommands
+
     public void SummonMinion(Creature source, MinionType type, Player player)
     {
         Minion minion = null;
@@ -497,7 +504,7 @@ public class Match
         }
     }
 
-    public void DestroyMultipleRandomMinions(Creature source, List<Minion> targets)
+    public void DestroyMultipleMinions(Creature source, List<Minion> targets)
     {
         if (targets.Count > 0)
         {
@@ -553,6 +560,44 @@ public class Match
         }
     }
 
+    #endregion
+
+    #region helper functions
+
+    public Vector3 GetPlanPosition(Minion m)
+    {
+        List<Minion> orderedTypeList = Minions.Where(x => x.Type == m.Type && x.Owner == m.Owner).OrderBy(x => x.OrderNum).ToList();
+        float position = orderedTypeList.IndexOf(m);
+        float yPos;
+        bool secondColumn = (position + 1) > MaxMinionsPerType / 2;
+
+        float visualWidth = (Enum.GetNames(typeof(MinionType)).Length * (2 * MinionScale + MinionXGapPlan)) - MinionXGapPlan;
+        float xPos = -(visualWidth / 2) + ((float)(m.Type - 1) * (MinionXGapPlan + 2 * MinionScale)) + MinionScale / 2;
+        if (secondColumn) xPos += MinionScale;
+
+        if (m.Owner == Player1)
+        {
+            if (secondColumn) yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - (MaxMinionsPerType / 2) - 1) * (MinionYGapPlan + MinionScale));
+            else yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - 1) * (MinionYGapPlan + MinionScale));
+        }
+        else
+        {
+            if (secondColumn) yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - MaxMinionsPerType / 2 - 1) * (MinionYGapPlan + MinionScale));
+            else yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - 1) * (MinionYGapPlan + MinionScale));
+        }
+
+        return new Vector3(xPos, 0, yPos);
+    }
+
+    public Vector3 GetActionPosition(Minion m)
+    {
+        List<Minion> orderedTypeList = Minions.OrderBy(x => x.OrderNum).ToList();
+        float visualWidth = (Minions.Count * (MinionScale + MinionXGapAction)) - MinionXGapAction;
+        float xPos = -(visualWidth / 2) + (orderedTypeList.IndexOf(m) * (MinionXGapAction + MinionScale)) + MinionScale / 2;
+        float yPos = m.Owner == Player1 ? -(VisualBoardHeight * MinionYStartAction) : (VisualBoardHeight * MinionYStartAction);
+        return new Vector3(xPos, 0, yPos);
+    }
+
     private List<Card> RandomCards(int amount)
     {
         List<Card> cards = new List<Card>();
@@ -587,7 +632,10 @@ public class Match
         throw new Exception("Minion type not handled in minion creation!");
     }
 
-    // LINQ
+    #endregion
+
+    #region LINQ
+
     public int NumMinions(Player player)
     {
         return Minions.Where(x => x.Owner == player).Count();
@@ -623,46 +671,17 @@ public class Match
         }
     }
 
+    public List<Minion> AllMinionsOfType(Player player, MinionType type)
+    {
+        return Minions.Where(x => x.Owner == player && x.Type == type).ToList();
+    }
+
     public MinionType RandomMinionType()
     {
         Array types = Enum.GetValues(typeof(MinionType));
         return (MinionType)types.GetValue(UnityEngine.Random.Range(0, types.Length));
     }
 
-    // Visual
-    public Vector3 GetPlanPosition(Minion m)
-    {
-        List<Minion> orderedTypeList = Minions.Where(x => x.Type == m.Type && x.Owner == m.Owner).OrderBy(x => x.OrderNum).ToList();
-        float position = orderedTypeList.IndexOf(m);
-        float yPos;
-        bool secondColumn = (position + 1) > MaxMinionsPerType / 2;
-
-        float visualWidth = (Enum.GetNames(typeof(MinionType)).Length * (2 * MinionScale + MinionXGapPlan)) - MinionXGapPlan;
-            float xPos = -(visualWidth / 2) + ((float)(m.Type - 1) * (MinionXGapPlan + 2 * MinionScale)) + MinionScale / 2;
-        if (secondColumn) xPos += MinionScale;
-
-        if (m.Owner == Player1)
-        {
-            if (secondColumn) yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - (MaxMinionsPerType / 2) - 1) * (MinionYGapPlan + MinionScale));
-            else yPos = -(VisualBoardHeight * MinionYStartPlan) + ((position - 1) * (MinionYGapPlan + MinionScale));
-        }
-        else
-        {
-            if (secondColumn) yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - MaxMinionsPerType / 2 - 1) * (MinionYGapPlan + MinionScale));
-            else yPos = (VisualBoardHeight * MinionYStartPlan) - ((position - 1) * (MinionYGapPlan + MinionScale));
-        }
-
-        return new Vector3(xPos, 0, yPos);
-    }
-
-    public Vector3 GetActionPosition(Minion m)
-    {
-        List<Minion> orderedTypeList = Minions.OrderBy(x => x.OrderNum).ToList();
-        float visualWidth = (Minions.Count * (MinionScale + MinionXGapAction)) - MinionXGapAction;
-        float xPos = -(visualWidth / 2) + (orderedTypeList.IndexOf(m) * (MinionXGapAction + MinionScale)) + MinionScale / 2;
-        float yPos = m.Owner == Player1 ? -(VisualBoardHeight * MinionYStartAction) : (VisualBoardHeight * MinionYStartAction);
-        return new Vector3(xPos, 0, yPos);
-    }
-
+    #endregion
 
 }

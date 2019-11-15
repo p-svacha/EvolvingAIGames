@@ -31,7 +31,10 @@ public class EvolutionInformation
     public float MaxFitness;
     public float AverageFitness;
 
-    public EvolutionInformation(int generation, bool mutationImmunityForTakeOvers, MutationInformation mutationInfo, int numBestSubjectsTakenOver, int numRandomSubjectsTakenOver, int numOffsprings, int numSubjectsCheckedForAdoption, int numImmuneToMutationSubjects, int numPreviousSpecies, int numEliminatedSpecies, int numEmptySpecies, int numNewSpecies, int numSpecies, float maxFitness, float averageFitness)
+    public int RankLimit;
+    public int GensAllowedBelowLimit;
+
+    public EvolutionInformation(int generation, bool mutationImmunityForTakeOvers, MutationInformation mutationInfo, int numBestSubjectsTakenOver, int numRandomSubjectsTakenOver, int numOffsprings, int numSubjectsCheckedForAdoption, int numImmuneToMutationSubjects, int numPreviousSpecies, int numEliminatedSpecies, int numEmptySpecies, int numNewSpecies, int numSpecies, float maxFitness, float averageFitness, int limit, int gensBelowLimit)
     {
         Generation = generation;
         MutationImmunityForTakeOvers = mutationImmunityForTakeOvers;
@@ -48,6 +51,8 @@ public class EvolutionInformation
         NumSpecies = numSpecies;
         MaxFitness = maxFitness;
         AverageFitness = averageFitness;
+        RankLimit = limit;
+        GensAllowedBelowLimit = gensBelowLimit;
     }
 
     public override string ToString()
@@ -58,6 +63,7 @@ public class EvolutionInformation
             "\nSpecies: " + NumSpecies + " (" + NumPreviousSpecies + " Previous, " + NumNewSpecies + " New, " + NumEliminatedSpecies + " Eliminated, " + NumEmptySpecies + " Empty)" +
             "\nMaxFitness: " + (int)MaxFitness + ", Average Fitness: " + (int)AverageFitness +
             "\n\nSubjects checked for adoption: " + NumSubjectsCheckedForAdoption + ", Subjects immune to mutations: " + NumImmuneToMutationSubjects +
+            "\nRank Limit: " + RankLimit + ", Generations below rank limit before extincion: " + GensAllowedBelowLimit +
             "\n" + MutationInfo.ToString() + "\n";
     }
 }

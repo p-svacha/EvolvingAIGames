@@ -22,15 +22,15 @@ public class Population {
     public int Generation;
 
     // Parameters
-    public float TakeOverBestRatio = 0.15f; // % of best subjects per species that are taken over to next generation
-    public float TakeOverRandomRatio = 0.05f; // % of random subjects per species that are taken over to next generation
+    public float TakeOverBestRatio = 0.13f; // % of best subjects per species that are taken over to next generation
+    public float TakeOverRandomRatio = 0.04f; // % of random subjects per species that are taken over to next generation
     public bool AreTakeOversImmuneToMutation = true; // If true, subjects that are taken over the next generation are immune to mutation
     // Rest will be newly generated as offsprings of good performing genomes from previous generation
 
     public float IgnoreRatio = 0.35f; // % of worst performing subjects within a species to ignore when chosing a random parent
 
     public int RankNeededToSurvive = 4; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
-    public int GenerationsWithoutImprovementPenalty = 15; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
+    public int GenerationsBelowRankAllowed = 15; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
 
     public float AdoptionRate = 0.4f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
 
@@ -280,7 +280,7 @@ public class Population {
         if (showTimestamps) stamp = TimeStamp(stamp, "Get Fitness");
 
         // Eliminate species without improvement for too long
-        int numEliminatedSpecies = EliminateBadSpecies(RankNeededToSurvive, GenerationsWithoutImprovementPenalty);
+        int numEliminatedSpecies = EliminateBadSpecies(RankNeededToSurvive, GenerationsBelowRankAllowed);
         if (showTimestamps) stamp = TimeStamp(stamp, "Eliminate Bad Species");
 
         // Take a random representative for each existing species
@@ -342,11 +342,11 @@ public class Population {
         if (Subjects.Count != Species.Sum(x => x.Subjects.Count)) throw new Exception("SPECIATION FAILED. The number of subjects in the species does not match the number of subjects in the population.");
 
         // Create the evolution information object
-        EvolutionInformation info = new EvolutionInformation(Generation, AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings, numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations, numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, maxFitness, averageFitness);
+        EvolutionInformation info = new EvolutionInformation(Generation, AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings, numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations, numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, maxFitness, averageFitness, RankNeededToSurvive, GenerationsBelowRankAllowed);
         Debug.Log(info.ToString());
 
         // Reset the species fitness values
-        foreach (Species s in Species) s.CalculateFitnessValues();
+        //foreach (Species s in Species) s.CalculateFitnessValues();
 
         return info;
     }
