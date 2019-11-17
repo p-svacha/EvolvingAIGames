@@ -15,6 +15,6 @@ public class M03_Blue : Minion
 
     public override void Action()
     {
-        Model.DestroyRandomMinion(this, Model.RandomMinionFromPlayer(Enemy));
+        Model.DestabilizeMinion(this, Model.RandomMinionFromPlayer(Enemy, withoutDestabilized: true));
     }
 }

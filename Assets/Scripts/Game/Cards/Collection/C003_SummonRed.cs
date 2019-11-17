@@ -16,6 +16,6 @@ public class C003_SummonRed : Card
         Model.SummonMultipleMinions(self, new List<Tuple<MinionType, Player>>() {
             new Tuple<MinionType, Player>(MinionType.Red, self),
             new Tuple<MinionType, Player>(MinionType.Red, self),
-        });
+        }, summonProtection: true);
     }
 }

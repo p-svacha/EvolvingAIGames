@@ -22,7 +22,7 @@ public class VA_DestroyMinions : VisualAction
     public VA_DestroyMinions(VisualEntity source, List<VisualEntity> targets, Color color)
     {
         Projectiles = new List<GameObject>();
-        Frames = 120;
+        //Frames = 40;
         Source = source;
         SourcePosition = source.transform.position;
         Targets = targets;

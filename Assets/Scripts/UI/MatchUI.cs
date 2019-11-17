@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,11 +26,12 @@ public class MatchUI : MonoBehaviour
     public GenomeVisualizer Player2GV;
 
     // Card Display
+    public Texture DestabilizedTexture;
     public List<Sprite> CardSprites;
     public List<VisualCard> DisplayedCards;
     private float CardMarginX = 0.15f;
     private float CardMarginY = 0.1f;
-    private float CardGapX = 1f; // 0.5 = The gap between two cards is the width of 0.5 cards
+    private float CardGapX; // 0.5 = The gap between two cards is the width of 0.5 cards
 
     public void UpdatePlayerHealth()
     {
@@ -50,6 +52,8 @@ public class MatchUI : MonoBehaviour
 
     public void ShowCards(List<Card> options, Player player)
     {
+        CardGapX = options.Count <= 3 ? 1f : options.Count <= 5 ? 0.5f : 0.1f;
+
         // Position constants
         float xStep = (1 - 2 * CardMarginX) / (options.Count);
         float cardWidth = xStep * (1 / (1 + CardGapX));
@@ -78,8 +82,11 @@ public class MatchUI : MonoBehaviour
 
             // Highlight selected Card
             if(options[i] == player.ChosenCard)
-            {
                 vc.GetComponent<Image>().color = Color.red;
+            // Highlight cards with shared highest value that were not picked
+            else if(player.BestOptions.Contains(options[i]))
+            {
+                vc.GetComponent<Image>().color = Color.yellow;
             }
 
             DisplayedCards.Add(vc);

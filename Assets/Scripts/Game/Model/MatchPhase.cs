@@ -10,6 +10,7 @@ public enum MatchPhase
     CardEffect,
     MinionsToAction,
     MinionEffect,
+    MinionDeaths,
     MinionsToPlan,
     GameEnded
 }

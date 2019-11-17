@@ -9,10 +9,11 @@ public class Speciator {
     public System.Random Random;
     public int SpeciesId = 0;
 
-    public float CompatibilityThreshold = 5; //default 5
+    public float CompatibilityThreshold;
 
-    public Speciator()
+    public Speciator(float compatibilityThreshhold)
     {
+        CompatibilityThreshold = compatibilityThreshhold;
         Random = new System.Random();
     }
 

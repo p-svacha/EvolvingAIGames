@@ -17,7 +17,7 @@ public class VA_SummonMinions : VisualAction
 
     public VA_SummonMinions(List<VisualEntity> visuals, VisualEntity source, List<Vector3> targetPositions, float targetScale)
     {
-        Frames = 100;
+        //Frames = 40;
         Visuals = visuals;
         Source = source;
         TargetPositions = targetPositions;

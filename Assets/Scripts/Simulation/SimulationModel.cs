@@ -13,15 +13,18 @@ public class SimulationModel : MonoBehaviour
 
     private int PopulationSize = 1000;
     private int MatchesPerGeneration = 20;
-    private int WatchAfterXGenerations = 15;
+    private int WatchAfterXGenerations = 1;
 
     // Matches
+    public Match MatchModel;
     public List<Match> Matches;
 
     // Match rules
-    public Match MatchModel;
     private int StartHealth = 40;
     private int StartCardOptions = 3;
+    private int MaxMinions = 30;
+    private int MaxMinionsPerType = 8;
+    private int FatigueDamageStartTurn = 20;
 
     // UI
     public SimulationUI SimulationUI;
@@ -48,9 +51,9 @@ public class SimulationModel : MonoBehaviour
         CardList.InitCardList();
 
         // Init population
-        Population = new Population(PopulationSize, 12, CardList.Cards.Count, false);
-        EvolutionInformation info = Population.EvolveGeneration(3);
-        SimulationUI.EvoStats.UpdateStatistics(info);
+        Population = new Population(PopulationSize, 12, CardList.Cards.Count, true);
+        //EvolutionInformation info = Population.EvolveGeneration(7);
+        //SimulationUI.EvoStats.UpdateStatistics(info);
         SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
 
         // Generate matches
@@ -93,7 +96,7 @@ public class SimulationModel : MonoBehaviour
 
             Player player1 = new AIPlayer(match, sub1);
             Player player2 = new AIPlayer(match, sub2);
-            match.InitGame(player1, player2, StartHealth, StartCardOptions, false);
+            match.InitGame(player1, player2, StartHealth, StartCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
             Matches.Add(match);
         }
     }
@@ -109,7 +112,7 @@ public class SimulationModel : MonoBehaviour
                 Match bestMatch = Matches.First(x => x.Player1.Brain.Wins + x.Player2.Brain.Wins == Matches.Max(y => y.Player1.Brain.Wins + y.Player2.Brain.Wins));
                 foreach (Match m in Matches)
                 {
-                    if (MatchesPlayed == MatchesPerGeneration - 1 && Population.Generation % WatchAfterXGenerations == 0 && m == bestMatch)
+                    if (MatchesPlayed == MatchesPerGeneration - 1 && Population.Generation > 0 && Population.Generation % WatchAfterXGenerations == 0 && m == bestMatch)
                     {
                         SimulationUI.gameObject.SetActive(false);
                         ActiveMatch = m;
@@ -160,7 +163,7 @@ public class SimulationModel : MonoBehaviour
                 MatchesPlayed = 0;
 
                 // Evolve and Update UI
-                EvolutionInformation info = Population.EvolveGeneration(2);
+                EvolutionInformation info = Population.EvolveGeneration(1.5f);
                 SimulationUI.EvoStats.UpdateStatistics(info);
                 SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
 

@@ -12,7 +12,8 @@ public class EvolutionStatistics : UIElement
         // Title
         float titleSize = 1f / 6f;
         int fontSize = 16;
-        AddText("Evolution Information for Generation " + info.Generation, fontSize, Color.black, FontStyle.Bold, 0, 0, 1, titleSize, Container, TextAnchor.MiddleCenter);
+        string titleText = "Evolution Information for Generation " + info.Generation + " (" + info.EvolutionTime + " ms)";
+        AddText(titleText, fontSize, Color.black, FontStyle.Bold, 0, 0, 1, titleSize, Container, TextAnchor.MiddleCenter);
 
         float numColumns = 6;
         int nRows = 7;
@@ -23,7 +24,7 @@ public class EvolutionStatistics : UIElement
         yStep += 1f / numColumns;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
-            new string[] { "# Species: " + info.NumSpecies, "# Previous: " + info.NumPreviousSpecies, "# New: " + info.NumNewSpecies, "# Eliminated: " + info.NumEliminatedSpecies, "# Empty: " + info.NumEmptySpecies });
+            new string[] { "# Species: " + info.NumSpecies, "# Previous: " + info.NumPreviousSpecies, "# New: " + info.NumNewSpecies, "# Eliminated: " + info.NumEliminatedSpecies, "# Empty: " + info.NumEmptySpecies, "CTH: " + info.CompatibilityThreshhold });
         yStep += 1f / numColumns;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
@@ -31,7 +32,7 @@ public class EvolutionStatistics : UIElement
         yStep += 1f / numColumns;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
-            new string[] { "Misc", "# AdpChecks: " + info.NumSubjectsCheckedForAdoption, "# Immune: " + info.NumImmuneToMutationSubjects, "Rank Limit: " + info.RankLimit, "#Gens <Limit: " + info.GensAllowedBelowLimit });
+            new string[] { "Misc", "# AdpChecks: " + info.NumSubjectsCheckedForAdoption, "# Immune: " + info.NumImmuneToMutationSubjects, "Rank Limit: " + info.RankLimit, "#Gens <Limit: " + info.GensAllowedBelowLimit, "Takeovers immune: " + info.MutationImmunityForTakeOvers });
         yStep += 1f / numColumns;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,

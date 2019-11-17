@@ -15,6 +15,6 @@ public class M04_Green : Minion
 
     public override void Action()
     {
-        Model.SummonMinion(this, Model.RandomMinionType(), Owner);
+        Model.SummonMinion(this, Model.RandomMinionType(), Owner, summonProtection: false);
     }
 }

@@ -32,7 +32,7 @@ public class AIPlayer : Player
             ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinionsPerType),
             ((float)(Health))/MaxHealth,
             ((float)(Enemy.Health))/Enemy.MaxHealth,
-            ((float)(Model.Turn))/50
+            ((float)(Model.Turn))/50,
         };
         float[] outputs = Brain.Genome.FeedForward(inputs);
 
@@ -57,15 +57,17 @@ public class AIPlayer : Player
             values.Add(i + 1, outputs[i]);
         }
 
-        // Choose best available option
-        KeyValuePair<int, float> bestOption = optionValues.First(x => x.Value == optionValues.Max(y => y.Value));
-
+        // Choose best available option (or one at random from best if there are multiple)
+        List<KeyValuePair<int, float>> bestOptions = optionValues.Where(x => x.Value == optionValues.Max(y => y.Value)).ToList();
+        KeyValuePair<int, float> bestOption = bestOptions[Random.Range(0, bestOptions.Count)];
+        List<int> bestOptionsIds = bestOptions.Select(x => x.Key).ToList();
+        BestOptions = options.Where(x => bestOptionsIds.Contains(x.Id)).ToList();
         ChosenCard = options.First(x => x.Id == bestOption.Key);
 
         // Update players card statistics
         foreach(Card c in options)
         {
-            if (c == ChosenCard) CardsPicked[c.Id]++;
+            if (BestOptions.Contains(c)) CardsPicked[c.Id]++;
             else CardsNotPicked[c.Id]++;
         }
     }

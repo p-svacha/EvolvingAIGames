@@ -11,6 +11,7 @@ public abstract class Player : Creature
     public int Health;
     public int NumCardOptions;
     public Card ChosenCard;
+    public List<Card> BestOptions; // List of cards with the shared highest value. (ChosenCard was chosen randomly from this list)
 
     // Card Statistics
     public Dictionary<int, int> CardsPicked;
@@ -22,6 +23,7 @@ public abstract class Player : Creature
         Brain = brain;
         CardsPicked = new Dictionary<int, int>();
         CardsNotPicked = new Dictionary<int, int>();
+        BestOptions = new List<Card>();
         for(int i = 0; i < CardList.Cards.Count; i++)
         {
             CardsPicked.Add(i + 1, 0);

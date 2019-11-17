@@ -41,8 +41,8 @@ public class CardValues : UIElement {
             float yStart = (i +1) * yStep;
             float yEnd = (i + 1) * yStep + yStep * RowHeight;
             AddPanel(CardList.Cards[key - 1].Name, options.Contains(key) ? Color.grey : Color.white, xStart, yStart, xEnd, yEnd, Container);
-            AddText(CardList.Cards[key - 1].Name, (int)(yStep * 200), Color.black, FontStyle.Normal, xMargin + (0.1f * xMargin), yStart, 0.5f, yEnd, Container, TextAnchor.MiddleLeft);
-            AddText(value.ToString("0.0%"), (int)(yStep * 200), Color.black, FontStyle.Normal, 0.5f, yStart, 1f - xMargin - (0.1f * xMargin), yEnd, Container, TextAnchor.MiddleRight);
+            AddText(CardList.Cards[key - 1].Name, (int)(yStep * 150), Color.black, FontStyle.Normal, xMargin + (0.1f * xMargin), yStart, 0.65f, yEnd, Container, TextAnchor.MiddleLeft);
+            AddText(value.ToString("0.0%"), (int)(yStep * 150), Color.black, FontStyle.Normal, 0.65f, yStart, 1f - xMargin - (0.1f * xMargin), yEnd, Container, TextAnchor.MiddleRight);
         }
 
     }

@@ -9,10 +9,10 @@ public class MutateAlgorithm {
     System.Random Random;
 
     // Topology mutations (the ratio between new node and new connection mutations is dependant on the possible mutations of each type)
-    public float TopologyMutationChance = 0.16f;
+    public float TopologyMutationChance = 0.14f;
 
     // Weight mutations
-    public float WeightMutationChancePerGenome = 0.35f;
+    public float WeightMutationChancePerGenome = 0.25f;
     public float ReplaceChance = 0.1f;
     public float ShiftChance = 0.4f;
     public float ScaleChance = 0.3f;
@@ -59,7 +59,7 @@ public class MutateAlgorithm {
     {
         double rng = Random.NextDouble();
 
-        if (rng <= TopologyMutationChance)
+        if (rng <= TopologyMutationChance * mutationScaleFactor)
         {
             int possibleNewNodeMutations = TopologyMutator.FindCandidateConnectionsForNewNode(g).Count;
             int possibleNewConnectionMutations = TopologyMutator.FindCandidateConnections(g).Count;
@@ -93,28 +93,28 @@ public class MutateAlgorithm {
 
             if (rng <= ReplaceChance)
             {
-                WeightMutator.ReplaceWeight(g);
-                info.NumReplaceMutations++;
+                bool canApplyMutation = WeightMutator.ReplaceWeight(g);
+                if(canApplyMutation) info.NumReplaceMutations++;
             }
             else if (rng <= ReplaceChance + ShiftChance)
             {
-                WeightMutator.ShiftWeight(g);
-                info.NumShiftMutations++;
+                bool canApplyMutation = WeightMutator.ShiftWeight(g);
+                if (canApplyMutation) info.NumShiftMutations++;
             }
             else if (rng <= ReplaceChance + ShiftChance + ScaleChance)
             {
-                WeightMutator.ScaleWeight(g);
-                info.NumScaleMutations++;
+                bool canApplyMutation = WeightMutator.ScaleWeight(g);
+                if (canApplyMutation) info.NumScaleMutations++;
             }
             else if (rng <= ReplaceChance + ShiftChance + ScaleChance + InvertChance)
             {
-                WeightMutator.InvertWeight(g);
-                info.NumInvertMutations++;
+                bool canApplyMutation = WeightMutator.InvertWeight(g);
+                if (canApplyMutation) info.NumInvertMutations++;
             }
             else if (rng <= ReplaceChance + ShiftChance + ScaleChance + InvertChance + SwapChance)
             {
-                WeightMutator.SwapWeights(g);
-                info.NumSwapMutations++;
+                bool canApplyMutation = WeightMutator.SwapWeights(g);
+                if (canApplyMutation) info.NumSwapMutations++;
             }
         }
     }

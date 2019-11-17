@@ -9,9 +9,10 @@ public class Match
 {
     // Rules
     public int StartHealth;
-    public int MaxMinionsPerType = 10;
-    public int MaxMinions = 30;
-    public int FatigueDamageStartTurn = 20;
+    public int StartCardOptions;
+    public int MaxMinionsPerType;
+    public int MaxMinions;
+    public int FatigueDamageStartTurn;
 
     // Players
     public Player Player1;
@@ -50,14 +51,20 @@ public class Match
     private float MinionYStartPlan = 0.35f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
     private float MinionYStartAction = 0.1f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
 
-    public void InitGame(Player player1, Player player2, int health, int options, bool log)
+    public void InitGame(Player player1, Player player2, int health, int options, int maxMinions, int maxMinionsPerType, int fatigueStart, bool log)
     {
-        // Set players
+        // Set rules
         StartHealth = health;
+        StartCardOptions = options;
+        MaxMinions = maxMinions;
+        MaxMinionsPerType = maxMinionsPerType;
+        FatigueDamageStartTurn = fatigueStart;
+
+        // Set players
         Player1 = player1;
         Player2 = player2;
-        Player1.Initialize(Player2, StartHealth, options);
-        Player2.Initialize(Player1, StartHealth, options);
+        Player1.Initialize(Player2, StartHealth, StartCardOptions);
+        Player2.Initialize(Player1, StartHealth, StartCardOptions);
 
         // Init game values
         Log = log;
@@ -135,15 +142,19 @@ public class Match
                 break;
 
             case MatchPhase.MinionsToAction:
-                MoveMinionsUpdate();
+                VisualUpdate();
                 break;
 
             case MatchPhase.MinionEffect:
                 DequeueEffect();
                 break;
 
+            case MatchPhase.MinionDeaths:
+                VisualUpdate();
+                break;
+
             case MatchPhase.MinionsToPlan:
-                MoveMinionsUpdate();
+                VisualUpdate();
                 break;
 
             case MatchPhase.GameEnded:
@@ -164,10 +175,8 @@ public class Match
 
                 case MatchPhase.CardPick:
                     // Hide cards
-                    if(Visual)
-                    {
-                        MatchUI.UnshowAllCards();
-                    }
+                    MatchUI.UnshowAllCards();
+
                     // Queue card effects
                     Effects.Enqueue(() => { Player1.ChosenCard.Action(this, Player1, Player2); });
                     Effects.Enqueue(() => { Player2.ChosenCard.Action(this, Player2, Player1); });
@@ -176,13 +185,14 @@ public class Match
                     break;
 
                 case MatchPhase.CardEffect:
+                    RemoveSummonProtection();
                     // Initiate Moveminion effect
-                    if(Visual && Minions.Count > 0)
+                    if(Minions.Count > 0)
                     {
                         VisualActions.Add(new VA_MoveMinions(this, true));
                         Phase = MatchPhase.MinionsToAction;
                     }
-                    else // Skip MoveMinion Phase if non-visual
+                    else // Skip MoveMinion Phase if no minions
                     {
                         QueueMinionEffects();
                         Phase = MatchPhase.MinionEffect;
@@ -196,12 +206,30 @@ public class Match
                     break;
 
                 case MatchPhase.MinionEffect:
-                    if (Visual && Minions.Count > 0)
+                    if(Minions.Where(x => x.Destabilized).Count() > 0)
+                    {
+                        DestroyDestabilizedMinions();
+                        Phase = MatchPhase.MinionDeaths;
+                    }
+                    else if (Minions.Count > 0) // Skip MinionDeaths if no destabilized minions
                     {
                         VisualActions.Add(new VA_MoveMinions(this, false));
                         Phase = MatchPhase.MinionsToPlan;
                     }
-                    else // Skip MoveMinion Phase if non-visual
+                    else // Skip MoveMinion Phase if no minions
+                    {
+                        PickCards();
+                        Phase = MatchPhase.CardPick;
+                    }
+                    break;
+
+                case MatchPhase.MinionDeaths:
+                    if (Minions.Count > 0)
+                    {
+                        VisualActions.Add(new VA_MoveMinions(this, false));
+                        Phase = MatchPhase.MinionsToPlan;
+                    }
+                    else // Skip MoveMinion Phase if no minions
                     {
                         PickCards();
                         Phase = MatchPhase.CardPick;
@@ -223,7 +251,6 @@ public class Match
     {
         while(Phase != MatchPhase.GameEnded)
         {
-            // During game phases
             switch (Phase)
             {
                 case MatchPhase.GameReady:
@@ -242,6 +269,7 @@ public class Match
                     DequeueEffect();
                     if (Phase != MatchPhase.GameEnded)
                     {
+                        RemoveSummonProtection();
                         QueueMinionEffects();
                         Phase = MatchPhase.MinionEffect;
                     }
@@ -251,6 +279,7 @@ public class Match
                     DequeueEffect();
                     if (Phase != MatchPhase.GameEnded)
                     {
+                        DestroyDestabilizedMinions();
                         PickCards();
                         Phase = MatchPhase.CardPick;
                     }
@@ -311,11 +340,41 @@ public class Match
         }
     }
 
+    private void DestroyDestabilizedMinions()
+    {
+        List<Minion> destabilizedMinions = Minions.Where(x => x.Destabilized).ToList();
+        if (destabilizedMinions.Count == 0) return;
+        foreach(Minion m in destabilizedMinions)
+        {
+            Minions.Remove(m);
+        }
+        if(Visual)
+        {
+            VisualActions.Add(new VA_MinionDeaths(destabilizedMinions.Select(x => x.Visual).ToList(), MinionScale));
+        }
+        if (Log)
+        {
+            string names = "";
+            foreach (Minion minion in destabilizedMinions) names += minion.Name + ", ";
+            names = names.TrimEnd(new char[] { ',', ' ' });
+            Debug.Log(names + " died from destabilization");
+        }
+    }
+
+    private void RemoveSummonProtection()
+    {
+        foreach (Minion m in Minions.Where(x => x.HasSummonProtection)) m.HasSummonProtection = false;
+        if(Log)
+        {
+            Debug.Log("Minions lost summon protection.");
+        }
+    }
+
     private void QueueMinionEffects()
     {
         foreach (Minion m in Minions.OrderBy(x => x.OrderNum))
         {
-            Effects.Enqueue(() => { if(!m.Destroyed) m.Action(); });
+            Effects.Enqueue(() => { m.Action(); });
         }
     }
 
@@ -408,7 +467,7 @@ public class Match
     /// <summary>
     /// Updates the minions positions while moving from planning phase to action phase or vice versa.
     /// </summary>
-    private void MoveMinionsUpdate()
+    private void VisualUpdate()
     {
         if (VisualActions.Count > 0)
         {
@@ -428,12 +487,13 @@ public class Match
 
     #region gamecommands
 
-    public void SummonMinion(Creature source, MinionType type, Player player)
+    public void SummonMinion(Creature source, MinionType type, Player player, bool summonProtection)
     {
         Minion minion = null;
         if (NumMinions(player, type) < MaxMinionsPerType && NumMinions(player) < MaxMinions)
         {
             minion = CreateNewMinion(type, player);
+            if (summonProtection) minion.HasSummonProtection = true;
             Minions.Add(minion);
 
             if (Visual)
@@ -450,7 +510,7 @@ public class Match
         }
     }
 
-    public void SummonMultipleMinions(Creature source, List<Tuple<MinionType, Player>> list)
+    public void SummonMultipleMinions(Creature source, List<Tuple<MinionType, Player>> list, bool summonProtection)
     {
         List<Minion> createdMinions = new List<Minion>();
         List<Vector3> targetPositions = new List<Vector3>();
@@ -462,6 +522,7 @@ public class Match
             if (NumMinions(player, type) < MaxMinionsPerType && NumMinions(player) < MaxMinions)
             {
                 Minion newMinion = CreateNewMinion(type, player);
+                if (summonProtection) newMinion.HasSummonProtection = true;
                 Minions.Add(newMinion);
                 createdMinions.Add(newMinion);
             }
@@ -486,11 +547,10 @@ public class Match
         }
     }
 
-    public void DestroyRandomMinion(Creature source, Minion target)
+    public void DestroyMinion(Creature source, Minion target)
     {
         if (target != null)
         {
-            target.Destroyed = true;
             Minions.Remove(target);
 
             if (Visual)
@@ -504,13 +564,29 @@ public class Match
         }
     }
 
+    public void DestabilizeMinion(Creature source, Minion target)
+    {
+        if (target != null)
+        {
+            target.Destabilized = true;
+
+            if (Visual)
+            {
+                VisualActions.Add(new VA_DestabilizeMinions(source.Visual, new List<VisualEntity>() { target.Visual }, new Color(1, 0, 1), MatchUI.DestabilizedTexture));
+            }
+            if (Log)
+            {
+                Debug.Log(source.Name + " destabilized " + target.Name);
+            }
+        }
+    }
+
     public void DestroyMultipleMinions(Creature source, List<Minion> targets)
     {
         if (targets.Count > 0)
         {
             foreach (Minion target in targets)
             {
-                target.Destroyed = true;
                 Minions.Remove(target);
             }
 
@@ -600,15 +676,14 @@ public class Match
 
     private List<Card> RandomCards(int amount)
     {
+        List<Card> cardListCopy = new List<Card>();
+        cardListCopy.AddRange(Cards);
         List<Card> cards = new List<Card>();
         for (int i = 0; i < amount; i++)
         {
-            Card c = null;
-            do
-            {
-                c = Cards[UnityEngine.Random.Range(0, Cards.Count)];
-            } while (cards.Contains(c));
+            Card c = cardListCopy[UnityEngine.Random.Range(0, cardListCopy.Count)];
             cards.Add(c);
+            cardListCopy.Remove(c);
         }
         return cards;
     }
@@ -646,34 +721,37 @@ public class Match
         return Minions.Where(x => x.Owner == player && x.Type == type).Count();
     }
 
-    public Minion RandomMinionFromPlayer(Player player)
+    public Minion RandomMinionFromPlayer(Player player, bool withoutDestabilized = false)
     {
         List<Minion> list = Minions.Where(x => x.Owner == player).ToList();
+        if (withoutDestabilized) list = list.Where(x => !x.Destabilized).ToList();
         if (list.Count == 0) return null;
         return list[UnityEngine.Random.Range(0, list.Count)];
     }
 
-    public List<Minion> RandomMinionsFromPlayer(Player player, int amount)
+    public List<Minion> RandomMinionsFromPlayer(Player player, int amount, bool withoutSummonProtection = false)
     {
-        if (amount >= NumMinions(player)) return Minions.Where(x => x.Owner == player).ToList();
+        List<Minion> list = Minions.Where(x => x.Owner == player).ToList();
+        if (withoutSummonProtection) list = list.Where(x => !x.HasSummonProtection).ToList();
+        if (amount >= list.Count) return list;
         else
         {
             List<Minion> returnList = new List<Minion>();
-            List<Minion> copy = new List<Minion>();
-            copy.AddRange(Minions.Where(x => x.Owner == player));
-            for(int i = 0; i < amount; i++)
+            for (int i = 0; i < amount; i++)
             {
-                Minion minion = copy[UnityEngine.Random.Range(0, copy.Count)];
+                Minion minion = list[UnityEngine.Random.Range(0, list.Count)];
                 returnList.Add(minion);
-                copy.Remove(minion);
+                list.Remove(minion);
             }
             return returnList;
         }
     }
 
-    public List<Minion> AllMinionsOfType(Player player, MinionType type)
+    public List<Minion> AllMinionsOfType(Player player, MinionType type, bool withoutSummonProtection = false)
     {
-        return Minions.Where(x => x.Owner == player && x.Type == type).ToList();
+        List<Minion> list = Minions.Where(x => x.Owner == player && x.Type == type).ToList();
+        if (withoutSummonProtection) list = list.Where(x => !x.HasSummonProtection).ToList();
+        return list;
     }
 
     public MinionType RandomMinionType()

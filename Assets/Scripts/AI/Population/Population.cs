@@ -34,6 +34,8 @@ public class Population {
 
     public float AdoptionRate = 0.4f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
 
+    public float SpeciesCompatiblityThreshhold = 10; // Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
+
     // Debug
     public bool showTimestamps = false;
 
@@ -41,7 +43,7 @@ public class Population {
     {
         Subjects = new List<Subject>();
         Species = new List<Species>();
-        Speciator = new Speciator();
+        Speciator = new Speciator(SpeciesCompatiblityThreshhold);
         TopologyMutator = new TopologyMutator();
         WeightMutator = new WeightMutator();
         MutateAlgorithm = new MutateAlgorithm(TopologyMutator, WeightMutator);
@@ -269,6 +271,7 @@ public class Population {
 
     public EvolutionInformation EvolveGeneration(float mutationScaleFactor)
     {
+        DateTime start = DateTime.Now;
         DateTime stamp = DateTime.Now;
         List<Subject> newSubjects = new List<Subject>();
         int numPreviousSpecies = Species.Count;
@@ -342,7 +345,8 @@ public class Population {
         if (Subjects.Count != Species.Sum(x => x.Subjects.Count)) throw new Exception("SPECIATION FAILED. The number of subjects in the species does not match the number of subjects in the population.");
 
         // Create the evolution information object
-        EvolutionInformation info = new EvolutionInformation(Generation, AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings, numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations, numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, maxFitness, averageFitness, RankNeededToSurvive, GenerationsBelowRankAllowed);
+        int evolutionTime = (int)((DateTime.Now - stamp).TotalMilliseconds);
+        EvolutionInformation info = new EvolutionInformation(Generation, evolutionTime, AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings, numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations, numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, SpeciesCompatiblityThreshhold, maxFitness, averageFitness, RankNeededToSurvive, GenerationsBelowRankAllowed);
         Debug.Log(info.ToString());
 
         // Reset the species fitness values

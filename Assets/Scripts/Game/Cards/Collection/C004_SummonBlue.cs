@@ -13,6 +13,6 @@ public class C004_SummonBlue : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.SummonMinion(self, MinionType.Blue, self);
+        Model.SummonMinion(self, MinionType.Blue, self, summonProtection: true);
     }
 }

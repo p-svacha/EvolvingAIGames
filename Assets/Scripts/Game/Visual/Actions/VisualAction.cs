@@ -5,7 +5,7 @@ using UnityEngine;
 public class VisualAction
 {
     public int CurrentFrame = 0;
-    public float Frames;
+    public float Frames = 70;
     public bool Done;
 
     public virtual void Update()

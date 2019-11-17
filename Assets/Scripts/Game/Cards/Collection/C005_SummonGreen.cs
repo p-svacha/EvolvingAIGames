@@ -13,6 +13,6 @@ public class C005_SummonGreen : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.SummonMinion(self, MinionType.Green, self);
+        Model.SummonMinion(self, MinionType.Green, self, summonProtection: true);
     }
 }
