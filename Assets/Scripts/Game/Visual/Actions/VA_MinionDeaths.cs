@@ -9,7 +9,7 @@ public class VA_MinionDeaths : VisualAction
 
     public VA_MinionDeaths(List<VisualEntity> visuals, float sourceScale)
     {
-        //Frames = 40;
+        Frames = DefaultFrames;
         Visuals = visuals;
         SourceScale = sourceScale;
     }

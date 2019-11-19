@@ -21,18 +21,20 @@ public class AIPlayer : Player
         // Feed forward network
         float[] inputs = new float[]
         {
-            1,
-            ((float)(Model.NumMinions(this, MinionType.Red)) / Model.MaxMinionsPerType),
-            ((float)(Model.NumMinions(this, MinionType.Yellow)) / Model.MaxMinionsPerType),
-            ((float)(Model.NumMinions(this, MinionType.Blue)) / Model.MaxMinionsPerType),
-            ((float)(Model.NumMinions(this, MinionType.Green)) / Model.MaxMinionsPerType),
-            ((float)(Model.NumMinions(Enemy, MinionType.Red)) / Model.MaxMinionsPerType),
-            ((float)(Model.NumMinions(Enemy, MinionType.Yellow)) / Model.MaxMinionsPerType),
-            ((float)(Model.NumMinions(Enemy, MinionType.Blue)) / Model.MaxMinionsPerType),
-            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinionsPerType),
-            ((float)(Health))/MaxHealth,
-            ((float)(Enemy.Health))/Enemy.MaxHealth,
-            ((float)(Model.Turn))/50,
+            1,                                                                                  // Bias
+            ((float)(Model.NumMinions(this, MinionType.Red)) / Model.MaxMinionsPerType),        // Own Red
+            ((float)(Model.NumMinions(this, MinionType.Yellow)) / Model.MaxMinionsPerType),     // Own Yellow
+            ((float)(Model.NumMinions(this, MinionType.Blue)) / Model.MaxMinionsPerType),       // Own Blue
+            ((float)(Model.NumMinions(this, MinionType.Green)) / Model.MaxMinionsPerType),      // Own Green
+            ((float)(Model.NumMinions(this, MinionType.Grey)) / Model.MaxMinionsPerType),       // Own Grey
+            ((float)(Model.NumMinions(Enemy, MinionType.Red)) / Model.MaxMinionsPerType),       // Enemy Red
+            ((float)(Model.NumMinions(Enemy, MinionType.Yellow)) / Model.MaxMinionsPerType),    // Enemy Yellow
+            ((float)(Model.NumMinions(Enemy, MinionType.Blue)) / Model.MaxMinionsPerType),      // Enemy Blue
+            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinionsPerType),     // Enemy Green
+            ((float)(Model.NumMinions(Enemy, MinionType.Grey)) / Model.MaxMinionsPerType),      // Enemy Grey
+            ((float)(Health))/MaxHealth,                                                        // Own Health
+            ((float)(Enemy.Health))/Enemy.MaxHealth,                                            // Enemy Health
+            Mathf.Min(1,((float)(Model.Turn))/Model.FatigueDamageStartTurn),                    // Turn
         };
         float[] outputs = Brain.Genome.FeedForward(inputs);
 

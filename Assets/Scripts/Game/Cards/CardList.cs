@@ -18,8 +18,10 @@ public static class CardList
         Cards.Add(new C004_SummonBlue(counter++));
         Cards.Add(new C005_SummonGreen(counter++));
         Cards.Add(new C006_DestroyTwo(counter++));
-        Cards.Add(new C007_DealEight(counter++));
+        Cards.Add(new C007_DealDirect(counter++));
         Cards.Add(new C008_DestroyRedAndYellow(counter++));
         Cards.Add(new C009_DestroyGreenAndBlue(counter++));
+        Cards.Add(new C010_SecondChance(counter++));
+        Cards.Add(new C011_DecoyArmy(counter++));
     }
 }

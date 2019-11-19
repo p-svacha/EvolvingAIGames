@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System;
 
-public class C007_DealEight : Card
+public class C007_DealDirect : Card
 {
 
-    public C007_DealEight(int id) : base(id)
+    public C007_DealDirect(int id) : base(id)
     {
         Name = "Direct Action";
         Text = "Deal 10 damage to the enemy.";

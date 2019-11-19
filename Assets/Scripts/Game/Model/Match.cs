@@ -386,9 +386,13 @@ public class Match
         // Visual
         if (Visual)
         {
-            if (VisualActions.Count > 0 && VisualActions[0].Done) VisualActions.RemoveAt(0);
+            if (VisualActions.Count > 0 && VisualActions[0].Done)
+            {
+                MatchUI.UpdatePlayerHealth();
+                VisualActions.RemoveAt(0);
+            }
 
-            if (Effects.Count > 0 && (VisualActions.Count == 0 || VisualActions[0].Done))
+            if (Effects.Count > 0 && VisualActions.Count == 0) // && (VisualActions.Count == 0 || VisualActions[0].Done))
             {
                 MatchUI.UpdatePlayerHealth();
                 CheckGameOver();
@@ -621,18 +625,21 @@ public class Match
 
     public void Heal(Creature source, Player target, int amount)
     {
-        if (target.Health < target.MaxHealth)
-        {
-            target.Health = Mathf.Min(target.MaxHealth, target.Health + amount);
+        if (target.Health >= target.MaxHealth || amount == 0) return;
 
-            if (Visual)
-            {
+
+        target.Health = Mathf.Min(target.MaxHealth, target.Health + amount);
+
+        if (Visual)
+        {
+            if (source == target)
+                VisualActions.Add(new VA_HealSelf(source.Visual, amount));
+            else
                 VisualActions.Add(new VA_Heal(source.Visual, target.Visual, amount, source.Color));
-            }
-            if (Log)
-            {
-                Debug.Log(source.Name + " healed " + target.Name + " for " + amount + " (now at " + target.Health + ")");
-            }
+        }
+        if (Log)
+        {
+            Debug.Log(source.Name + " healed " + target.Name + " for " + amount + " (now at " + target.Health + ")");
         }
     }
 
@@ -703,6 +710,9 @@ public class Match
 
             case MinionType.Green:
                 return new M04_Green(this, player, player.Enemy, SummonOrder++);
+
+            case MinionType.Grey:
+                return new M05_Grey(this, player, player.Enemy, SummonOrder++);
         }
         throw new Exception("Minion type not handled in minion creation!");
     }

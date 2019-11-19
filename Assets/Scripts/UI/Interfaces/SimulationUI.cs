@@ -12,10 +12,13 @@ public class SimulationUI : MonoBehaviour
 
     // Elements
     public Text TitleText;
+    public Toggle WatchGame;
     public EvolutionStatistics EvoStats;
     public SpeciesScoreboard SpeciesScoreboard;
     public CardStatistics CardPickrates;
     public CardStatistics CardWinrates;
+    public MatchRulesDisplay MatchRules;
+    public MatchStatisticsDisplay MatchStatistics;
 
     // Card Display
     public List<Sprite> CardSprites;

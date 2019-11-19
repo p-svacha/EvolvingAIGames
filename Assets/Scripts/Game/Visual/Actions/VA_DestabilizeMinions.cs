@@ -24,7 +24,7 @@ public class VA_DestabilizeMinions : VisualAction
     public VA_DestabilizeMinions(VisualEntity source, List<VisualEntity> targets, Color color, Texture destablizedTexture)
     {
         Projectiles = new List<GameObject>();
-        //Frames = 40;
+        Frames = DefaultFrames;
         Source = source;
         SourcePosition = source.transform.position;
         Targets = targets;

@@ -10,7 +10,7 @@ public class M03_Blue : Minion
         Name = "Blue";
         Text = "Destroy a random enemy minion.";
         Type = MinionType.Blue;
-        Color = Color.blue;
+        Color = new Color(0.2f, 0.2f, 1);
     }
 
     public override void Action()

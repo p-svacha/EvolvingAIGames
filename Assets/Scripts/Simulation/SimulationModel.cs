@@ -13,14 +13,14 @@ public class SimulationModel : MonoBehaviour
 
     private int PopulationSize = 1000;
     private int MatchesPerGeneration = 20;
-    private int WatchAfterXGenerations = 1;
 
     // Matches
     public Match MatchModel;
     public List<Match> Matches;
+    public Match BestMatch;
 
     // Match rules
-    private int StartHealth = 40;
+    private int StartHealth = 30;
     private int StartCardOptions = 3;
     private int MaxMinions = 30;
     private int MaxMinionsPerType = 8;
@@ -44,6 +44,11 @@ public class SimulationModel : MonoBehaviour
     public Dictionary<int, float> CardPickrate;
     public Dictionary<int, float> CardWinrate;
 
+    // Match Statistics
+    public int Player1WonMatches;
+    public int TotalMatches;
+    public int TotalTurns;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -51,7 +56,7 @@ public class SimulationModel : MonoBehaviour
         CardList.InitCardList();
 
         // Init population
-        Population = new Population(PopulationSize, 12, CardList.Cards.Count, true);
+        Population = new Population(PopulationSize, 14, CardList.Cards.Count, true);
         //EvolutionInformation info = Population.EvolveGeneration(7);
         //SimulationUI.EvoStats.UpdateStatistics(info);
         SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
@@ -63,7 +68,7 @@ public class SimulationModel : MonoBehaviour
         SimulationPhase = SimulationPhase.MatchesReady;
         MatchesPlayed = 0;
 
-        // Init Card statistics
+        // Init statistics
         CardsPicked = new Dictionary<int, int>();
         CardsPickedByWinner = new Dictionary<int, int>();
         CardsPickedByLoser = new Dictionary<int, int>();
@@ -77,6 +82,12 @@ public class SimulationModel : MonoBehaviour
             CardsPickedByLoser.Add(i + 1, 0);
             CardsNotPicked.Add(i + 1, 0);
         }
+        Player1WonMatches = 0;
+        TotalMatches = 0;
+        TotalTurns = 0;
+
+        // UI
+        SimulationUI.MatchRules.UpdateStatistics(StartHealth, StartCardOptions, FatigueDamageStartTurn, MaxMinions, MaxMinionsPerType);
     }
 
     private void GenerateMatches()
@@ -85,6 +96,26 @@ public class SimulationModel : MonoBehaviour
         List<Subject> remainingSubjects = new List<Subject>();
         remainingSubjects.AddRange(Population.Subjects);
 
+        // If last round of generation, let the best two subjects play against each other
+        if (SimulationUI.WatchGame.isOn && MatchesPlayed == MatchesPerGeneration - 1)
+        {
+            List<Subject> bestSubjects = remainingSubjects.OrderByDescending(x => x.Wins).Take(2).ToList();
+            Subject sub1 = bestSubjects[0];
+            remainingSubjects.Remove(sub1);
+            Subject sub2 = bestSubjects[1];
+            remainingSubjects.Remove(sub2);
+
+            Match match = new Match();
+
+            Player player1 = new AIPlayer(match, sub1);
+            Player player2 = new AIPlayer(match, sub2);
+            match.InitGame(player1, player2, StartHealth, StartCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
+            Matches.Add(match);
+
+            BestMatch = match;
+        }
+
+        // Generate random matches
         while(remainingSubjects.Count > 0)
         {
             Subject sub1 = remainingSubjects[Random.Range(0, remainingSubjects.Count)];
@@ -109,11 +140,11 @@ public class SimulationModel : MonoBehaviour
             case SimulationPhase.MatchesReady:
                 Debug.Log("Starting matchround " + Population.Generation + "." + (MatchesPlayed + 1));
                 SimulationUI.TitleText.text = "Match Round " + Population.Generation + "." + (MatchesPlayed + 1);
-                Match bestMatch = Matches.First(x => x.Player1.Brain.Wins + x.Player2.Brain.Wins == Matches.Max(y => y.Player1.Brain.Wins + y.Player2.Brain.Wins));
                 foreach (Match m in Matches)
                 {
-                    if (MatchesPlayed == MatchesPerGeneration - 1 && Population.Generation > 0 && Population.Generation % WatchAfterXGenerations == 0 && m == bestMatch)
+                    if (BestMatch != null && m == BestMatch)
                     {
+                        BestMatch = null;
                         SimulationUI.gameObject.SetActive(false);
                         ActiveMatch = m;
                         m.StartMatch(true, VisualPlayer, VisualMinion, VisualBoardHeight, MatchUI);
@@ -138,9 +169,7 @@ public class SimulationModel : MonoBehaviour
                 break;
 
             case SimulationPhase.MatchesFinished:
-                UpdateCardStatistics();
-                SimulationUI.CardPickrates.UpdateBoard(CardPickrate, "Card Pickrates");
-                SimulationUI.CardWinrates.UpdateBoard(CardWinrate, "Card Winrates");
+                UpdateStatistics();
                 GenerateMatches();
                 SimulationPhase = SimulationPhase.MatchesReady;
                 break;
@@ -160,6 +189,10 @@ public class SimulationModel : MonoBehaviour
                     CardsPickedByLoser.Add(i + 1, 0);
                     CardsNotPicked.Add(i + 1, 0);
                 }
+                Player1WonMatches = 0;
+                TotalMatches = 0;
+                TotalTurns = 0;
+
                 MatchesPlayed = 0;
 
                 // Evolve and Update UI
@@ -185,8 +218,19 @@ public class SimulationModel : MonoBehaviour
 
     }
 
-    private void UpdateCardStatistics()
+    private void UpdateStatistics()
     {
+        // Match statistics
+        Player1WonMatches += Matches.Where(x => x.Winner == x.Player1).Count();
+        TotalMatches += Matches.Count;
+        TotalTurns += Matches.Sum(x => x.Turn);
+
+        float p1winrate = (float)Player1WonMatches / TotalMatches;
+        float avgGameLength = (float)TotalTurns / TotalMatches;
+
+        SimulationUI.MatchStatistics.UpdateStatistics(p1winrate, avgGameLength);
+
+        // Card statistics
         foreach(Match m in Matches)
         {
             if (m.Phase != MatchPhase.GameEnded) throw new System.Exception("Match not finished");
@@ -208,5 +252,8 @@ public class SimulationModel : MonoBehaviour
             CardPickrate.Add(i + 1, (float)CardsPicked[i + 1] / (CardsPicked[i + 1] + CardsNotPicked[i + 1]));
             CardWinrate.Add(i + 1, (float)CardsPickedByWinner[i + 1] / (CardsPickedByWinner[i + 1] + CardsPickedByLoser[i + 1]));
         }
+
+        SimulationUI.CardPickrates.UpdateBoard(CardPickrate, "Card Pickrates");
+        SimulationUI.CardWinrates.UpdateBoard(CardWinrate, "Card Winrates");
     }
 }

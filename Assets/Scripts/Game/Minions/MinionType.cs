@@ -7,5 +7,6 @@ public enum MinionType
     Red = 1,
     Yellow = 2,
     Blue = 3,
-    Green = 4
+    Green = 4,
+    Grey = 5
 }

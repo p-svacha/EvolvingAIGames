@@ -48,7 +48,7 @@ public class EvolutionStatistics : UIElement
     {
         float step = 1f / nRows;
         int fontSize = 12;
-        RectTransform column = AddPanel("column", Color.grey, xStart, yStart, xEnd, yEnd, Container);
+        RectTransform column = AddPanel("column", Color.clear, xStart, yStart, xEnd, yEnd, Container);
         for(int i = 0; i < content.Length; i++)
             AddText(content[i], fontSize, Color.black, (i == 0 && hasTitle) ? FontStyle.Bold : FontStyle.Normal, 0, i * step, 1, (i + 1) * step, column, TextAnchor.MiddleLeft);
     }
