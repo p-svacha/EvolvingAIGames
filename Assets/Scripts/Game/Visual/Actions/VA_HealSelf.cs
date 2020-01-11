@@ -17,11 +17,15 @@ public class VA_HealSelf : VisualAction
         Visual = visual;
         SourceColor = Visual.GetComponent<Renderer>().material.color;
 
-        Visual.GetComponent<Renderer>().material.color = Color.yellow;
-
         BobExtraScale = 1 + ((float)amount / 10);
         BobSourceScale = Visual.transform.localScale;
         BobTargetScale = new Vector3(BobSourceScale.x * BobExtraScale, BobSourceScale.y * BobExtraScale, BobSourceScale.z * BobExtraScale);
+    }
+
+    public override void OnStart()
+    {
+        base.OnStart();
+        Visual.GetComponent<Renderer>().material.color = Color.yellow;
     }
 
     public override void Update()

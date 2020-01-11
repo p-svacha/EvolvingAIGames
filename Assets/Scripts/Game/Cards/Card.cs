@@ -7,11 +7,7 @@ public abstract class Card
     public int Id;
     public string Name;
     public string Text;
-
-    public Card(int id)
-    {
-        Id = id;
-    }
+    public bool AlwaysAppears;
 
     public abstract void Action(Match model, Player self, Player enemy);
 }

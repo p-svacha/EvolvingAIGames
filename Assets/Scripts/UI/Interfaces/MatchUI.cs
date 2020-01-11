@@ -25,6 +25,9 @@ public class MatchUI : MonoBehaviour
     public GenomeVisualizer Player1GV;
     public GenomeVisualizer Player2GV;
 
+    // Effects
+    public ParticleSystem PS_CardOptionIncrease;
+
     // Card Display
     public Texture DestabilizedTexture;
     public List<Sprite> CardSprites;
@@ -52,7 +55,7 @@ public class MatchUI : MonoBehaviour
 
     public void ShowCards(List<Card> options, Player player)
     {
-        CardGapX = options.Count <= 3 ? 1f : options.Count <= 5 ? 0.5f : 0.1f;
+        CardGapX = options.Count <= 2 ? 2f : options.Count <= 3 ? 1f : options.Count <= 5 ? 0.5f : 0.1f;
 
         // Position constants
         float xStep = (1 - 2 * CardMarginX) / (options.Count);
@@ -64,7 +67,7 @@ public class MatchUI : MonoBehaviour
         {
             // Instantiate Visual Card
             VisualCard vc = GameObject.Instantiate(VisualCard, transform);
-            vc.Image.sprite = CardSprites[options[i].Id - 1];
+            vc.Image.sprite = CardSprites[options[i].Id];
             vc.Title.text = options[i].Name;
             vc.Description.text = options[i].Text;
 

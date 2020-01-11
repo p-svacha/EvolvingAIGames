@@ -5,7 +5,7 @@ using UnityEngine;
 public class MatchRulesDisplay : UIElement
 {
 
-    public void UpdateStatistics(int startHealth, int startCardOptions, int fatigueDamageStartTurn, int maxMinions, int maxMinionsPerType)
+    public void UpdateStatistics(int startHealth, int startCardOptions, int minCardOptions, int maxCardOptions, int fatigueDamageStartTurn, int maxMinions, int maxMinionsPerType)
     {
         Clear();
 
@@ -16,11 +16,11 @@ public class MatchRulesDisplay : UIElement
         AddText(titleText, fontSize, Color.black, FontStyle.Bold, 0, 0, 1, titleSize, Container, TextAnchor.MiddleCenter);
 
         float numColumns = 2;
-        int nRows = 4;
+        int nRows = 5;
         float yStep = 0;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
-            new string[] { "General", "Start Health: " + startHealth, "Card Options: " + startCardOptions, "Fatigue Start Turn: " + fatigueDamageStartTurn });
+            new string[] { "General", "Start Health: " + startHealth, "Card Options: " + startCardOptions, "Card Options Range: " + minCardOptions + " - " + maxCardOptions, "Fatigue Start Turn: " + fatigueDamageStartTurn });
         yStep += 1f / numColumns;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,

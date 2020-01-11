@@ -21,9 +21,11 @@ public class SimulationModel : MonoBehaviour
 
     // Match rules
     private int StartHealth = 30;
-    private int StartCardOptions = 3;
+    private int StartCardOptions = 1;
+    private int MinCardOptions = 1;
+    private int MaxCardOptions = 5;
     private int MaxMinions = 30;
-    private int MaxMinionsPerType = 8;
+    private int MaxMinionsPerType = 6;
     private int FatigueDamageStartTurn = 20;
 
     // UI
@@ -56,7 +58,7 @@ public class SimulationModel : MonoBehaviour
         CardList.InitCardList();
 
         // Init population
-        Population = new Population(PopulationSize, 14, CardList.Cards.Count, true);
+        Population = new Population(PopulationSize, 16, CardList.Cards.Count, true);
         //EvolutionInformation info = Population.EvolveGeneration(7);
         //SimulationUI.EvoStats.UpdateStatistics(info);
         SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
@@ -77,17 +79,17 @@ public class SimulationModel : MonoBehaviour
         CardWinrate = new Dictionary<int, float>();
         for (int i = 0; i < CardList.Cards.Count; i++)
         {
-            CardsPicked.Add(i + 1, 0);
-            CardsPickedByWinner.Add(i + 1, 0);
-            CardsPickedByLoser.Add(i + 1, 0);
-            CardsNotPicked.Add(i + 1, 0);
+            CardsPicked.Add(i, 0);
+            CardsPickedByWinner.Add(i, 0);
+            CardsPickedByLoser.Add(i, 0);
+            CardsNotPicked.Add(i, 0);
         }
         Player1WonMatches = 0;
         TotalMatches = 0;
         TotalTurns = 0;
 
         // UI
-        SimulationUI.MatchRules.UpdateStatistics(StartHealth, StartCardOptions, FatigueDamageStartTurn, MaxMinions, MaxMinionsPerType);
+        SimulationUI.MatchRules.UpdateStatistics(StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, FatigueDamageStartTurn, MaxMinions, MaxMinionsPerType);
     }
 
     private void GenerateMatches()
@@ -109,7 +111,7 @@ public class SimulationModel : MonoBehaviour
 
             Player player1 = new AIPlayer(match, sub1);
             Player player2 = new AIPlayer(match, sub2);
-            match.InitGame(player1, player2, StartHealth, StartCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
+            match.InitGame(player1, player2, StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
             Matches.Add(match);
 
             BestMatch = match;
@@ -127,7 +129,7 @@ public class SimulationModel : MonoBehaviour
 
             Player player1 = new AIPlayer(match, sub1);
             Player player2 = new AIPlayer(match, sub2);
-            match.InitGame(player1, player2, StartHealth, StartCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
+            match.InitGame(player1, player2, StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
             Matches.Add(match);
         }
     }
@@ -184,10 +186,10 @@ public class SimulationModel : MonoBehaviour
                 CardWinrate.Clear();
                 for (int i = 0; i < CardList.Cards.Count; i++)
                 {
-                    CardsPicked.Add(i + 1, 0);
-                    CardsPickedByWinner.Add(i + 1, 0);
-                    CardsPickedByLoser.Add(i + 1, 0);
-                    CardsNotPicked.Add(i + 1, 0);
+                    CardsPicked.Add(i, 0);
+                    CardsPickedByWinner.Add(i, 0);
+                    CardsPickedByLoser.Add(i, 0);
+                    CardsNotPicked.Add(i, 0);
                 }
                 Player1WonMatches = 0;
                 TotalMatches = 0;
@@ -249,8 +251,8 @@ public class SimulationModel : MonoBehaviour
 
         for(int i = 0; i < CardList.Cards.Count; i++)
         {
-            CardPickrate.Add(i + 1, (float)CardsPicked[i + 1] / (CardsPicked[i + 1] + CardsNotPicked[i + 1]));
-            CardWinrate.Add(i + 1, (float)CardsPickedByWinner[i + 1] / (CardsPickedByWinner[i + 1] + CardsPickedByLoser[i + 1]));
+            CardPickrate.Add(i, (float)CardsPicked[i] / (CardsPicked[i] + CardsNotPicked[i]));
+            CardWinrate.Add(i, (float)CardsPickedByWinner[i] / (CardsPickedByWinner[i] + CardsPickedByLoser[i]));
         }
 
         SimulationUI.CardPickrates.UpdateBoard(CardPickrate, "Card Pickrates");

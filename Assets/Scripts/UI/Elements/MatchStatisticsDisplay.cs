@@ -16,7 +16,7 @@ public class MatchStatisticsDisplay : UIElement
         AddText(titleText, fontSize, Color.black, FontStyle.Bold, 0, 0, 1, titleSize, Container, TextAnchor.MiddleCenter);
 
         float numColumns = 1;
-        int nRows = 3;
+        int nRows = 4;
         float yStep = 0;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,

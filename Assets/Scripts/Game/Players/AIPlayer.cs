@@ -21,20 +21,22 @@ public class AIPlayer : Player
         // Feed forward network
         float[] inputs = new float[]
         {
-            1,                                                                                  // Bias
-            ((float)(Model.NumMinions(this, MinionType.Red)) / Model.MaxMinionsPerType),        // Own Red
-            ((float)(Model.NumMinions(this, MinionType.Yellow)) / Model.MaxMinionsPerType),     // Own Yellow
-            ((float)(Model.NumMinions(this, MinionType.Blue)) / Model.MaxMinionsPerType),       // Own Blue
-            ((float)(Model.NumMinions(this, MinionType.Green)) / Model.MaxMinionsPerType),      // Own Green
-            ((float)(Model.NumMinions(this, MinionType.Grey)) / Model.MaxMinionsPerType),       // Own Grey
-            ((float)(Model.NumMinions(Enemy, MinionType.Red)) / Model.MaxMinionsPerType),       // Enemy Red
-            ((float)(Model.NumMinions(Enemy, MinionType.Yellow)) / Model.MaxMinionsPerType),    // Enemy Yellow
-            ((float)(Model.NumMinions(Enemy, MinionType.Blue)) / Model.MaxMinionsPerType),      // Enemy Blue
-            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinionsPerType),     // Enemy Green
-            ((float)(Model.NumMinions(Enemy, MinionType.Grey)) / Model.MaxMinionsPerType),      // Enemy Grey
-            ((float)(Health))/MaxHealth,                                                        // Own Health
-            ((float)(Enemy.Health))/Enemy.MaxHealth,                                            // Enemy Health
-            Mathf.Min(1,((float)(Model.Turn))/Model.FatigueDamageStartTurn),                    // Turn
+            1,                                                                                              // Bias
+            ((float)(Model.NumMinions(this, MinionType.Red)) / Model.MaxMinionsPerType),                    // Own Red
+            ((float)(Model.NumMinions(this, MinionType.Yellow)) / Model.MaxMinionsPerType),                 // Own Yellow
+            ((float)(Model.NumMinions(this, MinionType.Blue)) / Model.MaxMinionsPerType),                   // Own Blue
+            ((float)(Model.NumMinions(this, MinionType.Green)) / Model.MaxMinionsPerType),                  // Own Green
+            ((float)(Model.NumMinions(this, MinionType.Grey)) / Model.MaxMinionsPerType),                   // Own Grey
+            ((float)(Model.NumMinions(Enemy, MinionType.Red)) / Model.MaxMinionsPerType),                   // Enemy Red
+            ((float)(Model.NumMinions(Enemy, MinionType.Yellow)) / Model.MaxMinionsPerType),                // Enemy Yellow
+            ((float)(Model.NumMinions(Enemy, MinionType.Blue)) / Model.MaxMinionsPerType),                  // Enemy Blue
+            ((float)(Model.NumMinions(Enemy, MinionType.Green)) / Model.MaxMinionsPerType),                 // Enemy Green
+            ((float)(Model.NumMinions(Enemy, MinionType.Grey)) / Model.MaxMinionsPerType),                  // Enemy Grey
+            ((float)(Health)) / MaxHealth,                                                                  // Own Health
+            ((float)(Enemy.Health)) / Enemy.MaxHealth,                                                      // Enemy Health
+            Mathf.Min(1,((float)(Model.Turn)) / Model.FatigueDamageStartTurn),                              // Turn
+            (NumCardOptions - Model.MinCardOptions) / (Model.MaxCardOptions - Model.MinCardOptions),        // Own Card Options
+            (Enemy.NumCardOptions - Model.MinCardOptions) / (Model.MaxCardOptions - Model.MinCardOptions),  // Enemy Card Options
         };
         float[] outputs = Brain.Genome.FeedForward(inputs);
 
@@ -52,11 +54,11 @@ public class AIPlayer : Player
         Dictionary<int, float> optionValues = new Dictionary<int, float>();
         for (int i = 0; i < outputs.Length; i++)
         {
-            if(optionIds.Contains(i+1))
+            if(optionIds.Contains(i))
             {
-                optionValues.Add(i + 1, outputs[i]);
+                optionValues.Add(i, outputs[i]);
             }
-            values.Add(i + 1, outputs[i]);
+            values.Add(i, outputs[i]);
         }
 
         // Choose best available option (or one at random from best if there are multiple)

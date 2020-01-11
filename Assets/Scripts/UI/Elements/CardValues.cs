@@ -21,7 +21,7 @@ public class CardValues : UIElement {
 
         for (int i = 0; i < allCards.Length; i++)
         {
-            values.Add(i + 1, allCards[i]);
+            values.Add(i, allCards[i]);
         }
 
         // Title
@@ -38,10 +38,10 @@ public class CardValues : UIElement {
             float xMargin = 0.1f;
             float xStart = xMargin;
             float xEnd = xMargin + value * 0.8f;
-            float yStart = (i +1) * yStep;
+            float yStart = (i + 1) * yStep;
             float yEnd = (i + 1) * yStep + yStep * RowHeight;
-            AddPanel(CardList.Cards[key - 1].Name, options.Contains(key) ? Color.grey : Color.white, xStart, yStart, xEnd, yEnd, Container);
-            AddText(CardList.Cards[key - 1].Name, (int)(yStep * 150), Color.black, FontStyle.Normal, xMargin + (0.1f * xMargin), yStart, 0.65f, yEnd, Container, TextAnchor.MiddleLeft);
+            AddPanel(CardList.Cards[key].Name, options.Contains(key) ? Color.grey : Color.white, xStart, yStart, xEnd, yEnd, Container);
+            AddText(CardList.Cards[key].Name, (int)(yStep * 150), Color.black, FontStyle.Normal, xMargin + (0.1f * xMargin), yStart, 0.65f, yEnd, Container, TextAnchor.MiddleLeft);
             AddText(value.ToString("0.0%"), (int)(yStep * 150), Color.black, FontStyle.Normal, 0.65f, yStart, 1f - xMargin - (0.1f * xMargin), yEnd, Container, TextAnchor.MiddleRight);
         }
 

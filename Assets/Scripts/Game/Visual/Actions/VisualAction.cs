@@ -11,6 +11,7 @@ public class VisualAction
 
     public virtual void Update()
     {
+        if (CurrentFrame == 0) OnStart();
         CurrentFrame++;
         if(CurrentFrame >= Frames)
         {
@@ -19,5 +20,6 @@ public class VisualAction
         }
     }
 
+    public virtual void OnStart() { }
     public virtual void OnDone() { }
 }

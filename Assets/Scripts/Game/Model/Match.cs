@@ -7,9 +7,13 @@ using System.Linq;
 
 public class Match
 {
+    #region variablies and init 
+
     // Rules
     public int StartHealth;
     public int StartCardOptions;
+    public int MinCardOptions;
+    public int MaxCardOptions;
     public int MaxMinionsPerType;
     public int MaxMinions;
     public int FatigueDamageStartTurn;
@@ -51,11 +55,13 @@ public class Match
     private float MinionYStartPlan = 0.35f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
     private float MinionYStartAction = 0.1f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
 
-    public void InitGame(Player player1, Player player2, int health, int options, int maxMinions, int maxMinionsPerType, int fatigueStart, bool log)
+    public void InitGame(Player player1, Player player2, int health, int options, int minOptions, int maxOptions, int maxMinions, int maxMinionsPerType, int fatigueStart, bool log)
     {
         // Set rules
         StartHealth = health;
         StartCardOptions = options;
+        MinCardOptions = minOptions;
+        MaxCardOptions = maxOptions;
         MaxMinions = maxMinions;
         MaxMinionsPerType = maxMinionsPerType;
         FatigueDamageStartTurn = fatigueStart;
@@ -76,6 +82,8 @@ public class Match
 
         Phase = MatchPhase.GameInitialized;
     }
+
+    #endregion
 
     #region gamecycle
 
@@ -300,8 +308,8 @@ public class Match
         // Pick Cards
         Player1.ChosenCard = null;
         Player2.ChosenCard = null;
-        List<Card> Player1RandomCards = RandomCards(Player1.NumCardOptions);
-        List<Card> Player2RandomCards = RandomCards(Player2.NumCardOptions);
+        List<Card> Player1RandomCards = GetCardOptions(Player1.NumCardOptions);
+        List<Card> Player2RandomCards = GetCardOptions(Player2.NumCardOptions);
         Player1.PickCard(Player1RandomCards);
         Player2.PickCard(Player2RandomCards);
         if (Visual)
@@ -615,7 +623,8 @@ public class Match
 
         if(Visual)
         {
-            VisualActions.Add(new VA_DealDamage(source.Visual, target.Visual, amount, source.Color));
+            if (source == target) VisualActions.Add(new VA_DamageSelf(source.Visual, amount));
+            else VisualActions.Add(new VA_DealDamage(source.Visual, target.Visual, amount, source.Color));
         }
         if(Log)
         {
@@ -640,6 +649,23 @@ public class Match
         if (Log)
         {
             Debug.Log(source.Name + " healed " + target.Name + " for " + amount + " (now at " + target.Health + ")");
+        }
+    }
+
+    public void AddCardOption(Creature source, Player target, int amount)
+    {
+        if (target.NumCardOptions == MaxCardOptions) return;
+        if (MaxCardOptions - target.NumCardOptions < amount) amount = MaxCardOptions - target.NumCardOptions;
+
+        target.NumCardOptions += amount;
+
+        if(Visual)
+        {
+            VisualActions.Add(new VA_IncreaseCardOption(target.Visual, MatchUI));
+        }
+        if(Log)
+        {
+            Debug.Log(source.Name + " has increased " + target.Name + "'s card options by " + amount + ".");
         }
     }
 
@@ -681,18 +707,19 @@ public class Match
         return new Vector3(xPos, 0, yPos);
     }
 
-    private List<Card> RandomCards(int amount)
+    private List<Card> GetCardOptions(int amount)
     {
         List<Card> cardListCopy = new List<Card>();
-        cardListCopy.AddRange(Cards);
-        List<Card> cards = new List<Card>();
+        cardListCopy.AddRange(Cards.Where(x => !x.AlwaysAppears));
+        List<Card> options = new List<Card>();
         for (int i = 0; i < amount; i++)
         {
             Card c = cardListCopy[UnityEngine.Random.Range(0, cardListCopy.Count)];
-            cards.Add(c);
+            options.Add(c);
             cardListCopy.Remove(c);
         }
-        return cards;
+        options.AddRange(Cards.Where(x => x.AlwaysAppears));
+        return options;
     }
 
     private Minion CreateNewMinion(MinionType type, Player player)
@@ -721,9 +748,10 @@ public class Match
 
     #region LINQ
 
-    public int NumMinions(Player player)
+    public int NumMinions(Player player, bool withoutSummonProtection = false)
     {
-        return Minions.Where(x => x.Owner == player).Count();
+        if(withoutSummonProtection) return Minions.Where(x => x.Owner == player && !x.HasSummonProtection).Count();
+        else return Minions.Where(x => x.Owner == player).Count();
     }
 
     public int NumMinions(Player player, MinionType type)

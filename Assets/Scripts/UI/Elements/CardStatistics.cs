@@ -36,8 +36,8 @@ public class CardStatistics : UIElement
             float xEnd = xMargin + value * 0.8f;
             float yStart = (i + 1) * yStep;
             float yEnd = (i + 1) * yStep + yStep * RowHeight;
-            AddPanel(CardList.Cards[key - 1].Name, Color.white, xStart, yStart, xEnd, yEnd, Container);
-            AddText(CardList.Cards[key - 1].Name, (int)(yStep * RowFontSize), Color.black, FontStyle.Normal, xMargin + (0.1f * xMargin), yStart, 0.7f, yEnd, Container, TextAnchor.MiddleLeft);
+            AddPanel(CardList.Cards[key].Name, Color.white, xStart, yStart, xEnd, yEnd, Container);
+            AddText(CardList.Cards[key].Name, (int)(yStep * RowFontSize), Color.black, FontStyle.Normal, xMargin + (0.1f * xMargin), yStart, 0.7f, yEnd, Container, TextAnchor.MiddleLeft);
             AddText(value.ToString("0.0%"), (int)(yStep * RowFontSize), Color.black, FontStyle.Normal, 0.7f, yStart, 1f - xMargin - (0.1f * xMargin), yEnd, Container, TextAnchor.MiddleRight);
         }
     }

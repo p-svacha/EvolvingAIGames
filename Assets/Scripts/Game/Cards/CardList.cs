@@ -8,20 +8,19 @@ public static class CardList
 
     public static void InitCardList()
     {
-        int counter = 1;
-
         Cards = new List<Card>();
 
-        Cards.Add(new C001_DoNothing(counter++));
-        Cards.Add(new C002_SummonYellow(counter++));
-        Cards.Add(new C003_SummonRed(counter++));
-        Cards.Add(new C004_SummonBlue(counter++));
-        Cards.Add(new C005_SummonGreen(counter++));
-        Cards.Add(new C006_DestroyTwo(counter++));
-        Cards.Add(new C007_DealDirect(counter++));
-        Cards.Add(new C008_DestroyRedAndYellow(counter++));
-        Cards.Add(new C009_DestroyGreenAndBlue(counter++));
-        Cards.Add(new C010_SecondChance(counter++));
-        Cards.Add(new C011_DecoyArmy(counter++));
+        Cards.Add(new C000_DoNothing());
+        Cards.Add(new C001_SummonYellow());
+        Cards.Add(new C002_SummonRed());
+        Cards.Add(new C003_SummonBlue());
+        Cards.Add(new C004_GreenBlood());
+        Cards.Add(new C005_DestroyTwo());
+        Cards.Add(new C006_DirectAction());
+        Cards.Add(new C007_DestroyRedAndYellow());
+        Cards.Add(new C008_DestroyGreenAndBlue());
+        Cards.Add(new C009_SecondChance());
+        Cards.Add(new C010_DecoyArmy());
+        Cards.Add(new C011_Invest());
     }
 }

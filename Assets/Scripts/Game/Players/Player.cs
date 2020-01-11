@@ -26,8 +26,8 @@ public abstract class Player : Creature
         BestOptions = new List<Card>();
         for(int i = 0; i < CardList.Cards.Count; i++)
         {
-            CardsPicked.Add(i + 1, 0);
-            CardsNotPicked.Add(i + 1, 0);
+            CardsPicked.Add(i, 0);
+            CardsNotPicked.Add(i, 0);
         }
     }
 
