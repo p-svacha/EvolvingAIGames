@@ -8,6 +8,28 @@ public class MutationInformation
     public int NumNewUniqueNodeMutations;
     public int NumNewConnectionsMutations;
     public int NumNewUniqueConnectionsMutations;
+
+    public float MutationChanceScaleFactor;
+    public float WeightMutationChancePerGenome;
+    public float TopologyMutationChancePerGenome;
+    public bool MultipleMutationsPerGenomeAllowed;
+
+    public int NumTopologyMutatedGenomes;
+    public int NumWeightMutatedGenomes;
+
+    public int NumReplaceMutations;
+    public int NumShiftMutations;
+    public int NumScaleMutations;
+    public int NumInvertMutations;
+    public int NumSwapMutations;
+
+    public int NumWeightMutations
+    {
+        get
+        {
+            return NumReplaceMutations + NumShiftMutations + NumScaleMutations + NumInvertMutations + NumSwapMutations;
+        }
+    }
     public int NumTopologyMutations
     {
         get
@@ -16,23 +38,11 @@ public class MutationInformation
         }
     }
 
-    public int NumReplaceMutations;
-    public int NumShiftMutations;
-    public int NumScaleMutations;
-    public int NumInvertMutations;
-    public int NumSwapMutations;
-    public int NumWeightMutations
-    {
-        get
-        {
-            return NumReplaceMutations + NumShiftMutations + NumScaleMutations + NumInvertMutations + NumSwapMutations;
-        }
-    }
-
     public override string ToString()
     {
         return
-            "Topology Mutations: " + NumTopologyMutations + " (" + NumNewConnectionsMutations + " [" + NumNewUniqueConnectionsMutations + " unique] new Connections, " + NumNewNodeMutations + " [" + NumNewUniqueNodeMutations + " unique] new Nodes)" +
-            "\nWeight Mutations: " + NumWeightMutations + " (" + NumReplaceMutations + " Replaces, " + NumShiftMutations + " Shifts, " + NumScaleMutations + " Scales, " + NumInvertMutations + " Invers, " + NumSwapMutations + " Swaps)";
+            "Weight Mutation Chance per Genome: " + WeightMutationChancePerGenome + " (factor " + MutationChanceScaleFactor + "), " + "Topology Mutation Chance per Genome: " + TopologyMutationChancePerGenome + "(factor " + MutationChanceScaleFactor + "), " + "Multiple Mutations per Genome Allowed: " + MultipleMutationsPerGenomeAllowed +
+            "\nTopology Mutations: " + NumTopologyMutations + " on " + NumTopologyMutatedGenomes + " Genomes (" + NumNewConnectionsMutations + " [" + NumNewUniqueConnectionsMutations + " unique] new Connections, " + NumNewNodeMutations + " [" + NumNewUniqueNodeMutations + " unique] new Nodes)" +
+            "\nWeight Mutations: " + NumWeightMutations + " on " + NumWeightMutations + " Genomes (" + NumReplaceMutations + " Replaces, " + NumShiftMutations + " Shifts, " + NumScaleMutations + " Scales, " + NumInvertMutations + " Invers, " + NumSwapMutations + " Swaps)";
     }
 }

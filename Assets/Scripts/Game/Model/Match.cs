@@ -85,7 +85,7 @@ public class Match
 
     #endregion
 
-    #region gamecycle
+    #region Game Cycle
 
     public void StartMatch(bool visual = false, VisualPlayer v_player = null, VisualMinion v_minion = null, int visualBoardHeight = 0, MatchUI matchUI = null)
     {
@@ -497,7 +497,7 @@ public class Match
 
     #endregion
 
-    #region gamecommands
+    #region Game Commands - Functions that can be called by Cards
 
     public void SummonMinion(Creature source, MinionType type, Player player, bool summonProtection)
     {
@@ -671,7 +671,7 @@ public class Match
 
     #endregion
 
-    #region helper functions
+    #region Helper Functions
 
     public Vector3 GetPlanPosition(Minion m)
     {

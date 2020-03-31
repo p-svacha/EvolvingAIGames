@@ -602,19 +602,6 @@ MonoBehaviour:
   PS_CardOptionIncrease: {fileID: 2397390040165664830, guid: 86623c875e808e5478904cc5bb9da016,
     type: 3}
   DestabilizedTexture: {fileID: 2800000, guid: d6b8e3c6f7ba8914aba343efc5233b59, type: 3}
-  CardSprites:
-  - {fileID: 21300000, guid: e8a914d15daa5a6478aa438b94dcebd5, type: 3}
-  - {fileID: 21300000, guid: 7e7f157cbc309264081d7a07784ce76e, type: 3}
-  - {fileID: 21300000, guid: 0471127c346ee9245bcc700f48cbe4dd, type: 3}
-  - {fileID: 21300000, guid: 4c07df4c0b0172e4fb7a62b5c609555b, type: 3}
-  - {fileID: 21300000, guid: e235e515c2623e249991f5e15801f1df, type: 3}
-  - {fileID: 21300000, guid: 63994d82a20c9d44985763eb2fcbb549, type: 3}
-  - {fileID: 21300000, guid: 91b2d1fa2e1bfdc448c12d49d06f9d11, type: 3}
-  - {fileID: 21300000, guid: dacfa57d827d532469645f4e8557c3ab, type: 3}
-  - {fileID: 21300000, guid: a1a407754b512624b93d939915834e55, type: 3}
-  - {fileID: 21300000, guid: 73880d70dfbfc2d41b02cae40f6e951d, type: 3}
-  - {fileID: 21300000, guid: e36a0c7e83b26344b8781ce7a1056bd0, type: 3}
-  - {fileID: 21300000, guid: 7e4b6235254dbe648ac4a17c994fc1ca, type: 3}
   DisplayedCards: []
 --- !u!222 &317861973
 CanvasRenderer:
@@ -1238,6 +1225,8 @@ MonoBehaviour:
   Player1WonMatches: 0
   TotalMatches: 0
   TotalTurns: 0
+  WinnerNumCardOptions: 0
+  LoserNumCardOptions: 0
 --- !u!4 &872370783
 Transform:
   m_ObjectHideFlags: 0

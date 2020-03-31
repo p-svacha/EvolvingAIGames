@@ -104,10 +104,16 @@ public class Genome {
 
     private void depthStep(Node n, int depth)
     {
-        if (depth > 30) throw new Exception("There seems to be a circular flow in the network. pls fix");
-        n.Depth = depth;
-        foreach (Connection c in n.OutConnections)
-            if(depth >= c.Out.Depth) depthStep(c.Out, depth + 1);
+        if (depth > 50)
+        {
+            Debug.Log("The depth of a node in a genome is greater than 50. This is an indication that there is a circular flow in the network.");
+        }
+        else
+        {
+            n.Depth = depth;
+            foreach (Connection c in n.OutConnections)
+                if (depth >= c.Out.Depth) depthStep(c.Out, depth + 1);
+        }
     }
 
     // Activation function - returns a value between 0 and 1

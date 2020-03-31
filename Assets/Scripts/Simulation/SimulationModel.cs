@@ -50,6 +50,8 @@ public class SimulationModel : MonoBehaviour
     public int Player1WonMatches;
     public int TotalMatches;
     public int TotalTurns;
+    public int WinnerNumCardOptions;
+    public int LoserNumCardOptions;
 
     // Start is called before the first frame update
     void Start()
@@ -71,22 +73,7 @@ public class SimulationModel : MonoBehaviour
         MatchesPlayed = 0;
 
         // Init statistics
-        CardsPicked = new Dictionary<int, int>();
-        CardsPickedByWinner = new Dictionary<int, int>();
-        CardsPickedByLoser = new Dictionary<int, int>();
-        CardsNotPicked = new Dictionary<int, int>();
-        CardPickrate = new Dictionary<int, float>();
-        CardWinrate = new Dictionary<int, float>();
-        for (int i = 0; i < CardList.Cards.Count; i++)
-        {
-            CardsPicked.Add(i, 0);
-            CardsPickedByWinner.Add(i, 0);
-            CardsPickedByLoser.Add(i, 0);
-            CardsNotPicked.Add(i, 0);
-        }
-        Player1WonMatches = 0;
-        TotalMatches = 0;
-        TotalTurns = 0;
+        ResetStatistics();
 
         // UI
         SimulationUI.MatchRules.UpdateStatistics(StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, FatigueDamageStartTurn, MaxMinions, MaxMinionsPerType);
@@ -140,7 +127,7 @@ public class SimulationModel : MonoBehaviour
         switch (SimulationPhase)
         {
             case SimulationPhase.MatchesReady:
-                Debug.Log("Starting matchround " + Population.Generation + "." + (MatchesPlayed + 1));
+                //Debug.Log("Starting matchround " + Population.Generation + "." + (MatchesPlayed + 1));
                 SimulationUI.TitleText.text = "Match Round " + Population.Generation + "." + (MatchesPlayed + 1);
                 foreach (Match m in Matches)
                 {
@@ -177,28 +164,10 @@ public class SimulationModel : MonoBehaviour
                 break;
 
             case SimulationPhase.GenerationFinished:
-                // Reset values
-                CardsPicked.Clear();
-                CardsPickedByWinner.Clear();
-                CardsPickedByLoser.Clear();
-                CardsNotPicked.Clear();
-                CardPickrate.Clear();
-                CardWinrate.Clear();
-                for (int i = 0; i < CardList.Cards.Count; i++)
-                {
-                    CardsPicked.Add(i, 0);
-                    CardsPickedByWinner.Add(i, 0);
-                    CardsPickedByLoser.Add(i, 0);
-                    CardsNotPicked.Add(i, 0);
-                }
-                Player1WonMatches = 0;
-                TotalMatches = 0;
-                TotalTurns = 0;
-
+                ResetStatistics();
                 MatchesPlayed = 0;
-
                 // Evolve and Update UI
-                EvolutionInformation info = Population.EvolveGeneration(1.5f);
+                EvolutionInformation info = Population.EvolveGeneration();
                 SimulationUI.EvoStats.UpdateStatistics(info);
                 SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
 
@@ -222,25 +191,47 @@ public class SimulationModel : MonoBehaviour
 
     private void UpdateStatistics()
     {
-        // Match statistics
-        Player1WonMatches += Matches.Where(x => x.Winner == x.Player1).Count();
-        TotalMatches += Matches.Count;
-        TotalTurns += Matches.Sum(x => x.Turn);
+        UpdateMatchStatistics();
+        UpdateCardStatistics();
+    }
 
+    /// <summary>
+    /// Updates the match statistics according to the matches in the Matches list. Also updates the UI Element.
+    /// </summary>
+    private void UpdateMatchStatistics()
+    {
+        TotalMatches += Matches.Count;
+
+        // Player 1 Winrate
+        Player1WonMatches += Matches.Where(x => x.Winner == x.Player1).Count();
         float p1winrate = (float)Player1WonMatches / TotalMatches;
+
+        // Game Length
+        TotalTurns += Matches.Sum(x => x.Turn);
         float avgGameLength = (float)TotalTurns / TotalMatches;
 
-        SimulationUI.MatchStatistics.UpdateStatistics(p1winrate, avgGameLength);
+        // Card Options
+        WinnerNumCardOptions += Matches.Sum(x => x.Winner.NumCardOptions);
+        LoserNumCardOptions += Matches.Sum(x => x.Loser.NumCardOptions);
+        float avgWinnerCardOptions = (float)WinnerNumCardOptions / TotalMatches;
+        float avgLoserCardOptions = (float)LoserNumCardOptions / TotalMatches;
 
-        // Card statistics
-        foreach(Match m in Matches)
+        SimulationUI.MatchStatistics.UpdateStatistics(p1winrate, avgGameLength, avgWinnerCardOptions, avgLoserCardOptions);
+    }
+
+    /// <summary>
+    /// Updates the card statistics according to the matches in the Matches list. Also updates the UI Element.
+    /// </summary>
+    private void UpdateCardStatistics()
+    {
+        foreach (Match m in Matches)
         {
             if (m.Phase != MatchPhase.GameEnded) throw new System.Exception("Match not finished");
-            foreach(KeyValuePair<int, int> kvp in m.Player1.CardsPicked) CardsPicked[kvp.Key] += kvp.Value;
-            foreach(KeyValuePair<int, int> kvp in m.Player2.CardsPicked) CardsPicked[kvp.Key] += kvp.Value;
+            foreach (KeyValuePair<int, int> kvp in m.Player1.CardsPicked) CardsPicked[kvp.Key] += kvp.Value;
+            foreach (KeyValuePair<int, int> kvp in m.Player2.CardsPicked) CardsPicked[kvp.Key] += kvp.Value;
 
-            foreach(KeyValuePair<int, int> kvp in m.Player1.CardsNotPicked) CardsNotPicked[kvp.Key] += kvp.Value;
-            foreach(KeyValuePair<int, int> kvp in m.Player2.CardsNotPicked) CardsNotPicked[kvp.Key] += kvp.Value;
+            foreach (KeyValuePair<int, int> kvp in m.Player1.CardsNotPicked) CardsNotPicked[kvp.Key] += kvp.Value;
+            foreach (KeyValuePair<int, int> kvp in m.Player2.CardsNotPicked) CardsNotPicked[kvp.Key] += kvp.Value;
 
             foreach (KeyValuePair<int, int> kvp in m.Winner.CardsPicked) CardsPickedByWinner[kvp.Key] += kvp.Value;
             foreach (KeyValuePair<int, int> kvp in m.Loser.CardsPicked) CardsPickedByLoser[kvp.Key] += kvp.Value;
@@ -249,7 +240,7 @@ public class SimulationModel : MonoBehaviour
         CardPickrate.Clear();
         CardWinrate.Clear();
 
-        for(int i = 0; i < CardList.Cards.Count; i++)
+        for (int i = 0; i < CardList.Cards.Count; i++)
         {
             CardPickrate.Add(i, (float)CardsPicked[i] / (CardsPicked[i] + CardsNotPicked[i]));
             CardWinrate.Add(i, (float)CardsPickedByWinner[i] / (CardsPickedByWinner[i] + CardsPickedByLoser[i]));
@@ -257,5 +248,30 @@ public class SimulationModel : MonoBehaviour
 
         SimulationUI.CardPickrates.UpdateBoard(CardPickrate, "Card Pickrates");
         SimulationUI.CardWinrates.UpdateBoard(CardWinrate, "Card Winrates");
+    }
+
+    /// <summary>
+    /// Resets all match and card statistics.
+    /// </summary>
+    private void ResetStatistics()
+    {
+        CardsPicked = new Dictionary<int, int>();
+        CardsPickedByWinner = new Dictionary<int, int>();
+        CardsPickedByLoser = new Dictionary<int, int>();
+        CardsNotPicked = new Dictionary<int, int>();
+        CardPickrate = new Dictionary<int, float>();
+        CardWinrate = new Dictionary<int, float>();
+        for (int i = 0; i < CardList.Cards.Count; i++)
+        {
+            CardsPicked.Add(i, 0);
+            CardsPickedByWinner.Add(i, 0);
+            CardsPickedByLoser.Add(i, 0);
+            CardsNotPicked.Add(i, 0);
+        }
+        Player1WonMatches = 0;
+        WinnerNumCardOptions = 0;
+        LoserNumCardOptions = 0;
+        TotalMatches = 0;
+        TotalTurns = 0;
     }
 }

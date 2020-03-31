@@ -30,7 +30,6 @@ public class MatchUI : MonoBehaviour
 
     // Card Display
     public Texture DestabilizedTexture;
-    public List<Sprite> CardSprites;
     public List<VisualCard> DisplayedCards;
     private float CardMarginX = 0.15f;
     private float CardMarginY = 0.1f;
@@ -67,7 +66,7 @@ public class MatchUI : MonoBehaviour
         {
             // Instantiate Visual Card
             VisualCard vc = GameObject.Instantiate(VisualCard, transform);
-            vc.Image.sprite = CardSprites[options[i].Id];
+            vc.Image.sprite = CardSpriteList.CardSprites[options[i].Id];
             vc.Title.text = options[i].Name;
             vc.Description.text = options[i].Text;
 

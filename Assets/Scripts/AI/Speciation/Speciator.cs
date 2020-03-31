@@ -41,7 +41,7 @@ public class Speciator {
             }
             if (!speciesFound)
             {
-                Species newSpecies = new Species(SpeciesId++, Subject.Genome, RandomColor(Species.Select(x => x.Color).ToArray()), 0);
+                Species newSpecies = new Species(SpeciesId++, Subject.Genome, ColorUtils.RandomColor(Species.Select(x => x.Color).ToArray()), 0);
                 newSpecies.Color.a = 1;
                 Subject.Genome.Species = newSpecies;
                 Species.Add(newSpecies);
@@ -63,28 +63,5 @@ public class Speciator {
 
         return (1 * numNonMatchingGenes);// + (0.6f * avgWeightDifference);
 
-    }
-
-    private Color RandomColor(Color[] others = null, float tolerance = 0.6f)
-    {
-        Color toReturn = new Color(1, 1, 1, 1);
-        bool tooSimilar = true;
-        int counter = 0;
-        while (tooSimilar && counter <= 20)
-        {
-            if (counter == 20) Debug.Log("couldn't find a new color.");
-            counter++;
-            tooSimilar = false;
-            toReturn = new Color((float)Random.NextDouble(), (float)Random.NextDouble(), (float)Random.NextDouble(), 1);
-            if (others != null)
-            {
-                foreach (Color other in others)
-                {
-                    float diff = Math.Abs(other.r - toReturn.r) + Math.Abs(other.g - toReturn.g) + Math.Abs(other.b - toReturn.b);
-                    if (diff < tolerance) tooSimilar = true;
-                }
-            }
-        }
-        return toReturn;
     }
 }

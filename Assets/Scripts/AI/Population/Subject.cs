@@ -26,7 +26,7 @@ public class Subject {
 
 	}
 
-    // This method is only used if a generation has more than one simulations. Call this when ending a simulation.
+    // This method is only used if a generation has more than one simulation. Gets called when a simulation has ended.
     public virtual void EndCurrentSimulation()
     {
 

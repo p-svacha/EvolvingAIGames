@@ -5,7 +5,7 @@ using UnityEngine;
 public class MatchStatisticsDisplay : UIElement
 {
 
-    public void UpdateStatistics(float player1Winrate, float avgGameLength)
+    public void UpdateStatistics(float player1Winrate, float avgGameLength, float avgNumCardOptionsWinner, float avgNumCardOptionsLoser)
     {
         Clear();
 
@@ -16,11 +16,16 @@ public class MatchStatisticsDisplay : UIElement
         AddText(titleText, fontSize, Color.black, FontStyle.Bold, 0, 0, 1, titleSize, Container, TextAnchor.MiddleCenter);
 
         float numColumns = 1;
-        int nRows = 4;
+        int nRows = 5;
         float yStep = 0;
 
         AddColumn(nRows, yStep, titleSize, yStep + (1 / numColumns), 1, true,
-            new string[] { "Statistics", "Player 1 Winrate: " + player1Winrate.ToString("0.0%"), "Avg Game Length: " + avgGameLength.ToString("0.0") + " Turns" });
+            new string[] { "Statistics",
+                "Player 1 Winrate: " + player1Winrate.ToString("0.0%"),
+                "Avg Game Length: " + avgGameLength.ToString("0.0") + " Turns",
+                "Avg Winner Card Options: " + avgNumCardOptionsWinner.ToString("0.0"),
+                "Avg Loser Card Options: " + avgNumCardOptionsLoser.ToString("0.0"),
+            });
         yStep += 1f / numColumns;
     }
 

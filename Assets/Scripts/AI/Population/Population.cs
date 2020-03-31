@@ -16,12 +16,13 @@ public class Population {
     public MutateAlgorithm MutateAlgorithm;
     public TopologyMutator TopologyMutator;
     public WeightMutator WeightMutator;
+    public float CurrentMutationChanceScaleFactor;
 
     // Evolution
     public Speciator Speciator;
     public int Generation;
 
-    // Parameters
+    // Evolution Parameters
     public float TakeOverBestRatio = 0.13f; // % of best subjects per species that are taken over to next generation
     public float TakeOverRandomRatio = 0.04f; // % of random subjects per species that are taken over to next generation
     public bool AreTakeOversImmuneToMutation = true; // If true, subjects that are taken over the next generation are immune to mutation
@@ -34,19 +35,35 @@ public class Population {
 
     public float AdoptionRate = 0.4f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
 
-    public float SpeciesCompatiblityThreshhold = 10; // Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
+    /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
+    /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
+    public float SpeciesCompatiblityThreshhold = 16; 
+       
+
+    // Mutation parameters
+    public float StartMutationChanceFactor = 1.5f; // At the start of the simulation, them mutation chance is multiplied with this factor
+    public float MutationChanceFactorReductionPerGeneration = 0.01f; // The amount the mutation scale factor gets reduced every generation
+    public float MinMutationChanceFactor = 1f; // The mutation chance factor will never fall below this value
+
+    public bool MultipleMutationsPerGenomeAllowed = true; // Sets if multiple mutations on the same genome are allowed
 
     // Debug
-    public bool showTimestamps = false;
+    public bool showTimestamps = true;
 
     public Population(int size, int numInputs, int numOutputs, bool startWithConnections)
     {
+        // Initialize objects
         Subjects = new List<Subject>();
         Species = new List<Species>();
         Speciator = new Speciator(SpeciesCompatiblityThreshhold);
         TopologyMutator = new TopologyMutator();
         WeightMutator = new WeightMutator();
         MutateAlgorithm = new MutateAlgorithm(TopologyMutator, WeightMutator);
+
+        // Initilaize parameters
+        CurrentMutationChanceScaleFactor = StartMutationChanceFactor;
+
+        // Create initial population
         CreateInitialPopulation(size, numInputs, numOutputs, startWithConnections);
     }
 
@@ -269,9 +286,9 @@ public class Population {
         foreach (Subject subject in newSubjects) Subjects.Add(subject);
     }
 
-    public EvolutionInformation EvolveGeneration(float mutationScaleFactor)
+    public EvolutionInformation EvolveGeneration()
     {
-        DateTime start = DateTime.Now;
+        DateTime startTimeStamp = DateTime.Now;
         DateTime stamp = DateTime.Now;
         List<Subject> newSubjects = new List<Subject>();
         int numPreviousSpecies = Species.Count;
@@ -296,7 +313,7 @@ public class Population {
         if (AreTakeOversImmuneToMutation) numSubjectsImmuneToMutations += numBestSubjects;
         if (showTimestamps) stamp = TimeStamp(stamp, "Take over Best Subjects");
 
-        // Take over best subjects of each species
+        // Take over random lucky subjects of each species
         int numRandomSubjects = TakeOverRandomSubjects(newSubjects, TakeOverRandomRatio, AreTakeOversImmuneToMutation);
         if (AreTakeOversImmuneToMutation) numSubjectsImmuneToMutations += numRandomSubjects;
         if (showTimestamps) stamp = TimeStamp(stamp, "Take over Random Subjects");
@@ -316,7 +333,7 @@ public class Population {
         if (showTimestamps) stamp = TimeStamp(stamp, "Replace Subjects");
 
         // Mutate the genomes in all subjects that are not marked immuneToMutation according to chances in the mutatealgorithm
-        MutationInformation mutationInfo = MutateAlgorithm.MutatePopulation(this, mutationScaleFactor);
+        MutationInformation mutationInfo = MutateAlgorithm.MutatePopulation(this, CurrentMutationChanceScaleFactor, MultipleMutationsPerGenomeAllowed);
         if (showTimestamps) stamp = TimeStamp(stamp, "Mutate Population");
 
         // Speciate all subjects that haven't gotten a species yet
@@ -336,7 +353,9 @@ public class Population {
         int numEmptySpecies = emptySpecies.Count;
         if (showTimestamps) stamp = TimeStamp(stamp, "Remove empty Species");
 
+        // Go to next generation
         Generation++;
+        if (CurrentMutationChanceScaleFactor > MinMutationChanceFactor) CurrentMutationChanceScaleFactor -= MutationChanceFactorReductionPerGeneration;
 
         // Name the subjects
         for (int i = 0; i < Subjects.Count; i++)
@@ -345,8 +364,13 @@ public class Population {
         if (Subjects.Count != Species.Sum(x => x.Subjects.Count)) throw new Exception("SPECIATION FAILED. The number of subjects in the species does not match the number of subjects in the population.");
 
         // Create the evolution information object
-        int evolutionTime = (int)((DateTime.Now - stamp).TotalMilliseconds);
-        EvolutionInformation info = new EvolutionInformation(Generation, evolutionTime, AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings, numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations, numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, SpeciesCompatiblityThreshhold, maxFitness, averageFitness, RankNeededToSurvive, GenerationsBelowRankAllowed);
+        int evolutionTime = (int)((DateTime.Now - startTimeStamp).TotalMilliseconds);
+        EvolutionInformation info = new EvolutionInformation(Generation, evolutionTime,
+            AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings, 
+            numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations, 
+            numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, SpeciesCompatiblityThreshhold, 
+            maxFitness, averageFitness, 
+            RankNeededToSurvive, GenerationsBelowRankAllowed);
         Debug.Log(info.ToString());
 
         // Reset the species fitness values
