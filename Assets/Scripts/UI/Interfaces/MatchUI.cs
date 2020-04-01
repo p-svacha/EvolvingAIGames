@@ -26,6 +26,9 @@ public class MatchUI : MonoBehaviour
     public GenomeVisualizer Player1GenomeVis;
     public GenomeVisualizer Player2GenomeVis;
 
+    public Button HideCardsButton;
+    public Text HideCardsButtonText;
+
     // Effects
     public ParticleSystem PS_CardOptionIncrease;
 
@@ -35,6 +38,18 @@ public class MatchUI : MonoBehaviour
     private float CardMarginX = 0.15f;
     private float CardMarginY = 0.1f;
     private float CardGapX; // 0.5 = The gap between two cards is the width of 0.5 cards
+    private bool CardsAreHidden;
+
+    void Start()
+    {
+        CanvasWidth = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.x;
+        CanvasHeight = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.y;
+        Factor = CanvasWidth / CanvasHeight;
+
+        HideCardsButtonText.text = "Hide Cards";
+        HideCardsButton.onClick.AddListener(HideCardsButtonOnClick);
+        HideCardsButton.gameObject.SetActive(false);
+    }
 
     public void UpdatePlayerHealthText()
     {
@@ -118,10 +133,24 @@ public class MatchUI : MonoBehaviour
         DisplayedCards.Clear();
     }
 
-    void Start()
+    private void HideCardsButtonOnClick()
     {
-        CanvasWidth = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.x;
-        CanvasHeight = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.y;
-        Factor = CanvasWidth / CanvasHeight;
+        if(CardsAreHidden)
+        {
+            HideCardsButtonText.text = "Hide Cards";
+            foreach (VisualCard card in DisplayedCards) card.gameObject.SetActive(true);
+        }
+        else
+        {
+            HideCardsButtonText.text = "Show Cards";
+            foreach (VisualCard card in DisplayedCards) card.gameObject.SetActive(false);
+        }
+        CardsAreHidden = !CardsAreHidden;
     }
+
+    public void SetHideCardsButtonVisible(bool vis)
+    {
+        HideCardsButton.gameObject.SetActive(vis);
+    }
+
 }

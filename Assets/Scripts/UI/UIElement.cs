@@ -14,7 +14,6 @@ public class UIElement : MonoBehaviour
 
     public void Awake()
     {
-
         objects = new List<GameObject>();
         Container = gameObject.GetComponent<RectTransform>();
     }

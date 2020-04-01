@@ -4,15 +4,10 @@ using UnityEngine;
 
 public class VisualMinion : VisualEntity
 {
-    // Start is called before the first frame update
-    void Start()
+
+    public void SetHaloEnabled(bool enabled)
     {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        Component halo = gameObject.GetComponent("Halo");
+        halo.GetType().GetProperty("enabled").SetValue(halo, enabled, null);
     }
 }

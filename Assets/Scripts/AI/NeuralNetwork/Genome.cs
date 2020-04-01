@@ -111,7 +111,7 @@ public class Genome {
         else
         {
             n.Depth = depth;
-            foreach (Connection c in n.OutConnections)
+            foreach (Connection c in n.OutConnections.Where(x => x.Enabled))
                 if (depth >= c.Out.Depth) depthStep(c.Out, depth + 1);
         }
     }

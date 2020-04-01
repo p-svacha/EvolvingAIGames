@@ -126,8 +126,6 @@ public class Match
             Player2.Color = PlayerColor;
             VisualActions.Add(new VA_SummonPlayer(Player1.Visual, PlayerColor));
             VisualActions.Add(new VA_SummonPlayer(Player2.Visual, PlayerColor));
-
-            
         }
 
         // Let's go
@@ -153,6 +151,8 @@ public class Match
                 break;
 
             case MatchPhase.CardPick:
+                if(!MatchUI.HideCardsButton.gameObject.activeSelf) MatchUI.SetHideCardsButtonVisible(true);
+
                 if (Player1.ChosenCard != null && Player2.ChosenCard != null)
                 {
                     NextPhaseReady = true;
@@ -198,6 +198,7 @@ public class Match
                 case MatchPhase.CardPick:
                     // Hide cards
                     MatchUI.UnshowAllCards();
+                    MatchUI.SetHideCardsButtonVisible(false);
 
                     // Queue effects that show what cards were chosen + card effects
                     Effects.Enqueue(() => { VisualActions.Add(new VA_ShowChosenCards(Player1, Player1.ChosenCard, MatchUI)); });
@@ -400,7 +401,11 @@ public class Match
 
     private void RemoveSummonProtection()
     {
-        foreach (Minion m in Minions.Where(x => x.HasSummonProtection)) m.HasSummonProtection = false;
+        foreach (Minion m in Minions.Where(x => x.HasSummonProtection))
+        {
+            m.HasSummonProtection = false;
+            if (Visual) ((VisualMinion)m.Visual).SetHaloEnabled(false);
+        }
         if(Log)
         {
             Debug.Log("Minions lost summon protection.");
@@ -551,6 +556,8 @@ public class Match
                 minion.Visual.GetComponent<Renderer>().material.color = minion.Color;
                 Vector3 targetPosition = GetPlanPosition(minion);
                 VisualActions.Add(new VA_SummonMinions(new List<VisualEntity>() { minion.Visual }, source.Visual, new List<Vector3>() { targetPosition }, MinionScale));
+
+                ((VisualMinion)minion.Visual).SetHaloEnabled(summonProtection);
             }
             if (Log)
             {
@@ -584,6 +591,7 @@ public class Match
                 minion.Visual = GameObject.Instantiate(V_Minion);
                 minion.Visual.GetComponent<Renderer>().material.color = minion.Color;
                 targetPositions.Add(GetPlanPosition(minion));
+                ((VisualMinion)minion.Visual).SetHaloEnabled(summonProtection);
             }
             VisualActions.Add(new VA_SummonMinions(createdMinions.Select(x => x.Visual).ToList(), source.Visual, targetPositions, MinionScale));
         }

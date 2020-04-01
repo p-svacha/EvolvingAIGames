@@ -37,7 +37,7 @@ public class Population {
 
     /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
     /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
-    public float SpeciesCompatiblityThreshhold = 16; 
+    public float SpeciesCompatiblityThreshhold = 20; 
        
 
     // Mutation parameters

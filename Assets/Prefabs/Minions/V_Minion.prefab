@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3874645300795174020}
   - component: {fileID: 8360737395126351677}
   - component: {fileID: 5860237866227488996}
+  - component: {fileID: 5588936364095937307}
   m_Layer: 0
   m_Name: V_Minion
   m_TagString: Untagged
@@ -105,3 +106,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SourcePosition: {x: 0, y: 0, z: 0}
+--- !u!122 &5588936364095937307
+Halo:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4811230582165630392}
+  m_Enabled: 1
+  m_Color:
+    serializedVersion: 2
+    rgba: 4278255608
+  m_Size: 0.3

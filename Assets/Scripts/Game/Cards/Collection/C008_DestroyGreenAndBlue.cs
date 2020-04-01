@@ -14,7 +14,8 @@ public class C008_DestroyGreenAndBlue : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.DestroyMultipleMinions(self, Model.AllMinionsOfType(enemy, MinionType.Green, withoutSummonProtection: true));
-        Model.DestroyMultipleMinions(self, Model.AllMinionsOfType(enemy, MinionType.Blue, withoutSummonProtection: true));
+        List<Minion> toDestroy = Model.AllMinionsOfType(enemy, MinionType.Blue, withoutSummonProtection: true);
+        toDestroy.AddRange(Model.AllMinionsOfType(enemy, MinionType.Green, withoutSummonProtection: true));
+        Model.DestroyMultipleMinions(self, toDestroy);
     }
 }
