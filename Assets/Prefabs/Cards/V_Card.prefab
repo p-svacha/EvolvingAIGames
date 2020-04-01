@@ -138,7 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -168,6 +168,7 @@ MonoBehaviour:
   Image: {fileID: 5508143488655453259}
   Title: {fileID: 5508143488713966898}
   Description: {fileID: 5508143487694115864}
+  Selectable: 0
 --- !u!1 &5508143487694115862
 GameObject:
   m_ObjectHideFlags: 0

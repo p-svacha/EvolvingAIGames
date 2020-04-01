@@ -11,13 +11,12 @@ public class SimulationModel : MonoBehaviour
     public SimulationPhase SimulationPhase;
     public int MatchesPlayed;
 
-    private int PopulationSize = 1000;
+    private int PopulationSize = 1200;
     private int MatchesPerGeneration = 20;
 
     // Matches
     public Match MatchModel;
     public List<Match> Matches;
-    public Match BestMatch;
 
     // Match rules
     private int StartHealth = 30;
@@ -36,7 +35,7 @@ public class SimulationModel : MonoBehaviour
     // Visuals
     public VisualPlayer VisualPlayer;
     public VisualMinion VisualMinion;
-    public Match ActiveMatch;
+    public Match VisualMatch;
 
     // Card Statistics
     public Dictionary<int, int> CardsPicked;
@@ -85,7 +84,7 @@ public class SimulationModel : MonoBehaviour
         List<Subject> remainingSubjects = new List<Subject>();
         remainingSubjects.AddRange(Population.Subjects);
 
-        // If last round of generation, let the best two subjects play against each other
+        // If last round of generation, let the best two subjects play against each other and watch the game
         if (SimulationUI.WatchGame.isOn && MatchesPlayed == MatchesPerGeneration - 1)
         {
             List<Subject> bestSubjects = remainingSubjects.OrderByDescending(x => x.Wins).Take(2).ToList();
@@ -98,10 +97,8 @@ public class SimulationModel : MonoBehaviour
 
             Player player1 = new AIPlayer(match, sub1);
             Player player2 = new AIPlayer(match, sub2);
-            match.InitGame(player1, player2, StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
+            match.InitGame(player1, player2, StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, true, false);
             Matches.Add(match);
-
-            BestMatch = match;
         }
 
         // Generate random matches
@@ -116,7 +113,7 @@ public class SimulationModel : MonoBehaviour
 
             Player player1 = new AIPlayer(match, sub1);
             Player player2 = new AIPlayer(match, sub2);
-            match.InitGame(player1, player2, StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false);
+            match.InitGame(player1, player2, StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, false, false);
             Matches.Add(match);
         }
     }
@@ -131,12 +128,11 @@ public class SimulationModel : MonoBehaviour
                 SimulationUI.TitleText.text = "Match Round " + Population.Generation + "." + (MatchesPlayed + 1);
                 foreach (Match m in Matches)
                 {
-                    if (BestMatch != null && m == BestMatch)
+                    if(m.Visual)
                     {
-                        BestMatch = null;
                         SimulationUI.gameObject.SetActive(false);
-                        ActiveMatch = m;
-                        m.StartMatch(true, VisualPlayer, VisualMinion, VisualBoardHeight, MatchUI);
+                        VisualMatch = m;
+                        m.StartMatch(VisualPlayer, VisualMinion, VisualBoardHeight, MatchUI);
                     }
                     else m.StartMatch();
                 }
@@ -148,24 +144,61 @@ public class SimulationModel : MonoBehaviour
                 if(Matches.TrueForAll(x => x.Phase == MatchPhase.GameEnded))
                 {
                     MatchesPlayed++;
-                    SimulationPhase = MatchesPlayed == MatchesPerGeneration ? SimulationPhase.GenerationFinished : SimulationPhase.MatchesFinished;
-                    if(ActiveMatch != null)
+                    SimulationPhase = SimulationPhase.MatchesFinished;
+                    if(VisualMatch != null)
                     {
-                        ActiveMatch = null;
+                        VisualMatch = null;
                         SimulationUI.gameObject.SetActive(true);
                     }
                 }
                 break;
 
             case SimulationPhase.MatchesFinished:
+
+                // Update Stats
                 UpdateStatistics();
-                GenerateMatches();
-                SimulationPhase = SimulationPhase.MatchesReady;
+
+                if (MatchesPlayed >= MatchesPerGeneration)
+                {
+                    // Init Human vs AI game if gen is finished
+                    if (SimulationUI.PlayGame.isOn)
+                    {
+                        SimulationUI.PlayGame.isOn = false;
+                        Matches.Clear();
+
+                        // Create match
+                        Match match = new Match();
+                        Player player1 = new HumanPlayer(match);
+                        Subject bestSubject = Population.Subjects.OrderByDescending(x => x.Wins).First();
+                        Player player2 = new AIPlayer(match, bestSubject);
+                        match.InitGame(player1, player2, StartHealth, StartCardOptions, MinCardOptions, MaxCardOptions, MaxMinions, MaxMinionsPerType, FatigueDamageStartTurn, true, false);
+
+                        // Start match
+                        Matches.Add(match);
+                        VisualMatch = match;
+                        SimulationUI.gameObject.SetActive(false);
+                        match.StartMatch(VisualPlayer, VisualMinion, VisualBoardHeight, MatchUI);
+                        SimulationPhase = SimulationPhase.MatchesReady;
+                    }
+
+                    else
+                    {
+                        SimulationPhase = SimulationPhase.GenerationFinished;
+                    }
+                }
+                else
+                {
+                    GenerateMatches();
+                    SimulationPhase = SimulationPhase.MatchesReady;
+                }
                 break;
 
             case SimulationPhase.GenerationFinished:
+
+                // Reset stats
                 ResetStatistics();
                 MatchesPlayed = 0;
+
                 // Evolve and Update UI
                 EvolutionInformation info = Population.EvolveGeneration();
                 SimulationUI.EvoStats.UpdateStatistics(info);

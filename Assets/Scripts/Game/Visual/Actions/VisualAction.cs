@@ -5,7 +5,7 @@ using UnityEngine;
 public class VisualAction
 {
     public int CurrentFrame = 0;
-    public float DefaultFrames = 60;
+    public float DefaultFrames = 160;
     public float Frames;
     public bool Done;
 

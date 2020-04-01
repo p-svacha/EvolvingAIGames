@@ -9,7 +9,7 @@ public class VA_MoveMinions : VisualAction
 
     public VA_MoveMinions(Match model, bool toAction)
     {
-        Frames = DefaultFrames;
+        Frames = DefaultFrames * 0.5f;
         Model = model;
         ToAction = toAction;
 

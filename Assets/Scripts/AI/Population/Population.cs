@@ -48,7 +48,7 @@ public class Population {
     public bool MultipleMutationsPerGenomeAllowed = true; // Sets if multiple mutations on the same genome are allowed
 
     // Debug
-    public bool showTimestamps = true;
+    public bool DebugTimestamps = true; // If true, evolution steps taking longer than 5 seconds are logged to console
 
     public Population(int size, int numInputs, int numOutputs, bool startWithConnections)
     {
@@ -297,53 +297,53 @@ public class Population {
         GetFitness();
         float averageFitness = Subjects.Average(x => x.Genome.Fitness);
         float maxFitness = Subjects.Max(x => x.Genome.Fitness);
-        if (showTimestamps) stamp = TimeStamp(stamp, "Get Fitness");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Get Fitness");
 
         // Eliminate species without improvement for too long
         int numEliminatedSpecies = EliminateBadSpecies(RankNeededToSurvive, GenerationsBelowRankAllowed);
-        if (showTimestamps) stamp = TimeStamp(stamp, "Eliminate Bad Species");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Eliminate Bad Species");
 
         // Take a random representative for each existing species
         CreateSpeciesRepresentatives();
-        if (showTimestamps) stamp = TimeStamp(stamp, "Create Representatives");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Create Representatives");
 
         int numSubjectsImmuneToMutations = 0;
         // Take over best subjects of each species
         int numBestSubjects = TakeOverBestSubjects(newSubjects, TakeOverBestRatio, AreTakeOversImmuneToMutation);
         if (AreTakeOversImmuneToMutation) numSubjectsImmuneToMutations += numBestSubjects;
-        if (showTimestamps) stamp = TimeStamp(stamp, "Take over Best Subjects");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Take over Best Subjects");
 
         // Take over random lucky subjects of each species
         int numRandomSubjects = TakeOverRandomSubjects(newSubjects, TakeOverRandomRatio, AreTakeOversImmuneToMutation);
         if (AreTakeOversImmuneToMutation) numSubjectsImmuneToMutations += numRandomSubjects;
-        if (showTimestamps) stamp = TimeStamp(stamp, "Take over Random Subjects");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Take over Random Subjects");
 
         // Evaluate which species is allowed to produce how many offsprings
         int numOffsprings = Size - numBestSubjects - numRandomSubjects;
         CalculateOffspringNumberPerSpecies(numOffsprings);
-        if (showTimestamps) stamp = TimeStamp(stamp, "Calculate Offspring numbers");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Calculate Offspring numbers");
 
         // Create offsprings with a chance to automatically have the same species as its parents
         List<Subject> toSpeciate = CreateOffsprings(newSubjects);
         int numSubjectsCheckedForAdoption = toSpeciate.Count;
-        if (showTimestamps) stamp = TimeStamp(stamp, "Create Offsprings");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Create Offsprings");
 
         // Moves subjects from the newSubjects list to the Subjects list (that it also clears)
         ReplaceSubjects(newSubjects);
-        if (showTimestamps) stamp = TimeStamp(stamp, "Replace Subjects");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Replace Subjects");
 
         // Mutate the genomes in all subjects that are not marked immuneToMutation according to chances in the mutatealgorithm
         MutationInformation mutationInfo = MutateAlgorithm.MutatePopulation(this, CurrentMutationChanceScaleFactor, MultipleMutationsPerGenomeAllowed);
-        if (showTimestamps) stamp = TimeStamp(stamp, "Mutate Population");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Mutate Population");
 
         // Speciate all subjects that haven't gotten a species yet
         int numNewSpecies = Speciator.Speciate(toSpeciate, Species);
-        if (showTimestamps) stamp = TimeStamp(stamp, "Speciate unspeciated Subjects");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Speciate unspeciated Subjects");
 
         // Fill species with new subjects
         foreach (Species s in Species) s.Subjects.Clear();
         foreach (Subject subject in Subjects) subject.Genome.Species.Subjects.Add(subject);
-        if (showTimestamps) stamp = TimeStamp(stamp, "Replace Subjects in Species");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Replace Subjects in Species");
 
         // Remove empty species
         List<Species> emptySpecies = new List<Species>();
@@ -351,7 +351,7 @@ public class Population {
             if (species.Subjects.Count == 0) emptySpecies.Add(species);
         foreach (Species remove in emptySpecies) Species.Remove(remove);
         int numEmptySpecies = emptySpecies.Count;
-        if (showTimestamps) stamp = TimeStamp(stamp, "Remove empty Species");
+        if (DebugTimestamps) stamp = TimeStamp(stamp, "Remove empty Species");
 
         // Go to next generation
         Generation++;
@@ -393,7 +393,8 @@ public class Population {
 
     private DateTime TimeStamp(DateTime stamp, string message)
     {
-        Debug.Log(message + ": " + (int)((DateTime.Now - stamp).TotalMilliseconds) + " ms");
+        int duration = (int)((DateTime.Now - stamp).TotalMilliseconds);
+        if(duration > 5000) Debug.Log(message + ": " + duration + " ms");
         return DateTime.Now;
     }
 

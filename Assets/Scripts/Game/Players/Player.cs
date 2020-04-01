@@ -5,22 +5,20 @@ using UnityEngine;
 
 public abstract class Player : Creature
 {
-    public Subject Brain;
-
     public int MaxHealth;
     public int Health;
     public int NumCardOptions;
     public Card ChosenCard;
+    public VisualCard ChosenVisualCard;
     public List<Card> BestOptions; // List of cards with the shared highest value. (ChosenCard was chosen randomly from this list)
 
     // Card Statistics
     public Dictionary<int, int> CardsPicked;
     public Dictionary<int, int> CardsNotPicked;
 
-    public Player(Match model, string name, Subject brain) : base(model)
+    public Player(Match model, string name) : base(model)
     {
         Name = name;
-        Brain = brain;
         CardsPicked = new Dictionary<int, int>();
         CardsNotPicked = new Dictionary<int, int>();
         BestOptions = new List<Card>();

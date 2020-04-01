@@ -13,6 +13,7 @@ public class SimulationUI : MonoBehaviour
     // Elements
     public Text TitleText;
     public Toggle WatchGame;
+    public Toggle PlayGame;
     public EvolutionStatistics EvoStats;
     public SpeciesScoreboard SpeciesScoreboard;
     public CardStatistics CardPickrates;

@@ -15,6 +15,7 @@ public class MatchUI : MonoBehaviour
 
     // Elements
     public VisualCard VisualCard;
+    public VisualCard VisualCardHidden;
     public Text TurnText;
     public Text Player1Name;
     public Text Player2Name;
@@ -22,8 +23,8 @@ public class MatchUI : MonoBehaviour
     public Text Player2Health;
     public CardValues Player1CV;
     public CardValues Player2CV;
-    public GenomeVisualizer Player1GV;
-    public GenomeVisualizer Player2GV;
+    public GenomeVisualizer Player1GenomeVis;
+    public GenomeVisualizer Player2GenomeVis;
 
     // Effects
     public ParticleSystem PS_CardOptionIncrease;
@@ -35,7 +36,7 @@ public class MatchUI : MonoBehaviour
     private float CardMarginY = 0.1f;
     private float CardGapX; // 0.5 = The gap between two cards is the width of 0.5 cards
 
-    public void UpdatePlayerHealth()
+    public void UpdatePlayerHealthText()
     {
         Player1Health.text = Model.Player1.Health + "/" + Model.Player1.MaxHealth;
         Player2Health.text = Model.Player2.Health + "/" + Model.Player2.MaxHealth;
@@ -43,8 +44,22 @@ public class MatchUI : MonoBehaviour
 
     public void UpdatePlayerNames()
     {
-        Player1Name.text = Model.Player1.Name + " | " + Model.Player1.Brain.Wins + " - " + Model.Player1.Brain.Losses;
-        Player2Name.text = Model.Player2.Name + " | " + Model.Player2.Brain.Wins + " - " + Model.Player2.Brain.Losses;
+        if (Model.MatchType == MatchType.AI_vs_AI)
+        {
+            Player1Name.text = Model.Player1.Name + " | " + ((AIPlayer)Model.Player1).Brain.Wins + " - " + ((AIPlayer)Model.Player1).Brain.Losses;
+            Player2Name.text = Model.Player2.Name + " | " + ((AIPlayer)Model.Player2).Brain.Wins + " - " + ((AIPlayer)Model.Player2).Brain.Losses;
+        }
+        else
+        {
+            Player1Name.text = Model.Player1.Name;
+            Player2Name.text = Model.Player2.Name + " | " + ((AIPlayer)Model.Player2).Brain.Wins + " - " + ((AIPlayer)Model.Player2).Brain.Losses;
+        }
+    }
+
+    public void UpdatePlayerGenomes()
+    {
+        Player1GenomeVis.VisualizeSubject(((AIPlayer)Model.Player1).Brain.Genome);
+        Player2GenomeVis.VisualizeSubject(((AIPlayer)Model.Player2).Brain.Genome);
     }
 
     public void UpdateTurnText()
@@ -52,7 +67,7 @@ public class MatchUI : MonoBehaviour
         TurnText.text = "Turn " + Model.Turn;
     }
 
-    public void ShowCards(List<Card> options, Player player)
+    public void ShowCards(List<Card> options, Player player, bool hidden, bool selectable)
     {
         CardGapX = options.Count <= 2 ? 2f : options.Count <= 3 ? 1f : options.Count <= 5 ? 0.5f : 0.1f;
 
@@ -65,10 +80,21 @@ public class MatchUI : MonoBehaviour
         for (int i = 0; i < options.Count; i++)
         {
             // Instantiate Visual Card
-            VisualCard vc = GameObject.Instantiate(VisualCard, transform);
-            vc.Image.sprite = CardSpriteList.CardSprites[options[i].Id];
-            vc.Title.text = options[i].Name;
-            vc.Description.text = options[i].Text;
+            VisualCard vc;
+            if (hidden)
+            {
+                vc = GameObject.Instantiate(VisualCardHidden, transform);
+            }
+            else
+            {
+                vc = GameObject.Instantiate(VisualCard, transform);
+                vc.ShowCardContent(options[i]);
+                if (options[i] == player.ChosenCard) vc.HighlightCard(Color.red);
+                else if (player.BestOptions.Contains(options[i])) vc.HighlightCard(Color.yellow);
+            }
+
+            // Set Card Attributes
+            vc.InitVisualCard(options[i], player, selectable);
 
             // Set Card Position
             float xStart = CardMarginX + i * xStep + xGap / 2;
@@ -81,15 +107,6 @@ public class MatchUI : MonoBehaviour
             rectTransform.sizeDelta = new Vector2(0, 0);
             rectTransform.anchorMin = new Vector2(xStart, 1 - yEnd);
             rectTransform.anchorMax = new Vector2(xEnd, 1 - yStart);
-
-            // Highlight selected Card
-            if(options[i] == player.ChosenCard)
-                vc.GetComponent<Image>().color = Color.red;
-            // Highlight cards with shared highest value that were not picked
-            else if(player.BestOptions.Contains(options[i]))
-            {
-                vc.GetComponent<Image>().color = Color.yellow;
-            }
 
             DisplayedCards.Add(vc);
         }
@@ -106,11 +123,5 @@ public class MatchUI : MonoBehaviour
         CanvasWidth = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.x;
         CanvasHeight = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.y;
         Factor = CanvasWidth / CanvasHeight;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }

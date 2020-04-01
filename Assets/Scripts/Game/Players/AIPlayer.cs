@@ -5,8 +5,11 @@ using UnityEngine;
 
 public class AIPlayer : Player
 {
-    public AIPlayer(Match model, Subject brain) : base(model, brain.Name, brain)
+    public Subject Brain;
+
+    public AIPlayer(Match model, Subject brain) : base(model, brain.Name)
     {
+        Brain = brain;
     }
 
     public override void PickCard(List<Card> options)

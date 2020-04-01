@@ -9,6 +9,9 @@ public class Match
 {
     #region variablies and init 
 
+    // Type
+    public MatchType MatchType;
+
     // Rules
     public int StartHealth;
     public int StartCardOptions;
@@ -55,7 +58,7 @@ public class Match
     private float MinionYStartPlan = 0.35f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
     private float MinionYStartAction = 0.1f; // The higher this value is, the closer the minions are to the player (0 < x < 0.5)
 
-    public void InitGame(Player player1, Player player2, int health, int options, int minOptions, int maxOptions, int maxMinions, int maxMinionsPerType, int fatigueStart, bool log)
+    public void InitGame(Player player1, Player player2, int health, int options, int minOptions, int maxOptions, int maxMinions, int maxMinionsPerType, int fatigueStart, bool visual, bool log)
     {
         // Set rules
         StartHealth = health;
@@ -72,7 +75,19 @@ public class Match
         Player1.Initialize(Player2, StartHealth, StartCardOptions);
         Player2.Initialize(Player1, StartHealth, StartCardOptions);
 
+        // Set match type
+        if (Player1.GetType() == typeof(AIPlayer) && Player2.GetType() == typeof(AIPlayer))
+        {
+            MatchType = MatchType.AI_vs_AI;
+        }
+        else if (Player1.GetType() == typeof(HumanPlayer) && Player2.GetType() == typeof(AIPlayer))
+        {
+            MatchType = MatchType.Human_vs_AI;
+        }
+        else throw new Exception("Invalid Match Type. Only AI vs AI and Human vs AI allowed!");
+
         // Init game values
+        Visual = visual;
         Log = log;
         Minions = new List<Minion>();
         Effects = new Queue<Action>();
@@ -87,9 +102,8 @@ public class Match
 
     #region Game Cycle
 
-    public void StartMatch(bool visual = false, VisualPlayer v_player = null, VisualMinion v_minion = null, int visualBoardHeight = 0, MatchUI matchUI = null)
+    public void StartMatch(VisualPlayer v_player = null, VisualMinion v_minion = null, int visualBoardHeight = 0, MatchUI matchUI = null)
     {
-        Visual = visual;
         V_Player = v_player;
         V_Minion = v_minion;
         VisualBoardHeight = visualBoardHeight;
@@ -99,9 +113,11 @@ public class Match
             // UI
             MatchUI = matchUI;
             MatchUI.Model = this;
-            MatchUI.UpdatePlayerHealth();
+            MatchUI.UpdatePlayerHealthText();
             MatchUI.UpdatePlayerNames();
             MatchUI.UpdateTurnText();
+            if (MatchType == MatchType.AI_vs_AI)
+                MatchUI.UpdatePlayerGenomes();
 
             // Summon Players
             Player1.Visual = GameObject.Instantiate(V_Player, new Vector3(0, 0, -(VisualBoardHeight / 2)), Quaternion.identity);
@@ -111,9 +127,7 @@ public class Match
             VisualActions.Add(new VA_SummonPlayer(Player1.Visual, PlayerColor));
             VisualActions.Add(new VA_SummonPlayer(Player2.Visual, PlayerColor));
 
-            // UI Elements
-            MatchUI.Player1GV.VisualizeSubject(Player1.Brain.Genome);
-            MatchUI.Player2GV.VisualizeSubject(Player2.Brain.Genome);
+            
         }
 
         // Let's go
@@ -170,7 +184,7 @@ public class Match
         }
 
         // Changing game phases
-        if(NextPhaseReady && (!Visual || Input.GetKeyDown(KeyCode.Space)))
+        if(NextPhaseReady && Input.GetKeyDown(KeyCode.Space))
         {
             NextPhaseReady = false;
 
@@ -185,9 +199,12 @@ public class Match
                     // Hide cards
                     MatchUI.UnshowAllCards();
 
-                    // Queue card effects
+                    // Queue effects that show what cards were chosen + card effects
+                    Effects.Enqueue(() => { VisualActions.Add(new VA_ShowChosenCards(Player1, Player1.ChosenCard, MatchUI)); });
                     Effects.Enqueue(() => { Player1.ChosenCard.Action(this, Player1, Player2); });
+                    Effects.Enqueue(() => { VisualActions.Add(new VA_ShowChosenCards(Player2, Player2.ChosenCard, MatchUI)); });
                     Effects.Enqueue(() => { Player2.ChosenCard.Action(this, Player2, Player1); });
+                    
                     ApplyFatigueDamage();
                     Phase = MatchPhase.CardEffect;
                     break;
@@ -301,9 +318,7 @@ public class Match
         // Next Turn
         Turn++;
         if (Log)
-        {
             Debug.Log("##################### Starting Turn " + Turn + " #####################");
-        }
 
         // Pick Cards
         Player1.ChosenCard = null;
@@ -312,13 +327,27 @@ public class Match
         List<Card> Player2RandomCards = GetCardOptions(Player2.NumCardOptions);
         Player1.PickCard(Player1RandomCards);
         Player2.PickCard(Player2RandomCards);
+
+        // Visual
         if (Visual)
         {
-            MatchUI.ShowCards(Player1RandomCards, Player1);
-            MatchUI.ShowCards(Player2RandomCards, Player2);
+            if (MatchType == MatchType.AI_vs_AI)
+            {
+                MatchUI.ShowCards(Player1RandomCards, Player1, false, false);
+                MatchUI.ShowCards(Player2RandomCards, Player2, false, false);
+            }
+            else
+            {
+                MatchUI.ShowCards(Player1RandomCards, Player1, false, true);
+                MatchUI.ShowCards(Player2RandomCards, Player2, true, false); // Hide cards for opponent in human match
+            }
+
             MatchUI.UpdateTurnText();
-            MatchUI.Player1GV.UpdateValues(Player1.Brain.Genome, false);
-            MatchUI.Player1GV.UpdateValues(Player2.Brain.Genome, false);
+            // Show Genomes is AI vs AI match
+            if (MatchType == MatchType.AI_vs_AI)
+            {
+                MatchUI.UpdatePlayerGenomes();
+            }
         }
         if(Log)
         {
@@ -396,13 +425,13 @@ public class Match
         {
             if (VisualActions.Count > 0 && VisualActions[0].Done)
             {
-                MatchUI.UpdatePlayerHealth();
+                MatchUI.UpdatePlayerHealthText();
                 VisualActions.RemoveAt(0);
             }
 
             if (Effects.Count > 0 && VisualActions.Count == 0) // && (VisualActions.Count == 0 || VisualActions[0].Done))
             {
-                MatchUI.UpdatePlayerHealth();
+                MatchUI.UpdatePlayerHealthText();
                 CheckGameOver();
 
                 if(Phase != MatchPhase.GameEnded) Effects.Dequeue().Invoke();
@@ -413,7 +442,7 @@ public class Match
             }
             else
             {
-                MatchUI.UpdatePlayerHealth();
+                MatchUI.UpdatePlayerHealthText();
                 CheckGameOver();
 
                 NextPhaseReady = true;
@@ -440,32 +469,40 @@ public class Match
         {
             Winner = Player2;
             Loser = Player1;
-
-            Player2.Brain.Wins++;
-            Player1.Brain.Losses++;
+            if (MatchType == MatchType.AI_vs_AI)
+            {
+                ((AIPlayer)Player2).Brain.Wins++;
+                ((AIPlayer)Player1).Brain.Losses++;
+            }
             Phase = MatchPhase.GameEnded;
         }
         else if (Player2.Health <= 0)
         {
             Winner = Player1;
             Loser = Player2;
-            Player1.Brain.Wins++;
-            Player2.Brain.Losses++;
+            if (MatchType == MatchType.AI_vs_AI)
+            {
+                ((AIPlayer)Player1).Brain.Wins++;
+                ((AIPlayer)Player2).Brain.Losses++;
+            }
             Phase = MatchPhase.GameEnded;
         }
         if (Phase == MatchPhase.GameEnded)
         {
             //if (Player1.Name == "0.0" || Player2.Name == "0-0") Debug.Log("0-0 finished a game " + Player1.Name + "," + Player2.Name); // test if one player finished one match per round
 
-            Player1.Brain.DamageDealt = StartHealth - Player2.Health;
-            Player2.Brain.DamageReceived = StartHealth - Player2.Health;
+            if (MatchType == MatchType.AI_vs_AI)
+            {
+                ((AIPlayer)Player1).Brain.DamageDealt = StartHealth - Player2.Health;
+                ((AIPlayer)Player2).Brain.DamageReceived = StartHealth - Player2.Health;
 
-            Player1.Brain.DamageReceived = StartHealth - Player1.Health;
-            Player2.Brain.DamageDealt = StartHealth - Player1.Health;
+                ((AIPlayer)Player1).Brain.DamageReceived = StartHealth - Player1.Health;
+                ((AIPlayer)Player2).Brain.DamageDealt = StartHealth - Player1.Health;
+            }
 
             if (Visual)
             {
-                MatchUI.UpdatePlayerHealth();
+                MatchUI.UpdatePlayerHealthText();
                 GameObject.Destroy(Player1.Visual.gameObject);
                 GameObject.Destroy(Player2.Visual.gameObject);
                 foreach (Minion m in Minions) GameObject.Destroy(m.Visual.gameObject);
