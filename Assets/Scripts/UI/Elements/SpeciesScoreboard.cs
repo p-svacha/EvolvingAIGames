@@ -61,7 +61,7 @@ public class SpeciesScoreboard : UIElement
                     case 1: text = species[i].Size + ""; break;
                     case 2: text = species[i].GenerationsWithoutImprovement + ""; break;
                     case 3: text = species[i].MaxFitness + ""; break;
-                    case 4: text = species[i].AverageFitness + ""; break;
+                    case 4: text = species[i].AverageFitness.ToString("0.0") + ""; break;
                 }
                 float xStart = Columns.Where(x => Columns.IndexOf(x) < j).Sum(x => x.Item2);
                 AddText(text, fontSize, fontColor, FontStyle.Normal, xStart, 0, xStart + Columns[j].Item2, 1, panel);

@@ -17,12 +17,17 @@ public class Genome {
     public float AdjustedFitness;
     public Species Species;
 
-    public Genome(int id, List<Node> inputs, List<Node> outputs, List<Connection> initialConnections)
+    public float MaxConnectionWeight;
+    public float MinConnectionWeight;
+
+    public Genome(int id, List<Node> inputs, List<Node> outputs, List<Connection> initialConnections, float maxConnectionWeight, float minConnectionWeight)
     {
         Id = id;
         InputNodes = inputs;
         OutputNodes = outputs;
         Connections = initialConnections;
+        MaxConnectionWeight = maxConnectionWeight;
+        MinConnectionWeight = minConnectionWeight;
         Nodes = new List<Node>();
         HiddenNodes = new List<Node>();
         Nodes.AddRange(inputs);
@@ -48,8 +53,8 @@ public class Genome {
         foreach (Node n in Nodes) newNodes.Add(new Node(n.Id, n.Type));
         foreach (Connection c in Connections)
         {
-            Node sourceNode = newNodes.First(x => x.Id == c.In.Id);
-            Node targetNode = newNodes.First(x => x.Id == c.Out.Id);
+            Node sourceNode = newNodes.First(x => x.Id == c.From.Id);
+            Node targetNode = newNodes.First(x => x.Id == c.To.Id);
             Connection newConnection = new Connection(c.InnovationNumber, sourceNode, targetNode);
             newConnections.Add(newConnection);
             sourceNode.OutConnections.Add(newConnection);
@@ -77,7 +82,7 @@ public class Genome {
                 n.Value = 0;
                 foreach(Connection c in n.InConnections.Where(x => x.Enabled))
                 {
-                    n.Value += c.In.Value * c.Weight;
+                    n.Value += c.From.Value * c.Weight;
                 }
                 n.Value = Sigmoid(n.Value);
             }
@@ -88,7 +93,12 @@ public class Genome {
 
     public void CalculateDepths()
     {
-        foreach (Node n in Nodes) n.Depth = 0;
+        foreach (Node n in Nodes)
+        {
+            if (n.Type == NodeType.Hidden && n.InConnections.Count == 0 && n.OutConnections.Count == 0)
+                throw new Exception("Hidden Layer Node with Id " + n.Id + " has no connections!");
+            n.Depth = 0;
+        }
         foreach(Node input in InputNodes)
                 depthStep(input, 0);
         Depth = Nodes.Max(x => x.Depth);
@@ -112,7 +122,7 @@ public class Genome {
         {
             n.Depth = depth;
             foreach (Connection c in n.OutConnections.Where(x => x.Enabled))
-                if (depth >= c.Out.Depth) depthStep(c.Out, depth + 1);
+                if (depth >= c.To.Depth) depthStep(c.To, depth + 1);
         }
     }
 

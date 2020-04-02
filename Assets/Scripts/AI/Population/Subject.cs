@@ -7,7 +7,9 @@ public class Subject {
     public string Name;
     public int OverallRank;
     public Genome Genome;
-    public bool ImmunteToMutation;
+    public bool ImmuneToMutation;
+
+    
 
     // Match specific (delete this when copying projects)
     public int Wins;
@@ -35,7 +37,7 @@ public class Subject {
     // This method returns the fitness of a subject at the point of the evolution of the next generation.
     public virtual float GetFitness()
     {
-        return Wins * 10;
+        return Wins;
     }
 
     public void CalculateFitnessValues()

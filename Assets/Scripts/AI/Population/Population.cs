@@ -23,34 +23,43 @@ public class Population {
     public int Generation;
 
     // Evolution Parameters
+    public bool InitialGenomesAreFullyConnected = false; // If true, the initial genomes have connections from every input node to every output node
+
     public float TakeOverBestRatio = 0.13f; // % of best subjects per species that are taken over to next generation
     public float TakeOverRandomRatio = 0.04f; // % of random subjects per species that are taken over to next generation
     public bool AreTakeOversImmuneToMutation = true; // If true, subjects that are taken over the next generation are immune to mutation
     // Rest will be newly generated as offsprings of good performing genomes from previous generation
 
-    public float IgnoreRatio = 0.35f; // % of worst performing subjects within a species to ignore when chosing a random parent
+    public float IgnoreRatio = 0.2f; // % of worst performing subjects within a species to ignore when chosing a random parent
 
     public int RankNeededToSurvive = 4; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
     public int GenerationsBelowRankAllowed = 15; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
 
-    public float AdoptionRate = 0.4f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
+    public float AdoptionRate = 1f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
 
     /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
     /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
-    public float SpeciesCompatiblityThreshhold = 20; 
-       
+    public float SpeciesCompatiblityThreshhold = 30;
+
 
     // Mutation parameters
-    public float StartMutationChanceFactor = 1.5f; // At the start of the simulation, them mutation chance is multiplied with this factor
+    public float BaseTopologyMutationChancePerGenome = 0.14f; // % Chance that a genome will have at least 1 mutation in topology during evolution
+    public float BaseWeightMutationChancePerGenome = 0.25f; // % Chance that a genome will have at least 1 mutation in weight during evolution
+
+    public float StartMutationChanceFactor = 2f; // At the start of the simulation, them mutation chance is multiplied with this factor
     public float MutationChanceFactorReductionPerGeneration = 0.01f; // The amount the mutation scale factor gets reduced every generation
     public float MinMutationChanceFactor = 1f; // The mutation chance factor will never fall below this value
 
     public bool MultipleMutationsPerGenomeAllowed = true; // Sets if multiple mutations on the same genome are allowed
+    public float MutationChanceReductionFactorPerMutation = 0.2f; // % Chance that the mutation chance gets reduced after each mutation on the same genome. Only relevant if multiple mutations are allowed
+
+    public float MaxConnectionWeight = 20; // The maximum value the weight of a connection inside a genome can have
+    public float MinConnectionWeight = -20; // The minimum value the weight of a connection inside a genome can have
 
     // Debug
     public bool DebugTimestamps = true; // If true, evolution steps taking longer than 5 seconds are logged to console
 
-    public Population(int size, int numInputs, int numOutputs, bool startWithConnections)
+    public Population(int size, int numInputs, int numOutputs)
     {
         // Initialize objects
         Subjects = new List<Subject>();
@@ -58,13 +67,13 @@ public class Population {
         Speciator = new Speciator(SpeciesCompatiblityThreshhold);
         TopologyMutator = new TopologyMutator();
         WeightMutator = new WeightMutator();
-        MutateAlgorithm = new MutateAlgorithm(TopologyMutator, WeightMutator);
+        MutateAlgorithm = new MutateAlgorithm(TopologyMutator, WeightMutator, BaseWeightMutationChancePerGenome, BaseTopologyMutationChancePerGenome);
 
         // Initilaize parameters
         CurrentMutationChanceScaleFactor = StartMutationChanceFactor;
 
         // Create initial population
-        CreateInitialPopulation(size, numInputs, numOutputs, startWithConnections);
+        CreateInitialPopulation(size, numInputs, numOutputs, InitialGenomesAreFullyConnected);
     }
 
     private void CreateInitialPopulation(int size, int numInputs, int numOutputs, bool startWithConnections)
@@ -100,7 +109,7 @@ public class Population {
             }
 
             // Create genome and add it to the subject
-            Genome newGenome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections);
+            Genome newGenome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections, MaxConnectionWeight, MinConnectionWeight);
             Subject newSubject = new Subject(newGenome);
             newSubject.Name = Generation + "-" + g;
             Subjects.Add(newSubject);
@@ -202,7 +211,7 @@ public class Population {
                 Subject newSubject = new Subject(sub.Genome.Copy());
                 newSubject.Genome.Species = s;
                 newSubject.Name = sub.Name;
-                newSubject.ImmunteToMutation = immuneToMutation;
+                newSubject.ImmuneToMutation = immuneToMutation;
                 newSubjects.Add(newSubject);
                 numTakeOver++;
             }
@@ -231,7 +240,7 @@ public class Population {
                 Subject newSubject = new Subject(luckyOne.Genome.Copy());
                 newSubject.Genome.Species = s;
                 newSubject.Name = luckyOne.Name;
-                newSubject.ImmunteToMutation = immuneToMutation;
+                newSubject.ImmuneToMutation = immuneToMutation;
                 newSubjects.Add(newSubject);
                 numTakeOver++;
             }
@@ -333,7 +342,7 @@ public class Population {
         if (DebugTimestamps) stamp = TimeStamp(stamp, "Replace Subjects");
 
         // Mutate the genomes in all subjects that are not marked immuneToMutation according to chances in the mutatealgorithm
-        MutationInformation mutationInfo = MutateAlgorithm.MutatePopulation(this, CurrentMutationChanceScaleFactor, MultipleMutationsPerGenomeAllowed);
+        MutationInformation mutationInfo = MutateAlgorithm.MutatePopulation(this, CurrentMutationChanceScaleFactor, MultipleMutationsPerGenomeAllowed, MutationChanceReductionFactorPerMutation);
         if (DebugTimestamps) stamp = TimeStamp(stamp, "Mutate Population");
 
         // Speciate all subjects that haven't gotten a species yet

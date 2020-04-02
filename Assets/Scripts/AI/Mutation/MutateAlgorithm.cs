@@ -9,15 +9,13 @@ public class MutateAlgorithm {
     System.Random Random;
 
     // Topology mutations (the ratio between new node and new connection mutations is dependant on the possible mutations of each type)
-    public float BaseTopologyMutationChancePerGenome = 0.14f;
+    public float BaseTopologyMutationChancePerGenome;
 
     // Weight mutations
-    public float BaseWeightMutationChancePerGenome = 0.25f;
-    public float ReplaceChance = 0.1f;
-    public float ShiftChance = 0.4f;
-    public float ScaleChance = 0.3f;
-    public float InvertChance = 0.1f;
-    public float SwapChance = 0.1f;
+    public float BaseWeightMutationChancePerGenome;
+
+    public float MaxConnectionWeight = 20;
+    public float MinConnectionWeight = -20;
 
     private TopologyMutator TopologyMutator;
     private WeightMutator WeightMutator;
@@ -28,9 +26,11 @@ public class MutateAlgorithm {
     List<NewNodeMutation> NewNodeMutations;
     List<NewConnectionMutation> NewConnectionMutations;
 
-    public MutateAlgorithm(TopologyMutator topologyMutator, WeightMutator weightMutator)
+    public MutateAlgorithm(TopologyMutator topologyMutator, WeightMutator weightMutator, float baseWeightMutChance, float baseTopMutChance)
     {
-        if (ReplaceChance + ShiftChance + ScaleChance + InvertChance + SwapChance < 0.99f || ReplaceChance + ShiftChance + ScaleChance + InvertChance + SwapChance > 1.01f) throw new Exception("Sum of weight mutation chances must add up to exactly 1! (and not " + (ReplaceChance + ShiftChance + ScaleChance + InvertChance + SwapChance) + ")");
+        BaseWeightMutationChancePerGenome = baseWeightMutChance;
+        BaseTopologyMutationChancePerGenome = baseTopMutChance;
+
         if (BaseTopologyMutationChancePerGenome + BaseWeightMutationChancePerGenome > 1f) throw new Exception("Sum of weight mutation chance and topology mutation chance is greater than 1! This is not allowed.");
         Random = new System.Random();
         TopologyMutator = topologyMutator;
@@ -42,7 +42,7 @@ public class MutateAlgorithm {
         NewConnectionMutations = new List<NewConnectionMutation>();
     }
 
-    public MutationInformation MutatePopulation(Population pop, float mutationScaleFactor, bool multipleMutationsPerGenomeAllowed)
+    public MutationInformation MutatePopulation(Population pop, float mutationScaleFactor, bool multipleMutationsPerGenomeAllowed, float reductionFactor)
     {
         MutationInformation info = new MutationInformation();
 
@@ -55,9 +55,9 @@ public class MutateAlgorithm {
         float topologyMutationChancePerGenome = BaseTopologyMutationChancePerGenome * mutationScaleFactor;
         float weightMutationChancePerGenome = BaseWeightMutationChancePerGenome * mutationScaleFactor;
 
-        foreach (Genome g in pop.Subjects.Where(x => !x.ImmunteToMutation).Select(s => s.Genome))
+        foreach (Genome g in pop.Subjects.Where(x => !x.ImmuneToMutation).Select(s => s.Genome))
         {
-            MutateGenome(g, topologyMutationChancePerGenome, weightMutationChancePerGenome, multipleMutationsPerGenomeAllowed, info);
+            MutateGenome(g, topologyMutationChancePerGenome, weightMutationChancePerGenome, multipleMutationsPerGenomeAllowed, reductionFactor, info);
         }
 
         info.NumNewUniqueConnectionsMutations = NewConnectionMutations.Count - previousUniqueNewConnectionMutations;
@@ -75,7 +75,7 @@ public class MutateAlgorithm {
     /// <summary>
     /// Runs the mutation alogorithm through a genome with the given parameters.
     /// </summary>
-    private void MutateGenome(Genome g, float topologyMutationChancePerGenome, float weightMutationChancePerGenome, bool multipleMutationsPerGenomeAllowed, MutationInformation info)
+    private void MutateGenome(Genome g, float topologyMutationChancePerGenome, float weightMutationChancePerGenome, bool multipleMutationsPerGenomeAllowed, float reducationFactor, MutationInformation info)
     {
         // If the genome has no connections, it can only mutate topology
         if (g.Connections.Where(x => x.Enabled).Count() == 0)
@@ -86,77 +86,22 @@ public class MutateAlgorithm {
 
         double rng = Random.NextDouble();
 
-        while (rng <= topologyMutationChancePerGenome + weightMutationChancePerGenome)
+        int numMutations = 1;
+
+        while (rng <= ((topologyMutationChancePerGenome + weightMutationChancePerGenome) * (1 - Math.Pow(reducationFactor, numMutations))))
         {
             if(rng <= topologyMutationChancePerGenome)
             {
-                MutateTopology(g, info);
+                TopologyMutatedGenomes.Add(g);
+                TopologyMutator.MutateTopology(g, info, NewNodeMutations, NewConnectionMutations);
             }
             else
             {
-                MutateWeight(g, info);
+                WeightMutatedGenomes.Add(g);
+                WeightMutator.MutateWeight(g, info);
             }
+            numMutations++;
             rng = multipleMutationsPerGenomeAllowed ? Random.NextDouble() : 1; // Allows for multiple mutations per genome
         }
     }
-
-    private void MutateTopology(Genome g, MutationInformation info)
-    {
-        TopologyMutatedGenomes.Add(g);
-
-        int possibleNewNodeMutations = TopologyMutator.FindCandidateConnectionsForNewNode(g).Count;
-        int possibleNewConnectionMutations = TopologyMutator.FindCandidateConnections(g).Count;
-        int allPossibleMutations = possibleNewNodeMutations + possibleNewConnectionMutations;
-
-        float addNewNodeChance = (float)possibleNewNodeMutations / (float)allPossibleMutations;
-
-        double rng = Random.NextDouble();
-
-        if (rng <= addNewNodeChance)
-        {
-            NewNodeMutation mutation = TopologyMutator.AddNode(g, NewNodeMutations);
-            if (NewNodeMutations.Where(x => x.SplittedConnectionId == mutation.SplittedConnectionId).Count() == 0) NewNodeMutations.Add(mutation);
-            info.NumNewNodeMutations++;
-        }
-        else
-        {
-            NewConnectionMutation mutation = TopologyMutator.AddConnection(g, NewConnectionMutations);
-            if (NewConnectionMutations.Where(x => x.SourceNodeId == mutation.SourceNodeId && x.TargetNodeId == mutation.TargetNodeId).Count() == 0) NewConnectionMutations.Add(mutation);
-            info.NumNewConnectionsMutations++;
-        }
-    }
-
-    private void MutateWeight(Genome g, MutationInformation info)
-    {
-        WeightMutatedGenomes.Add(g);
-
-        double rng = Random.NextDouble();
-
-        if (rng <= ReplaceChance)
-        {
-            bool canApplyMutation = WeightMutator.ReplaceWeight(g);
-            if (canApplyMutation) info.NumReplaceMutations++;
-        }
-        else if (rng <= ReplaceChance + ShiftChance)
-        {
-            bool canApplyMutation = WeightMutator.ShiftWeight(g);
-            if (canApplyMutation) info.NumShiftMutations++;
-        }
-        else if (rng <= ReplaceChance + ShiftChance + ScaleChance)
-        {
-            bool canApplyMutation = WeightMutator.ScaleWeight(g);
-            if (canApplyMutation) info.NumScaleMutations++;
-        }
-        else if (rng <= ReplaceChance + ShiftChance + ScaleChance + InvertChance)
-        {
-            bool canApplyMutation = WeightMutator.InvertWeight(g);
-            if (canApplyMutation) info.NumInvertMutations++;
-        }
-        else if (rng <= ReplaceChance + ShiftChance + ScaleChance + InvertChance + SwapChance)
-        {
-            bool canApplyMutation = WeightMutator.SwapWeights(g);
-            if (canApplyMutation) info.NumSwapMutations++;
-        }
-    }
-
 }

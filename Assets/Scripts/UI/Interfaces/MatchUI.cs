@@ -73,8 +73,8 @@ public class MatchUI : MonoBehaviour
 
     public void UpdatePlayerGenomes()
     {
-        Player1GenomeVis.VisualizeSubject(((AIPlayer)Model.Player1).Brain.Genome);
-        Player2GenomeVis.VisualizeSubject(((AIPlayer)Model.Player2).Brain.Genome);
+        Player1GenomeVis.VisualizeGenome(((AIPlayer)Model.Player1).Brain.Genome);
+        Player2GenomeVis.VisualizeGenome(((AIPlayer)Model.Player2).Brain.Genome);
     }
 
     public void UpdateTurnText()

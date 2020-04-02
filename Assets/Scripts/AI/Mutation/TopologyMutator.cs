@@ -16,6 +16,30 @@ public class TopologyMutator {
         Random = new System.Random();
     }
 
+    public void MutateTopology(Genome g, MutationInformation info, List<NewNodeMutation> newNodeMutations, List<NewConnectionMutation> newConnectionMutations)
+    {
+        int possibleNewNodeMutations = FindCandidateConnectionsForNewNode(g).Count;
+        int possibleNewConnectionMutations = FindCandidateConnections(g).Count;
+        int allPossibleMutations = possibleNewNodeMutations + possibleNewConnectionMutations;
+
+        float addNewNodeChance = (float)possibleNewNodeMutations / (float)allPossibleMutations;
+
+        double rng = Random.NextDouble();
+
+        if (rng <= addNewNodeChance)
+        {
+            NewNodeMutation mutation = AddNode(g, newNodeMutations);
+            if (newNodeMutations.Where(x => x.SplittedConnectionId == mutation.SplittedConnectionId).Count() == 0) newNodeMutations.Add(mutation);
+            if(info != null) info.NumNewNodeMutations++;
+        }
+        else
+        {
+            NewConnectionMutation mutation = AddConnection(g, newConnectionMutations);
+            if (newConnectionMutations.Where(x => x.SourceNodeId == mutation.SourceNodeId && x.TargetNodeId == mutation.TargetNodeId).Count() == 0) newConnectionMutations.Add(mutation);
+            if (info != null) info.NumNewConnectionsMutations++;
+        }
+    }
+
     public NewConnectionMutation AddConnection(Genome genome, List<NewConnectionMutation> mutations)
     {
         List<Connection> candidateConnections = FindCandidateConnections(genome);
@@ -23,7 +47,7 @@ public class TopologyMutator {
 
         // Check if this exact mutation has already been done this evolution cycle
         int newConnectionId;
-        List<NewConnectionMutation> existingMutations = mutations.Where(x => x.SourceNodeId == newConnection.In.Id && x.TargetNodeId == newConnection.Out.Id).ToList();
+        List<NewConnectionMutation> existingMutations = mutations.Where(x => x.SourceNodeId == newConnection.From.Id && x.TargetNodeId == newConnection.To.Id).ToList();
         if (existingMutations.Count > 0)
             newConnectionId = existingMutations[0].NewConnectionId;
         else newConnectionId = InnovationNumber++;
@@ -31,8 +55,8 @@ public class TopologyMutator {
         newConnection.InnovationNumber = newConnectionId;
         newConnection.Weight = (float)(Random.NextDouble() * 2 - 1);
 
-        newConnection.In.OutConnections.Add(newConnection);
-        newConnection.Out.InConnections.Add(newConnection);
+        newConnection.From.OutConnections.Add(newConnection);
+        newConnection.To.InConnections.Add(newConnection);
 
         genome.Connections.Add(newConnection);
 
@@ -40,8 +64,8 @@ public class TopologyMutator {
 
         return new NewConnectionMutation()
         {
-            SourceNodeId = newConnection.In.Id,
-            TargetNodeId = newConnection.Out.Id,
+            SourceNodeId = newConnection.From.Id,
+            TargetNodeId = newConnection.To.Id,
             NewConnectionId = newConnection.InnovationNumber
         };
     }
@@ -73,14 +97,14 @@ public class TopologyMutator {
         Node newNode = new Node(nodeId, NodeType.Hidden);
 
         // Create new connections
-        Connection toNewNode = new Connection(toNewNodeId, connectionToSplit.In, newNode);
-        connectionToSplit.In.OutConnections.Add(toNewNode);
+        Connection toNewNode = new Connection(toNewNodeId, connectionToSplit.From, newNode);
+        connectionToSplit.From.OutConnections.Add(toNewNode);
         newNode.InConnections.Add(toNewNode);
         toNewNode.Weight = 1;
 
-        Connection fromNewNode = new Connection(fromNewNodeId, newNode, connectionToSplit.Out);
+        Connection fromNewNode = new Connection(fromNewNodeId, newNode, connectionToSplit.To);
         newNode.OutConnections.Add(fromNewNode);
-        connectionToSplit.Out.InConnections.Add(fromNewNode);
+        connectionToSplit.To.InConnections.Add(fromNewNode);
         fromNewNode.Weight = connectionToSplit.Weight;
 
         genome.HiddenNodes.Add(newNode);

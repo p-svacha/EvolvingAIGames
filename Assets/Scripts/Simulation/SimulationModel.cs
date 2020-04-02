@@ -11,7 +11,7 @@ public class SimulationModel : MonoBehaviour
     public SimulationPhase SimulationPhase;
     public int MatchesPlayed;
 
-    private int PopulationSize = 1200;
+    private int PopulationSize = 2000;
     private int MatchesPerGeneration = 20;
 
     // Matches
@@ -23,8 +23,8 @@ public class SimulationModel : MonoBehaviour
     private int StartCardOptions = 1;
     private int MinCardOptions = 1;
     private int MaxCardOptions = 5;
-    private int MaxMinions = 30;
-    private int MaxMinionsPerType = 6;
+    private int MaxMinions = 50;
+    private int MaxMinionsPerType = 8;
     private int FatigueDamageStartTurn = 20;
 
     // UI
@@ -59,7 +59,7 @@ public class SimulationModel : MonoBehaviour
         CardList.InitCardList();
 
         // Init population
-        Population = new Population(PopulationSize, 16, CardList.Cards.Count, true);
+        Population = new Population(PopulationSize, 16, CardList.Cards.Count);
         //EvolutionInformation info = Population.EvolveGeneration(7);
         //SimulationUI.EvoStats.UpdateStatistics(info);
         SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);

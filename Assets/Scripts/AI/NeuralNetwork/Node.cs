@@ -26,6 +26,6 @@ public class Node {
 
     public bool IsConnectedTo(Node n)
     {
-        return InConnections.Exists(x => x.In == n) || OutConnections.Exists(x => x.Out == n);
+        return InConnections.Exists(x => x.From == n) || OutConnections.Exists(x => x.To == n);
     }
 }

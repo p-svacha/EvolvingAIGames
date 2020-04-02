@@ -12,9 +12,10 @@ public class GenomeVisualizer : UIElement {
     public Text FitnessText;
 
     private float CircleSize = 0.05f;
+    private int IdFontSize = 20;
 
 
-    public void VisualizeSubject(Genome g)
+    public void VisualizeGenome(Genome g, bool drawIds = false)
     {
         Clear();
 
@@ -23,6 +24,7 @@ public class GenomeVisualizer : UIElement {
 
         // Set background according to species
         if (g.Species != null) SetBackgroundColor(g.Species.Color);
+        else SetBackgroundColor(Color.grey);
 
         // Set fitness text
         if(FitnessText!= null) FitnessText.text = g.Fitness.ToString("0.#") + " / " + g.AdjustedFitness.ToString("0.#");
@@ -49,8 +51,32 @@ public class GenomeVisualizer : UIElement {
                 Node node = depthLayerNodes[j];
                 if (node.Type == NodeType.Hidden)
                 {
-                    List<Node> connectedNodes = node.InConnections.Select(x => x.In).Concat(node.OutConnections.Select(x => x.Out)).ToList();
-                    node.VisualYPosition = connectedNodes.Average(x => x.VisualYPosition);
+                    //List<Node> connectedNodes = node.InConnections.Select(x => x.In).Concat(node.OutConnections.Select(x => x.Out)).ToList();
+                    List<Node> nodesLeadingHere = node.InConnections.Where(x => x.Enabled).Select(x => x.From).ToList();
+                    if(nodesLeadingHere.Count == 1)
+                    {
+                        float nodeY = nodesLeadingHere[0].VisualYPosition;
+                        if (nodeY < 0.5f) node.VisualYPosition = nodeY + 1 * CircleSize;
+                        else node.VisualYPosition = nodeY - 1 * CircleSize;
+                    }
+                    else
+                        node.VisualYPosition = nodesLeadingHere.Average(x => x.VisualYPosition);
+
+                    // Move Node if there is already a node at this position
+                    bool positionBlocked = false;
+                    do
+                    {
+                        if (positionBlocked) node.VisualYPosition += CircleSize;
+                        positionBlocked = false;
+                        foreach (Node otherNode in depthLayerNodes)
+                        {
+                            if(otherNode != node && otherNode.VisualYPosition > node.VisualYPosition - CircleSize && otherNode.VisualYPosition < node.VisualYPosition + CircleSize)
+                            {
+                                positionBlocked = true;
+                            }
+                        }
+                    }
+                    while (positionBlocked);
                 }
 
                 float xStart = xPosition;
@@ -59,13 +85,20 @@ public class GenomeVisualizer : UIElement {
                 float yEnd = node.VisualYPosition + circleSizeY;
 
                 RectTransform circle = AddPanel("Node", Color.black, xStart, yStart, xEnd, yEnd, Container, CircleSprite);
-                GameObject textElement = AddText(node.Id + "", (int)(CircleSize * 0.75), Color.red, FontStyle.Normal, xStart, yStart, xEnd, yEnd, circle);
+
+                if (drawIds)
+                {
+                    GameObject textElement = AddText(node.Id + "", IdFontSize, Color.red, FontStyle.Normal, 0, 0, 1, 1, circle);
+                }
 
                 node.VisualNode = circle.gameObject;
             }
         }
 
-        foreach (Connection c in g.Connections.Where(x => x.Enabled)) c.VisualConnection = CreateDotConnection(c.In.VisualNode.transform.localPosition, c.Out.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, "");
+        foreach (Connection c in g.Connections.Where(x => x.Enabled))
+        {
+            c.VisualConnection = CreateDotConnection(c.From.VisualNode.transform.localPosition, c.To.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, c.InnovationNumber + "", drawIds, c.Weight <= 0 ? Color.blue : Color.green);
+        }
     }
 
     protected override void Clear()
@@ -89,7 +122,7 @@ public class GenomeVisualizer : UIElement {
         }
     }
 
-    private GameObject CreateDotConnection(Vector2 dotPositionA, Vector2 dotPositionB, Color color, float thickness, string conText)
+    private GameObject CreateDotConnection(Vector2 dotPositionA, Vector2 dotPositionB, Color color, float thickness, string conText, bool drawIds, Color textColor)
     {
         GameObject gameObject = new GameObject("dotConnection", typeof(Image));
         gameObject.transform.SetParent(Container, false);
@@ -106,6 +139,26 @@ public class GenomeVisualizer : UIElement {
         rectTransform.localEulerAngles = new Vector3(0, 0, GetAngleFromVectorFloat(dir));
         gameObject.transform.SetSiblingIndex(0);
         objects.Add(gameObject);
+
+        if (drawIds)
+        {
+            GameObject textElement = new GameObject(conText);
+            textElement.transform.SetParent(gameObject.GetComponent<RectTransform>(), false);
+            Text text = textElement.AddComponent<Text>();
+            text.text = conText;
+            Font ArialFont = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+            text.font = ArialFont;
+            text.material = ArialFont.material;
+            text.fontStyle = FontStyle.Normal;
+            text.color = textColor;
+            text.fontSize = IdFontSize;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.raycastTarget = false;
+
+            RectTransform textRect = textElement.GetComponent<RectTransform>();
+            textRect.anchoredPosition = new Vector2(0, 0);
+            textRect.sizeDelta = new Vector2(50, 50);
+        }
 
         return gameObject;
     }
