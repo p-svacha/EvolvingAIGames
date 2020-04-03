@@ -10,6 +10,7 @@ public class C010_DecoyArmy : Card
         Id = 10;
         Name = "Decoy Army";
         Text = "Summon a Grey for each enemy minion.";
+        Cost = 0;
     }
 
     public override void Action(Match Model, Player self, Player enemy)

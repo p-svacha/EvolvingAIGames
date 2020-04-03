@@ -6,6 +6,7 @@ public enum MatchPhase
 {
     GameInitialized,
     GameReady,
+    TurnStart,
     CardPick,
     CardEffect,
     MinionsToAction,

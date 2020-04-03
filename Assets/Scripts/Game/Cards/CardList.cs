@@ -10,7 +10,7 @@ public static class CardList
     {
         Cards = new List<Card>();
 
-        Cards.Add(new C000_DoNothing());
+        Cards.Add(new C000_SkipTurn());
         Cards.Add(new C001_SummonYellow());
         Cards.Add(new C002_SummonRed());
         Cards.Add(new C003_SummonBlue());
@@ -22,5 +22,7 @@ public static class CardList
         Cards.Add(new C009_SecondChance());
         Cards.Add(new C010_DecoyArmy());
         Cards.Add(new C011_Invest());
+        Cards.Add(new C012_RedArmy());
+        Cards.Add(new C013_Sacrifice());
     }
 }

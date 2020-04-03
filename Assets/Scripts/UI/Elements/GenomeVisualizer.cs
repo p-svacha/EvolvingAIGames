@@ -15,7 +15,12 @@ public class GenomeVisualizer : UIElement {
     private int IdFontSize = 20;
 
 
-    public void VisualizeGenome(Genome g, bool drawIds = false)
+    /// <summary>
+    /// Visualizes the neural network of a genome.
+    /// If showNodeWeights is true, the nodes are colored according to their value, where black = 0 and white = 1.
+    /// If drawIds is true, the Ids of nodes and connection will be drawn onto them.
+    /// </summary>
+    public void VisualizeGenome(Genome g, bool showNodeWeights, bool drawIds)
     {
         Clear();
 
@@ -99,6 +104,8 @@ public class GenomeVisualizer : UIElement {
         {
             c.VisualConnection = CreateDotConnection(c.From.VisualNode.transform.localPosition, c.To.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, c.InnovationNumber + "", drawIds, c.Weight <= 0 ? Color.blue : Color.green);
         }
+
+        if (showNodeWeights) UpdateValues(g, false);
     }
 
     protected override void Clear()

@@ -86,9 +86,7 @@ public class CrossoverAlgorithm {
         }
         catch(Exception e)
         {
-            Debug.Log("A circluar node structure has occured while making a child. Top is the fit parent, botto the unfit parent. gl hf " + e.Message);
-            GameObject.Find("Player1Genome").GetComponent<GenomeVisualizer>().VisualizeGenome(fitParent);
-            GameObject.Find("Player2Genome").GetComponent<GenomeVisualizer>().VisualizeGenome(unfitParent);
+            Debug.Log("A circluar node structure has occured while making a child. " + e.Message);
         }
         return newGenome;
     }

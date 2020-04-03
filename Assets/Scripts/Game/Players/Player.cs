@@ -5,9 +5,14 @@ using UnityEngine;
 
 public abstract class Player : Creature
 {
+    // Fixed values
     public int MaxHealth;
+
+    // Changing values
     public int Health;
     public int NumCardOptions;
+    public int Money;
+
     public Card ChosenCard;
     public VisualCard ChosenVisualCard;
     public List<Card> BestOptions; // List of cards with the shared highest value. (ChosenCard was chosen randomly from this list)

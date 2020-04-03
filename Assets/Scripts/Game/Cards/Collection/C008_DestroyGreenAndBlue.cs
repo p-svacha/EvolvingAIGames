@@ -10,6 +10,7 @@ public class C008_DestroyGreenAndBlue : Card
         Id = 8;
         Name = "Anti-Glue";
         Text = "Destroy all enemy Green and Blue minions.";
+        Cost = 1;
     }
 
     public override void Action(Match Model, Player self, Player enemy)

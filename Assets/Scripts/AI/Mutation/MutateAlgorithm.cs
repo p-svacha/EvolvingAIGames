@@ -86,9 +86,9 @@ public class MutateAlgorithm {
 
         double rng = Random.NextDouble();
 
-        int numMutations = 1;
+        int numMutations = 0;
 
-        while (rng <= ((topologyMutationChancePerGenome + weightMutationChancePerGenome) * (1 - Math.Pow(reducationFactor, numMutations))))
+        while (rng <= ((topologyMutationChancePerGenome + weightMutationChancePerGenome) * (Math.Pow(1 - reducationFactor, numMutations))))
         {
             if(rng <= topologyMutationChancePerGenome)
             {

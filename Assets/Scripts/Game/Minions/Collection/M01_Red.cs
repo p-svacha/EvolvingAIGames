@@ -15,6 +15,6 @@ public class M01_Red : Minion
 
     public override void Action()
     {
-        Model.Damage(this, Enemy, 4);
+        Model.DealDamage(this, Enemy, 4);
     }
 }

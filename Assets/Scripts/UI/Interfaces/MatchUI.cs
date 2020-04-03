@@ -17,10 +17,15 @@ public class MatchUI : MonoBehaviour
     public VisualCard VisualCard;
     public VisualCard VisualCardHidden;
     public Text TurnText;
+
     public Text Player1Name;
-    public Text Player2Name;
     public Text Player1Health;
+    public Text Player1Money;
+
+    public Text Player2Name;
     public Text Player2Health;
+    public Text Player2Money;
+
     public CardValues Player1CV;
     public CardValues Player2CV;
     public GenomeVisualizer Player1GenomeVis;
@@ -51,14 +56,12 @@ public class MatchUI : MonoBehaviour
         HideCardsButton.gameObject.SetActive(false);
     }
 
-    public void UpdatePlayerHealthText()
+    /// <summary>
+    /// Updates the player bars, which inclues name, health and money
+    /// </summary>
+    public void UpdatePlayerBar()
     {
-        Player1Health.text = Model.Player1.Health + "/" + Model.Player1.MaxHealth;
-        Player2Health.text = Model.Player2.Health + "/" + Model.Player2.MaxHealth;
-    }
-
-    public void UpdatePlayerNames()
-    {
+        // Name
         if (Model.MatchType == MatchType.AI_vs_AI)
         {
             Player1Name.text = Model.Player1.Name + " | " + ((AIPlayer)Model.Player1).Brain.Wins + " - " + ((AIPlayer)Model.Player1).Brain.Losses;
@@ -69,12 +72,20 @@ public class MatchUI : MonoBehaviour
             Player1Name.text = Model.Player1.Name;
             Player2Name.text = Model.Player2.Name + " | " + ((AIPlayer)Model.Player2).Brain.Wins + " - " + ((AIPlayer)Model.Player2).Brain.Losses;
         }
+
+        // Health
+        Player1Health.text = Model.Player1.Health + "/" + Model.Player1.MaxHealth;
+        Player2Health.text = Model.Player2.Health + "/" + Model.Player2.MaxHealth;
+
+        // Money
+        Player1Money.text = Model.Player1.Money + " Money";
+        Player2Money.text = Model.Player2.Money + " Money";
     }
 
     public void UpdatePlayerGenomes()
     {
-        Player1GenomeVis.VisualizeGenome(((AIPlayer)Model.Player1).Brain.Genome);
-        Player2GenomeVis.VisualizeGenome(((AIPlayer)Model.Player2).Brain.Genome);
+        Player1GenomeVis.VisualizeGenome(((AIPlayer)Model.Player1).Brain.Genome, true, false);
+        Player2GenomeVis.VisualizeGenome(((AIPlayer)Model.Player2).Brain.Genome, true, false);
     }
 
     public void UpdateTurnText()

@@ -16,8 +16,11 @@ public class SimulationUI : MonoBehaviour
     public Toggle PlayGame;
     public EvolutionStatistics EvoStats;
     public SpeciesScoreboard SpeciesScoreboard;
+
+    public CardStatistics CardPicksAbsolute;
     public CardStatistics CardPickrates;
     public CardStatistics CardWinrates;
+
     public MatchRulesDisplay MatchRules;
     public MatchStatisticsDisplay MatchStatistics;
 
@@ -33,6 +36,13 @@ public class SimulationUI : MonoBehaviour
         CanvasWidth = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.x;
         CanvasHeight = GameObject.Find("Canvas").GetComponent<RectTransform>().sizeDelta.y;
         Factor = CanvasWidth / CanvasHeight;
+    }
+
+    public void UpdateCardStatistics(Dictionary<int, float> cardPicksPerMatch, Dictionary<int, float> cardPickrate, Dictionary<int, float> cardWinrate)
+    {
+        CardPicksAbsolute.UpdateBoard(cardPicksPerMatch, "Card Picks per Match per Player", false);
+        CardPickrates.UpdateBoard(cardPickrate, "Card Pickrates", true);
+        CardWinrates.UpdateBoard(cardWinrate, "Card Winrates", true);
     }
 
     // Update is called once per frame

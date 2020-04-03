@@ -10,6 +10,7 @@ public class C005_DestroyTwo : Card
         Id = 5;
         Name = "Two Crosses";
         Text = "Destroy two random minions.";
+        Cost = 1;
     }
 
     public override void Action(Match Model, Player self, Player enemy)

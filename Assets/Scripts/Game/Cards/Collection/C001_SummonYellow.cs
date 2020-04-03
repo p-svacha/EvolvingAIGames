@@ -10,6 +10,7 @@ public class C001_SummonYellow : Card
         Id = 1;
         Name = "Yellow Duo";
         Text = "Summon two Yellows.";
+        Cost = 1;
     }
 
     public override void Action(Match Model, Player self, Player enemy)

@@ -11,6 +11,7 @@ public class VisualCard : MonoBehaviour
     public Image Image;
     public Text Title;
     public Text Description;
+    public Text CostText;
 
     // Owner and card
     public Card Card;
@@ -32,6 +33,7 @@ public class VisualCard : MonoBehaviour
         Image.sprite = CardSpriteList.CardSprites[card.Id];
         Title.text = card.Name;
         Description.text = card.Text;
+        CostText.text = card.Cost + "";
     }
 
     public void OnPointerClick(PointerEventData eventData)

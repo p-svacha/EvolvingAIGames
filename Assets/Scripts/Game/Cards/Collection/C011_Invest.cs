@@ -10,6 +10,7 @@ public class C011_Invest : Card
         Id = 11;
         Name = "Invest";
         Text = "Increase your future card options by 1.";
+        Cost = 1;
         AlwaysAppears = true;
     }
 

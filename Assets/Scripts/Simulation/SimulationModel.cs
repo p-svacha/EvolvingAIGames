@@ -12,7 +12,7 @@ public class SimulationModel : MonoBehaviour
     public int MatchesPlayed;
 
     private int PopulationSize = 2000;
-    private int MatchesPerGeneration = 20;
+    private int MatchesPerGeneration = 16;
 
     // Matches
     public Match MatchModel;
@@ -42,6 +42,8 @@ public class SimulationModel : MonoBehaviour
     public Dictionary<int, int> CardsPickedByWinner;
     public Dictionary<int, int> CardsPickedByLoser;
     public Dictionary<int, int> CardsNotPicked;
+
+    public Dictionary<int, float> CardPickedPerMatch;
     public Dictionary<int, float> CardPickrate;
     public Dictionary<int, float> CardWinrate;
 
@@ -222,6 +224,8 @@ public class SimulationModel : MonoBehaviour
 
     }
 
+    #region Statistics
+
     private void UpdateStatistics()
     {
         UpdateMatchStatistics();
@@ -270,17 +274,18 @@ public class SimulationModel : MonoBehaviour
             foreach (KeyValuePair<int, int> kvp in m.Loser.CardsPicked) CardsPickedByLoser[kvp.Key] += kvp.Value;
         }
 
+        CardPickedPerMatch.Clear();
         CardPickrate.Clear();
         CardWinrate.Clear();
 
         for (int i = 0; i < CardList.Cards.Count; i++)
         {
+            CardPickedPerMatch.Add(i, (float)CardsPicked[i] / TotalMatches / 2); // The /2 is because it is per player
             CardPickrate.Add(i, (float)CardsPicked[i] / (CardsPicked[i] + CardsNotPicked[i]));
             CardWinrate.Add(i, (float)CardsPickedByWinner[i] / (CardsPickedByWinner[i] + CardsPickedByLoser[i]));
         }
 
-        SimulationUI.CardPickrates.UpdateBoard(CardPickrate, "Card Pickrates");
-        SimulationUI.CardWinrates.UpdateBoard(CardWinrate, "Card Winrates");
+        SimulationUI.UpdateCardStatistics(CardPickedPerMatch, CardPickrate, CardWinrate);
     }
 
     /// <summary>
@@ -292,6 +297,7 @@ public class SimulationModel : MonoBehaviour
         CardsPickedByWinner = new Dictionary<int, int>();
         CardsPickedByLoser = new Dictionary<int, int>();
         CardsNotPicked = new Dictionary<int, int>();
+        CardPickedPerMatch = new Dictionary<int, float>();
         CardPickrate = new Dictionary<int, float>();
         CardWinrate = new Dictionary<int, float>();
         for (int i = 0; i < CardList.Cards.Count; i++)
@@ -307,4 +313,6 @@ public class SimulationModel : MonoBehaviour
         TotalMatches = 0;
         TotalTurns = 0;
     }
+
+    #endregion
 }

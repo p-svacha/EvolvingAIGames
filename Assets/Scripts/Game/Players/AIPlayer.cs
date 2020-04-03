@@ -44,7 +44,7 @@ public class AIPlayer : Player
         float[] outputs = Brain.Genome.FeedForward(inputs);
 
         // Visualize
-        if(Model.Visual)
+        if(Model.Visual && Model.MatchType == MatchType.AI_vs_AI)
         {
             if(this == Model.Player1)
                 Model.MatchUI.Player1CV.VisualizeOptions(outputs, optionIds);

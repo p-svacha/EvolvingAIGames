@@ -10,6 +10,7 @@ public class C007_DestroyRedAndYellow : Card
         Id = 7;
         Name = "Anti-Rellow";
         Text = "Destroy all enemy Red and Yellow minions.";
+        Cost = 1;
     }
 
     public override void Action(Match Model, Player self, Player enemy)

@@ -8,6 +8,7 @@ public abstract class Card
     public string Name;
     public string Text;
     public bool AlwaysAppears;
+    public int Cost;
 
     public abstract void Action(Match model, Player self, Player enemy);
 }

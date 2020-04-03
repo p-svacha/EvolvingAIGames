@@ -9,10 +9,11 @@ public class C006_DirectAction : Card
         Id = 6;
         Name = "Direct Action";
         Text = "Deal 7 damage to the enemy.";
+        Cost = 1;
     }
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.Damage(self, enemy, 7);
+        Model.DealDamage(self, enemy, 7);
     }
 }

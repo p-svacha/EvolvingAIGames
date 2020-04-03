@@ -70,7 +70,7 @@ public class PlaygroundUI : MonoBehaviour
         NewConnectionMutations.Clear();
         ResetGenome(Parent1GV);
         ResetGenome(Parent2GV);
-        ChildGV.VisualizeGenome(Parent1Genome, true);
+        ChildGV.VisualizeGenome(Parent1Genome, false, true);
     }
 
     private void P1_MutateTopology_OnClick()
@@ -97,7 +97,7 @@ public class PlaygroundUI : MonoBehaviour
     {
         Parent1Genome.AdjustedFitness = 2;
         Parent2Genome.AdjustedFitness = 1;
-        ChildGV.VisualizeGenome(CrossoverAlgorithm.Crossover(Parent1Genome, Parent2Genome), true);
+        ChildGV.VisualizeGenome(CrossoverAlgorithm.Crossover(Parent1Genome, Parent2Genome), false, true);
     }
 
     private void TopologyMutationToBoth_OnClick()
@@ -134,7 +134,7 @@ public class PlaygroundUI : MonoBehaviour
 
             Parent2Genome.CalculateDepths();
             
-            Parent2GV.VisualizeGenome(Parent2Genome, true);
+            Parent2GV.VisualizeGenome(Parent2Genome, false, true);
         }
     }
 
@@ -155,12 +155,12 @@ public class PlaygroundUI : MonoBehaviour
         if (gv == Parent1GV)
         {
             Parent1Genome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections, 2, -2);
-            gv.VisualizeGenome(Parent1Genome, true);
+            gv.VisualizeGenome(Parent1Genome, false, true);
         }
         else
         {
             Parent2Genome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections, 2, -2);
-            gv.VisualizeGenome(Parent2Genome, true);
+            gv.VisualizeGenome(Parent2Genome, false, true);
         }
         
     }
@@ -170,7 +170,7 @@ public class PlaygroundUI : MonoBehaviour
         if (g != null)
         {
             TopologyMutator.MutateTopology(g, null, NewNodeMutations, NewConnectionMutations);
-            gv.VisualizeGenome(g, true);
+            gv.VisualizeGenome(g, false, true);
         }
     }
 
@@ -179,7 +179,7 @@ public class PlaygroundUI : MonoBehaviour
         if (g != null)
         {
             WeightMutator.MutateWeight(g, null);
-            gv.VisualizeGenome(g, true);
+            gv.VisualizeGenome(g, false, true);
         }
     }
 }

@@ -39,11 +39,11 @@ public class Population {
 
     /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
     /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
-    public float SpeciesCompatiblityThreshhold = 30;
+    public float SpeciesCompatiblityThreshhold = 20;
 
 
     // Mutation parameters
-    public float BaseTopologyMutationChancePerGenome = 0.14f; // % Chance that a genome will have at least 1 mutation in topology during evolution
+    public float BaseTopologyMutationChancePerGenome = 0.25f; // % Chance that a genome will have at least 1 mutation in topology during evolution
     public float BaseWeightMutationChancePerGenome = 0.25f; // % Chance that a genome will have at least 1 mutation in weight during evolution
 
     public float StartMutationChanceFactor = 2f; // At the start of the simulation, them mutation chance is multiplied with this factor
@@ -53,8 +53,8 @@ public class Population {
     public bool MultipleMutationsPerGenomeAllowed = true; // Sets if multiple mutations on the same genome are allowed
     public float MutationChanceReductionFactorPerMutation = 0.2f; // % Chance that the mutation chance gets reduced after each mutation on the same genome. Only relevant if multiple mutations are allowed
 
-    public float MaxConnectionWeight = 20; // The maximum value the weight of a connection inside a genome can have
-    public float MinConnectionWeight = -20; // The minimum value the weight of a connection inside a genome can have
+    public float MaxConnectionWeight = 1; // The maximum value the weight of a connection inside a genome can have
+    public float MinConnectionWeight = -1; // The minimum value the weight of a connection inside a genome can have
 
     // Debug
     public bool DebugTimestamps = true; // If true, evolution steps taking longer than 5 seconds are logged to console
@@ -123,7 +123,14 @@ public class Population {
         foreach (Subject s in Subjects) s.Genome.Species.Subjects.Add(s);
 
         TopologyMutator.NodeId = numInputs + numOutputs;
-        if (startWithConnections) TopologyMutator.InnovationNumber = numInputs * numOutputs;
+        if (startWithConnections)
+        {
+            TopologyMutator.InnovationNumber = numInputs * numOutputs;
+        }
+        else // Instantly evolve once if starting with no connections
+        {
+            EvolveGeneration();
+        }
     }
 
     public void Update()

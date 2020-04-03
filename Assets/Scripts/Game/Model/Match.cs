@@ -113,8 +113,7 @@ public class Match
             // UI
             MatchUI = matchUI;
             MatchUI.Model = this;
-            MatchUI.UpdatePlayerHealthText();
-            MatchUI.UpdatePlayerNames();
+            MatchUI.UpdatePlayerBar();
             MatchUI.UpdateTurnText();
             if (MatchType == MatchType.AI_vs_AI)
                 MatchUI.UpdatePlayerGenomes();
@@ -134,7 +133,7 @@ public class Match
 
     public void Update()
     {
-       // During game phases
+       // During game phases (only visual)
         switch(Phase)
         {
             case MatchPhase.GameReady:
@@ -148,6 +147,10 @@ public class Match
                 {
                     CompleteWholeMatch();
                 }
+                break;
+
+            case MatchPhase.TurnStart:
+                DequeueEffect();
                 break;
 
             case MatchPhase.CardPick:
@@ -183,7 +186,7 @@ public class Match
                 break;
         }
 
-        // Changing game phases
+        // Changing game phases (only visual)
         if(NextPhaseReady && Input.GetKeyDown(KeyCode.Space))
         {
             NextPhaseReady = false;
@@ -191,7 +194,12 @@ public class Match
             switch(Phase)
             {
                 case MatchPhase.GameReady:
-                    PickCards();
+                    StartTurn();
+                    Phase = MatchPhase.TurnStart;
+                    break;
+
+                case MatchPhase.TurnStart:
+                    GetCardOptions();
                     Phase = MatchPhase.CardPick;
                     break;
 
@@ -199,13 +207,7 @@ public class Match
                     // Hide cards
                     MatchUI.UnshowAllCards();
                     MatchUI.SetHideCardsButtonVisible(false);
-
-                    // Queue effects that show what cards were chosen + card effects
-                    Effects.Enqueue(() => { VisualActions.Add(new VA_ShowChosenCards(Player1, Player1.ChosenCard, MatchUI)); });
-                    Effects.Enqueue(() => { Player1.ChosenCard.Action(this, Player1, Player2); });
-                    Effects.Enqueue(() => { VisualActions.Add(new VA_ShowChosenCards(Player2, Player2.ChosenCard, MatchUI)); });
-                    Effects.Enqueue(() => { Player2.ChosenCard.Action(this, Player2, Player1); });
-                    
+                    InitializeCardEffects();
                     ApplyFatigueDamage();
                     Phase = MatchPhase.CardEffect;
                     break;
@@ -242,10 +244,10 @@ public class Match
                         VisualActions.Add(new VA_MoveMinions(this, false));
                         Phase = MatchPhase.MinionsToPlan;
                     }
-                    else // Skip MoveMinion Phase if no minions
+                    else // Skip to next turn if there are no minions
                     {
-                        PickCards();
-                        Phase = MatchPhase.CardPick;
+                        StartTurn();
+                        Phase = MatchPhase.TurnStart;
                     }
                     break;
 
@@ -255,16 +257,16 @@ public class Match
                         VisualActions.Add(new VA_MoveMinions(this, false));
                         Phase = MatchPhase.MinionsToPlan;
                     }
-                    else // Skip MoveMinion Phase if no minions
+                    else // Skip to next turn if there are no minions
                     {
-                        PickCards();
-                        Phase = MatchPhase.CardPick;
+                        StartTurn();
+                        Phase = MatchPhase.TurnStart;
                     }
                     break;
 
                 case MatchPhase.MinionsToPlan:
-                    PickCards();
-                    Phase = MatchPhase.CardPick;
+                    StartTurn();
+                    Phase = MatchPhase.TurnStart;
                     break;
 
                 case MatchPhase.GameEnded:
@@ -280,13 +282,17 @@ public class Match
             switch (Phase)
             {
                 case MatchPhase.GameReady:
-                    PickCards();
+                    Phase = MatchPhase.TurnStart;
+                    break;
+
+                case MatchPhase.TurnStart:
+                    StartTurn();
                     Phase = MatchPhase.CardPick;
                     break;
 
                 case MatchPhase.CardPick:
-                    Effects.Enqueue(() => { Player1.ChosenCard.Action(this, Player1, Player2); });
-                    Effects.Enqueue(() => { Player2.ChosenCard.Action(this, Player2, Player1); });
+                    GetCardOptions();
+                    InitializeCardEffects();
                     ApplyFatigueDamage();
                     Phase = MatchPhase.CardEffect;
                     break;
@@ -306,26 +312,39 @@ public class Match
                     if (Phase != MatchPhase.GameEnded)
                     {
                         DestroyDestabilizedMinions();
-                        PickCards();
-                        Phase = MatchPhase.CardPick;
+                        Phase = MatchPhase.TurnStart;
                     }
                     break;
             }
         }
     }
 
-    private void PickCards()
+    /// <summary>
+    /// Actions that occur at the start of a turn.
+    /// </summary>
+    private void StartTurn()
     {
-        // Next Turn
+        // Next turn
         Turn++;
         if (Log)
             Debug.Log("##################### Starting Turn " + Turn + " #####################");
 
+        // Give each player money
+        GiveMoney(Player1, Player1, 1);
+        GiveMoney(Player2, Player2, 1);
+
+    }
+
+    /// <summary>
+    /// Gets card options for each player. AI players also instantly chose a card (as set a card as ChosenCard)
+    /// </summary>
+    private void GetCardOptions()
+    {
         // Pick Cards
         Player1.ChosenCard = null;
         Player2.ChosenCard = null;
-        List<Card> Player1RandomCards = GetCardOptions(Player1.NumCardOptions);
-        List<Card> Player2RandomCards = GetCardOptions(Player2.NumCardOptions);
+        List<Card> Player1RandomCards = GetCardOptionsFor(Player1);
+        List<Card> Player2RandomCards = GetCardOptionsFor(Player2);
         Player1.PickCard(Player1RandomCards);
         Player2.PickCard(Player2RandomCards);
 
@@ -364,13 +383,34 @@ public class Match
         }
     }
 
+    /// <summary>
+    /// Adjust player money and initialize card effects according to the players ChosenCards
+    /// </summary>
+    private void InitializeCardEffects()
+    {
+        if (Player1.ChosenCard == null || Player2.ChosenCard == null) throw new Exception("Called InitializeCardEffects() without both players having chosen a card.");
+
+        // Reduce money of players according to card costs
+        Player1.Money -= Player1.ChosenCard.Cost;
+        Player2.Money -= Player2.ChosenCard.Cost;
+
+        // Update Player bar to show new money
+        if (Visual) MatchUI.UpdatePlayerBar(); 
+
+        // Queue actions of the chosen cards (and show chosen cards if visual)
+        if (Visual) Effects.Enqueue(() => { VisualActions.Add(new VA_ShowChosenCards(Player1, Player1.ChosenCard, MatchUI)); });
+        Effects.Enqueue(() => { Player1.ChosenCard.Action(this, Player1, Player2); });
+        if(Visual) Effects.Enqueue(() => { VisualActions.Add(new VA_ShowChosenCards(Player2, Player2.ChosenCard, MatchUI)); });
+        Effects.Enqueue(() => { Player2.ChosenCard.Action(this, Player2, Player1); });
+    }
+
     private void ApplyFatigueDamage()
     {
         if(Turn > FatigueDamageStartTurn)
         {
             int dmg = Turn - FatigueDamageStartTurn;
-            Effects.Enqueue(() => { Damage(Player1, Player2, dmg); });
-            Effects.Enqueue(() => { Damage(Player2, Player1, dmg); });
+            Effects.Enqueue(() => { DealDamage(Player1, Player2, dmg); });
+            Effects.Enqueue(() => { DealDamage(Player2, Player1, dmg); });
             if (Log)
             {
                 Debug.Log("Applying " + dmg + " fatigue damage each.");
@@ -430,13 +470,13 @@ public class Match
         {
             if (VisualActions.Count > 0 && VisualActions[0].Done)
             {
-                MatchUI.UpdatePlayerHealthText();
+                MatchUI.UpdatePlayerBar();
                 VisualActions.RemoveAt(0);
             }
 
             if (Effects.Count > 0 && VisualActions.Count == 0) // && (VisualActions.Count == 0 || VisualActions[0].Done))
             {
-                MatchUI.UpdatePlayerHealthText();
+                MatchUI.UpdatePlayerBar();
                 CheckGameOver();
 
                 if(Phase != MatchPhase.GameEnded) Effects.Dequeue().Invoke();
@@ -447,7 +487,7 @@ public class Match
             }
             else
             {
-                MatchUI.UpdatePlayerHealthText();
+                MatchUI.UpdatePlayerBar();
                 CheckGameOver();
 
                 NextPhaseReady = true;
@@ -507,7 +547,7 @@ public class Match
 
             if (Visual)
             {
-                MatchUI.UpdatePlayerHealthText();
+                MatchUI.UpdatePlayerBar();
                 GameObject.Destroy(Player1.Visual.gameObject);
                 GameObject.Destroy(Player2.Visual.gameObject);
                 foreach (Minion m in Minions) GameObject.Destroy(m.Visual.gameObject);
@@ -662,7 +702,7 @@ public class Match
         }
     }
 
-    public void Damage(Creature source, Player target, int amount)
+    public void DealDamage(Creature source, Player target, int amount)
     {
         target.Health = Mathf.Max(0, target.Health - amount);
 
@@ -714,6 +754,13 @@ public class Match
         }
     }
 
+    public void GiveMoney(Creature source, Player target, int amount)
+    {
+        target.Money += amount;
+
+        if (Log) Debug.Log(source.Name + " has increased " + target.Name + "'s gold by " + amount + ".");
+    }
+
     #endregion
 
     #region Helper Functions
@@ -752,18 +799,25 @@ public class Match
         return new Vector3(xPos, 0, yPos);
     }
 
-    private List<Card> GetCardOptions(int amount)
+    private List<Card> GetCardOptionsFor(Player player)
     {
-        List<Card> cardListCopy = new List<Card>();
-        cardListCopy.AddRange(Cards.Where(x => !x.AlwaysAppears));
+        // Create Lists
+        List<Card> possibleCards = new List<Card>();
         List<Card> options = new List<Card>();
-        for (int i = 0; i < amount; i++)
+
+        // Add x random options from other cards, where x is the amount of options of the player
+        // Only affordable cards appear
+        possibleCards.AddRange(Cards.Where(x => !x.AlwaysAppears && x.Cost <= player.Money));
+        for (int i = 0; i < player.NumCardOptions; i++)
         {
-            Card c = cardListCopy[UnityEngine.Random.Range(0, cardListCopy.Count)];
+            Card c = possibleCards[UnityEngine.Random.Range(0, possibleCards.Count)];
             options.Add(c);
-            cardListCopy.Remove(c);
+            possibleCards.Remove(c);
         }
+
+        // Add cards that always appear
         options.AddRange(Cards.Where(x => x.AlwaysAppears));
+
         return options;
     }
 
