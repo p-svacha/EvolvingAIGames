@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class VisualEntity : MonoBehaviour
 {
-    public Vector3 SourcePosition;
-
     // Start is called before the first frame update
     void Start()
     {

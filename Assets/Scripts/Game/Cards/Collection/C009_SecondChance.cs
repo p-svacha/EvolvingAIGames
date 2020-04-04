@@ -17,6 +17,8 @@ public class C009_SecondChance : Card
     {
         int healAmount = (int)((self.MaxHealth - self.Health) * 0.5f);
         Model.Heal(self, self, healAmount);
-        Model.SummonMinion(self, Model.RandomMinionType(), self, summonProtection: true);
+        Model.SummonMinions(self, new List<Tuple<MinionType, Player>>() {
+            new Tuple<MinionType, Player>(Model.RandomMinionType(), self),
+        }, summonProtection: true);
     }
 }

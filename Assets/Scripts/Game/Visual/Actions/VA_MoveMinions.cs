@@ -1,37 +1,40 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class VA_MoveMinions : VisualAction
 {
-    public Match Model;
-    public bool ToAction;
+    private List<Minion> Minions;
+    private List<Vector3> SourcePositions;
+    private List<Vector3> TargetPositions;
 
-    public VA_MoveMinions(Match model, bool toAction)
+    /// <summary>
+    /// Moves all minions given in the dictionary from their current positions to their given target position.
+    /// </summary>
+    public VA_MoveMinions(Dictionary<Minion, Vector3> minionPositions)
     {
         Frames = DefaultFrames * 0.5f;
-        Model = model;
-        ToAction = toAction;
 
-        foreach (Minion m in model.Minions) m.Visual.SourcePosition = m.Visual.transform.position;
+        Minions = minionPositions.Select(x => x.Key).ToList();
+        SourcePositions = minionPositions.Select(x => x.Key.Visual.transform.position).ToList();
+        TargetPositions = minionPositions.Select(x => x.Value).ToList();
     }
 
     public override void Update()
     {
         base.Update();
-        foreach(Minion m in Model.Minions)
+        for(int i = 0; i < Minions.Count; i++)
         {
-            Vector3 targetPosition = ToAction ? Model.GetActionPosition(m) : Model.GetPlanPosition(m);
-            m.Visual.transform.position = Vector3.Lerp(m.Visual.SourcePosition, targetPosition, CurrentFrame / Frames);
+            Minions[i].Visual.transform.position = Vector3.Lerp(SourcePositions[i], TargetPositions[i], CurrentFrame / Frames);
         }
     }
 
     public override void OnDone()
     {
-        foreach(Minion m in Model.Minions)
+        for (int i = 0; i < Minions.Count; i++)
         {
-            Vector3 targetPosition = ToAction ? Model.GetActionPosition(m) : Model.GetPlanPosition(m);
-            m.Visual.transform.position = targetPosition;
+            Minions[i].Visual.transform.position = TargetPositions[i];
         }
     }
 }

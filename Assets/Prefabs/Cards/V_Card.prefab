@@ -33,8 +33,8 @@ RectTransform:
   m_Father: {fileID: 5508143487391496468}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.025, y: 0.39666668}
-  m_AnchorMax: {x: 0.975, y: 0.5}
+  m_AnchorMin: {x: 0.025, y: 0.25}
+  m_AnchorMax: {x: 0.975, y: 0.33}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -403,7 +403,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Very long description with a lot of words.
+  m_Text: Very long description with a lot of words that very sure take up more than
+    three lines of space ladidadu.
 --- !u!1 &5508143488655453257
 GameObject:
   m_ObjectHideFlags: 0
@@ -436,8 +437,8 @@ RectTransform:
   m_Father: {fileID: 5508143487391496468}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.025, y: 0.5}
-  m_AnchorMax: {x: 0.975, y: 0.98333335}
+  m_AnchorMin: {x: 0.025, y: 0.33}
+  m_AnchorMax: {x: 0.975, y: 0.98}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -590,8 +591,8 @@ RectTransform:
   m_Father: {fileID: 5508143487391496468}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.025, y: 0.016666668}
-  m_AnchorMax: {x: 0.975, y: 0.39666668}
+  m_AnchorMin: {x: 0.025, y: 0.01}
+  m_AnchorMax: {x: 0.975, y: 0.25}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,6 +16,8 @@ public class M04_Green : Minion
 
     public override void Action()
     {
-        Model.SummonMinion(this, Model.RandomMinionType(), Owner, summonProtection: false);
+        Model.SummonMinions(this, new List<Tuple<MinionType, Player>>() {
+            new Tuple<MinionType, Player>(Model.RandomMinionType(), Owner),
+        }, summonProtection: false);
     }
 }

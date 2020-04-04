@@ -17,6 +17,6 @@ public class C007_DestroyRedAndYellow : Card
     {
         List<Minion> toDestroy = Model.AllMinionsOfType(enemy, MinionType.Red, withoutSummonProtection: true);
         toDestroy.AddRange(Model.AllMinionsOfType(enemy, MinionType.Yellow, withoutSummonProtection: true));
-        Model.DestroyMultipleMinions(self, toDestroy);
+        Model.DestroyMinions(self, toDestroy);
     }
 }

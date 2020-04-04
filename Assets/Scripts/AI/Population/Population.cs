@@ -33,13 +33,13 @@ public class Population {
     public float IgnoreRatio = 0.2f; // % of worst performing subjects within a species to ignore when chosing a random parent
 
     public int RankNeededToSurvive = 4; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
-    public int GenerationsBelowRankAllowed = 15; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
+    public int GenerationsBelowRankAllowed = 20; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
 
     public float AdoptionRate = 1f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
 
     /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
     /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
-    public float SpeciesCompatiblityThreshhold = 20;
+    public float SpeciesCompatiblityThreshhold = 18;
 
 
     // Mutation parameters

@@ -15,6 +15,8 @@ public class C004_GreenBlood : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.SummonMinion(self, MinionType.Green, self, summonProtection: true);
+        Model.SummonMinions(self, new List<Tuple<MinionType, Player>>() {
+            new Tuple<MinionType, Player>(MinionType.Green, self),
+        }, summonProtection: true);
     }
 }

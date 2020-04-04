@@ -15,7 +15,7 @@ public class C013_Sacrifice : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.DestroyMultipleMinions(self, Model.RandomMinionsFromPlayer(self, 1, withoutSummonProtection: false));
+        Model.DestroyMinions(self, Model.RandomMinionsFromPlayer(self, 1, withoutSummonProtection: false));
         Model.Heal(self, self, self.MaxHealth);
     }
 }

@@ -15,7 +15,7 @@ public class C002_SummonRed : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.SummonMultipleMinions(self, new List<Tuple<MinionType, Player>>() {
+        Model.SummonMinions(self, new List<Tuple<MinionType, Player>>() {
             new Tuple<MinionType, Player>(MinionType.Red, self),
         }, summonProtection: true);
     }

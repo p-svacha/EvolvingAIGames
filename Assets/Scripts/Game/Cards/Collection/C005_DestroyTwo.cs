@@ -15,6 +15,6 @@ public class C005_DestroyTwo : Card
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.DestroyMultipleMinions(self, Model.RandomMinionsFromPlayer(enemy, 2, withoutSummonProtection: true));
+        Model.DestroyMinions(self, Model.RandomMinionsFromPlayer(enemy, 2, withoutSummonProtection: true));
     }
 }

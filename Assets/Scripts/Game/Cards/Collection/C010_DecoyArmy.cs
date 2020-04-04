@@ -20,6 +20,6 @@ public class C010_DecoyArmy : Card
         {
             summons.Add(new Tuple<MinionType, Player>(MinionType.Grey, self));
         }
-        Model.SummonMultipleMinions(self, summons, summonProtection: true);
+        Model.SummonMinions(self, summons, summonProtection: true);
     }
 }

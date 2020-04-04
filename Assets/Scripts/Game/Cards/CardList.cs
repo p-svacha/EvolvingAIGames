@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class CardList
@@ -24,5 +25,13 @@ public static class CardList
         Cards.Add(new C011_Invest());
         Cards.Add(new C012_RedArmy());
         Cards.Add(new C013_Sacrifice());
+        Cards.Add(new C014_Steal());
+        Cards.Add(new C015_RedDuo());
+        Cards.Add(new C016_Rainbow());
+        Cards.Add(new C017_TacticalNuke());
+        Cards.Add(new C018_Shotgun());
+        Cards.Add(new C019_ClassicDuo());
+
+        if (Cards.GroupBy(x => x.Id).Count() != Cards.Count) throw new System.Exception("Not all card id's are unique!");
     }
 }

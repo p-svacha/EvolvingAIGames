@@ -2,21 +2,22 @@
 using System.Collections.Generic;
 using System;
 
-public class C003_SummonBlue : Card
+public class C015_RedDuo : Card
 {
 
-    public C003_SummonBlue()
+    public C015_RedDuo()
     {
-        Id = 3;
-        Name = "Blue+";
-        Text = "Summon a Blue";
-        Cost = 1;
+        Id = 15;
+        Name = "Red Duo";
+        Text = "Summon 2 Reds.";
+        Cost = 2;
     }
 
     public override void Action(Match Model, Player self, Player enemy)
     {
         Model.SummonMinions(self, new List<Tuple<MinionType, Player>>() {
-            new Tuple<MinionType, Player>(MinionType.Blue, self),
+            new Tuple<MinionType, Player>(MinionType.Red, self),
+            new Tuple<MinionType, Player>(MinionType.Red, self),
         }, summonProtection: true);
     }
 }
