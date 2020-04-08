@@ -35,7 +35,7 @@ public class VA_ShowChosenCards : VisualAction
         float travelDistance = 100;
         float startX = MatchUI.CanvasWidth / 2 - travelDistance / 2;
         float yMargin = 200;
-        float y = Player == MatchUI.Model.Player1 ? yMargin : MatchUI.CanvasHeight - yMargin;
+        float y = Player == MatchUI.Match.Player1 ? yMargin : MatchUI.CanvasHeight - yMargin;
 
         SourcePosition = new Vector3(startX, y, 0);
         TargetPosition = SourcePosition + new Vector3(travelDistance, 0, 0);

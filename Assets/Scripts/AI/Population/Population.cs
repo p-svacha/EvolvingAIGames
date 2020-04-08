@@ -25,28 +25,28 @@ public class Population {
     // Evolution Parameters
     public bool InitialGenomesAreFullyConnected = false; // If true, the initial genomes have connections from every input node to every output node
 
-    public float TakeOverBestRatio = 0.13f; // % of best subjects per species that are taken over to next generation
-    public float TakeOverRandomRatio = 0.04f; // % of random subjects per species that are taken over to next generation
+    public float TakeOverBestRatio = 0.05f; // % of best subjects per species that are taken over to next generation
+    public float TakeOverRandomRatio = 0.01f; // % of random subjects per species that are taken over to next generation
     public bool AreTakeOversImmuneToMutation = true; // If true, subjects that are taken over the next generation are immune to mutation
     // Rest will be newly generated as offsprings of good performing genomes from previous generation
 
     public float IgnoreRatio = 0.2f; // % of worst performing subjects within a species to ignore when chosing a random parent
 
-    public int RankNeededToSurvive = 4; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
+    public int RankNeededToSurvive = 5; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
     public int GenerationsBelowRankAllowed = 20; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
 
     public float AdoptionRate = 1f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
 
     /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
     /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
-    public float SpeciesCompatiblityThreshhold = 18;
+    public float SpeciesCompatiblityThreshhold = 15;
 
 
     // Mutation parameters
-    public float BaseTopologyMutationChancePerGenome = 0.25f; // % Chance that a genome will have at least 1 mutation in topology during evolution
+    public float BaseTopologyMutationChancePerGenome = 0.14f; // % Chance that a genome will have at least 1 mutation in topology during evolution
     public float BaseWeightMutationChancePerGenome = 0.25f; // % Chance that a genome will have at least 1 mutation in weight during evolution
 
-    public float StartMutationChanceFactor = 2f; // At the start of the simulation, them mutation chance is multiplied with this factor
+    public float StartMutationChanceFactor = 1.5f; // At the start of the simulation, them mutation chance is multiplied with this factor
     public float MutationChanceFactorReductionPerGeneration = 0.01f; // The amount the mutation scale factor gets reduced every generation
     public float MinMutationChanceFactor = 1f; // The mutation chance factor will never fall below this value
 
@@ -59,7 +59,7 @@ public class Population {
     // Debug
     public bool DebugTimestamps = true; // If true, evolution steps taking longer than 5 seconds are logged to console
 
-    public Population(int size, int numInputs, int numOutputs)
+    public Population(int size, int numInputs, int[] hiddenLayers, int numOutputs)
     {
         // Initialize objects
         Subjects = new List<Subject>();
@@ -73,43 +73,97 @@ public class Population {
         CurrentMutationChanceScaleFactor = StartMutationChanceFactor;
 
         // Create initial population
-        CreateInitialPopulation(size, numInputs, numOutputs, InitialGenomesAreFullyConnected);
+        CreateInitialPopulation(size, numInputs, hiddenLayers, numOutputs, InitialGenomesAreFullyConnected);
     }
 
-    private void CreateInitialPopulation(int size, int numInputs, int numOutputs, bool startWithConnections)
+    private void CreateInitialPopulation(int size, int numInputs, int[] hiddenLayers, int numOutputs, bool startWithConnections)
     {
+        if (hiddenLayers.Length > 0 && !startWithConnections) throw new Exception("Can't start with hidden layers and without connections - startWithConnections must be set to true.");
+
+        int nodeIdCounter = 0;
+        int connectionIdCounter = 0;
         for (int g = 0; g < size; g++)
         {
+            Dictionary<int, Node> allNodes = new Dictionary<int, Node>();
             List<Node> inputs = new List<Node>();
             List<Node> outputs = new List<Node>();
-            List<Connection> initialConnections = new List<Connection>();
+            List<List<Node>> hiddens = new List<List<Node>>();
+            Dictionary<int, Connection> initialConnections = new Dictionary<int, Connection>();
 
             // Create input nodes
+            nodeIdCounter = 0;
             for (int i = 0; i < numInputs; i++)
-                inputs.Add(new Node(i, NodeType.Input));
+            {
+                Node inputNode = new Node(nodeIdCounter++, NodeType.Input);
+                inputs.Add(inputNode);
+                allNodes.Add(inputNode.Id, inputNode);
+            }
 
             // Create output nodes
             for (int i = numInputs; i < (numInputs + numOutputs); i++)
-                outputs.Add(new Node(i, NodeType.Output));
+            {
+                Node outputNode = new Node(nodeIdCounter++, NodeType.Output);
+                outputs.Add(outputNode);
+                allNodes.Add(outputNode.Id, outputNode);
+            }
+
+            // Create hidden nodes
+            for(int nLayer = 0; nLayer < hiddenLayers.Length; nLayer++)
+            {
+                List<Node> depthLayer = new List<Node>();
+                hiddens.Add(depthLayer);
+                for(int nNode = 0; nNode < hiddenLayers[nLayer]; nNode++)
+                {
+                    Node hiddenNode = new Node(nodeIdCounter++, NodeType.Hidden);
+                    depthLayer.Add(hiddenNode);
+                    allNodes.Add(hiddenNode.Id, hiddenNode);
+                }
+            }
 
             // Create initial connections
+            connectionIdCounter = 0;
             if (startWithConnections)
             {
-                int counter = 0;
-                foreach (Node input in inputs)
+                int hiddenLayerCounter = 0;
+                List<Node> fromLayerNodes = inputs;
+                List<Node> toLayerNodes;
+
+                // Connections to hidden layers
+                while(hiddenLayerCounter < hiddenLayers.Length)
                 {
-                    foreach (Node output in outputs)
+                    toLayerNodes = hiddens[hiddenLayerCounter];
+                    foreach (Node fromNode in fromLayerNodes)
                     {
-                        Connection con = new Connection(counter++, input, output);
-                        initialConnections.Add(con);
-                        input.OutConnections.Add(con);
-                        output.InConnections.Add(con);
+                        foreach (Node toNode in toLayerNodes)
+                        {
+                            int id = connectionIdCounter++;
+                            Connection con = new Connection(id, fromNode, toNode);
+                            initialConnections.Add(id, con);
+                            fromNode.OutConnections.Add(con);
+                            toNode.InConnections.Add(con);
+                        }
+                    }
+                    fromLayerNodes = toLayerNodes;
+                    hiddenLayerCounter++;
+                }
+
+                // Connections to output layer
+                toLayerNodes = outputs;
+                foreach (Node fromNode in fromLayerNodes)
+                {
+                    foreach (Node toNode in toLayerNodes)
+                    {
+                        int id = connectionIdCounter++;
+                        Connection con = new Connection(id, fromNode, toNode);
+                        initialConnections.Add(id, con);
+                        fromNode.OutConnections.Add(con);
+                        toNode.InConnections.Add(con);
                     }
                 }
             }
 
             // Create genome and add it to the subject
-            Genome newGenome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections, MaxConnectionWeight, MinConnectionWeight);
+            Genome newGenome = new Genome(CrossoverAlgorithm.GenomeId++, allNodes, initialConnections, MaxConnectionWeight, MinConnectionWeight);
             Subject newSubject = new Subject(newGenome);
             newSubject.Name = Generation + "-" + g;
             Subjects.Add(newSubject);
@@ -122,12 +176,10 @@ public class Population {
         Speciator.Speciate(Subjects, Species);
         foreach (Subject s in Subjects) s.Genome.Species.Subjects.Add(s);
 
-        TopologyMutator.NodeId = numInputs + numOutputs;
-        if (startWithConnections)
-        {
-            TopologyMutator.InnovationNumber = numInputs * numOutputs;
-        }
-        else // Instantly evolve once if starting with no connections
+        TopologyMutator.NodeId = nodeIdCounter;
+        TopologyMutator.ConnectionId = connectionIdCounter;
+
+        if(!startWithConnections) // Instantly evolve once if starting with no connections
         {
             EvolveGeneration();
         }

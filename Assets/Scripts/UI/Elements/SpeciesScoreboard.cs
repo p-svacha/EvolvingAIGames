@@ -11,7 +11,7 @@ public class SpeciesScoreboard : UIElement
 
     private List<Tuple<string, float>> Columns; // Column name, column start, column end
 
-    private void Start()
+    protected override void OnStart()
     {
         Columns = new List<Tuple<string, float>>()
         {
@@ -60,8 +60,8 @@ public class SpeciesScoreboard : UIElement
                     case 0: text = species[i].Id + ""; break;
                     case 1: text = species[i].Size + ""; break;
                     case 2: text = species[i].GenerationsWithoutImprovement + ""; break;
-                    case 3: text = species[i].MaxFitness + ""; break;
-                    case 4: text = species[i].AverageFitness.ToString("0.0") + ""; break;
+                    case 3: text = species[i].MaxFitness.ToString("0.00") + ""; break;
+                    case 4: text = species[i].AverageFitness.ToString("0.00") + ""; break;
                 }
                 float xStart = Columns.Where(x => Columns.IndexOf(x) < j).Sum(x => x.Item2);
                 AddText(text, fontSize, fontColor, FontStyle.Normal, xStart, 0, xStart + Columns[j].Item2, 1, panel);

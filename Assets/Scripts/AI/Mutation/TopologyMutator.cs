@@ -9,7 +9,7 @@ public class TopologyMutator {
     public System.Random Random;
 
     public int NodeId;
-    public int InnovationNumber; //connection id, historical marker to know if genomes share a connection
+    public int ConnectionId; //connection id, historical marker to know if genomes share a connection
 
     public TopologyMutator()
     {
@@ -35,7 +35,10 @@ public class TopologyMutator {
         else
         {
             NewConnectionMutation mutation = AddConnection(g, newConnectionMutations);
-            if (newConnectionMutations.Where(x => x.SourceNodeId == mutation.SourceNodeId && x.TargetNodeId == mutation.TargetNodeId).Count() == 0) newConnectionMutations.Add(mutation);
+            if (newConnectionMutations.Where(x => 
+            (x.FromNodeId == mutation.FromNodeId && x.ToNodeId == mutation.ToNodeId) ||
+            (x.FromNodeId == mutation.ToNodeId && x.ToNodeId == mutation.FromNodeId)
+            ).Count() == 0) newConnectionMutations.Add(mutation);
             if (info != null) info.NumNewConnectionsMutations++;
         }
     }
@@ -45,28 +48,31 @@ public class TopologyMutator {
         List<Connection> candidateConnections = FindCandidateConnections(genome);
         Connection newConnection = candidateConnections[Random.Next(candidateConnections.Count)];
 
-        // Check if this exact mutation has already been done this evolution cycle
+        // Check if this exact mutation has already been done
         int newConnectionId;
-        List<NewConnectionMutation> existingMutations = mutations.Where(x => x.SourceNodeId == newConnection.From.Id && x.TargetNodeId == newConnection.To.Id).ToList();
+        List<NewConnectionMutation> existingMutations = mutations.Where(x => 
+            (x.FromNodeId == newConnection.FromNode.Id && x.ToNodeId == newConnection.ToNode.Id) || 
+            (x.FromNodeId == newConnection.ToNode.Id && x.ToNodeId == newConnection.FromNode.Id)
+            ).ToList();
         if (existingMutations.Count > 0)
             newConnectionId = existingMutations[0].NewConnectionId;
-        else newConnectionId = InnovationNumber++;
+        else newConnectionId = ConnectionId++;
 
-        newConnection.InnovationNumber = newConnectionId;
+        newConnection.Id = newConnectionId;
         newConnection.Weight = (float)(Random.NextDouble() * 2 - 1);
 
-        newConnection.From.OutConnections.Add(newConnection);
-        newConnection.To.InConnections.Add(newConnection);
+        newConnection.FromNode.OutConnections.Add(newConnection);
+        newConnection.ToNode.InConnections.Add(newConnection);
 
-        genome.Connections.Add(newConnection);
+        genome.Connections.Add(newConnectionId, newConnection);
 
         genome.CalculateDepths();
 
         return new NewConnectionMutation()
         {
-            SourceNodeId = newConnection.From.Id,
-            TargetNodeId = newConnection.To.Id,
-            NewConnectionId = newConnection.InnovationNumber
+            FromNodeId = newConnection.FromNode.Id,
+            ToNodeId = newConnection.ToNode.Id,
+            NewConnectionId = newConnection.Id
         };
     }
 
@@ -78,7 +84,7 @@ public class TopologyMutator {
 
         // Check if this exact mutation has already been done this evolution cycle
         int nodeId, toNewNodeId, fromNewNodeId;
-        List<NewNodeMutation> existingMutations = mutations.Where(x => x.SplittedConnectionId == connectionToSplit.InnovationNumber).ToList();
+        List<NewNodeMutation> existingMutations = mutations.Where(x => x.SplittedConnectionId == connectionToSplit.Id).ToList();
         if(existingMutations.Count > 0)
         {
             NewNodeMutation existingMutation = existingMutations[0];
@@ -89,37 +95,37 @@ public class TopologyMutator {
         else
         {
             nodeId = NodeId++;
-            toNewNodeId = InnovationNumber++;
-            fromNewNodeId = InnovationNumber++;
+            toNewNodeId = ConnectionId++;
+            fromNewNodeId = ConnectionId++;
         }
 
         // Create new node
         Node newNode = new Node(nodeId, NodeType.Hidden);
 
         // Create new connections
-        Connection toNewNode = new Connection(toNewNodeId, connectionToSplit.From, newNode);
-        connectionToSplit.From.OutConnections.Add(toNewNode);
+        Connection toNewNode = new Connection(toNewNodeId, connectionToSplit.FromNode, newNode);
+        connectionToSplit.FromNode.OutConnections.Add(toNewNode);
         newNode.InConnections.Add(toNewNode);
         toNewNode.Weight = 1;
 
-        Connection fromNewNode = new Connection(fromNewNodeId, newNode, connectionToSplit.To);
+        Connection fromNewNode = new Connection(fromNewNodeId, newNode, connectionToSplit.ToNode);
         newNode.OutConnections.Add(fromNewNode);
-        connectionToSplit.To.InConnections.Add(fromNewNode);
+        connectionToSplit.ToNode.InConnections.Add(fromNewNode);
         fromNewNode.Weight = connectionToSplit.Weight;
 
         genome.HiddenNodes.Add(newNode);
-        genome.Nodes.Add(newNode);
-        genome.Connections.Add(toNewNode);
-        genome.Connections.Add(fromNewNode);
+        genome.Nodes.Add(nodeId, newNode);
+        genome.Connections.Add(toNewNodeId, toNewNode);
+        genome.Connections.Add(fromNewNodeId, fromNewNode);
 
         genome.CalculateDepths();
 
         return new NewNodeMutation()
         {
-            SplittedConnectionId = connectionToSplit.InnovationNumber,
+            SplittedConnectionId = connectionToSplit.Id,
             NewNodeId = newNode.Id,
-            ToNewNodeConnectionId = toNewNode.InnovationNumber,
-            FromNewNodeConnectionId = fromNewNode.InnovationNumber
+            ToNewNodeConnectionId = toNewNode.Id,
+            FromNewNodeConnectionId = fromNewNode.Id
         };
     }
 
@@ -154,7 +160,7 @@ public class TopologyMutator {
 
     public List<Connection> FindCandidateConnectionsForNewNode(Genome g)
     {
-        return g.Connections.Where(x => x.Enabled).ToList();
+        return g.EnabledConnections;
     }
 
 }

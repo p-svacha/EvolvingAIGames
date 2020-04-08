@@ -11,7 +11,7 @@ public class GenomeVisualizer : UIElement {
     public Sprite CircleSprite;
     public Text FitnessText;
 
-    private float CircleSize = 0.05f;
+    private float CircleSize = 0.04f;
     private int IdFontSize = 20;
 
 
@@ -24,8 +24,8 @@ public class GenomeVisualizer : UIElement {
     {
         Clear();
 
-        float circleSizeX = CircleSize; // Todo: adjust for factor
-        float circleSizeY = CircleSize; // Todo: adjust for factor
+        float circleSizeX = CircleSize;
+        float circleSizeY = CircleSize * (ContainerWidth / ContainerHeight);
 
         // Set background according to species
         if (g.Species != null) SetBackgroundColor(g.Species.Color);
@@ -50,14 +50,23 @@ public class GenomeVisualizer : UIElement {
         for (int i = 0; i < g.Depth + 1; i++)
         {
             float xPosition = circleSizeX + ((1f - 3 * circleSizeX) / g.Depth * i);
-            List<Node> depthLayerNodes = g.Nodes.Where(x => x.Depth == i).ToList();
+            List<Node> depthLayerNodes = g.Nodes.Values.Where(x => x.Depth == i).ToList();
             for(int j = 0; j < depthLayerNodes.Count; j++)
             {
+                // Absolute Positioning
+                Node node = depthLayerNodes[j];
+                if (node.Type == NodeType.Hidden)
+                {
+                    if (depthLayerNodes.Count == 1) node.VisualYPosition = 0.5f;
+                    else node.VisualYPosition = circleSizeY + ((1f - 3 * circleSizeY) / (depthLayerNodes.Count - 1) * j);
+                }
+
+                /* Dynamic Positioning
                 Node node = depthLayerNodes[j];
                 if (node.Type == NodeType.Hidden)
                 {
                     //List<Node> connectedNodes = node.InConnections.Select(x => x.In).Concat(node.OutConnections.Select(x => x.Out)).ToList();
-                    List<Node> nodesLeadingHere = node.InConnections.Where(x => x.Enabled).Select(x => x.From).ToList();
+                    List<Node> nodesLeadingHere = node.InConnections.Where(x => x.Enabled).Select(x => x.FromNode).ToList();
                     if(nodesLeadingHere.Count == 1)
                     {
                         float nodeY = nodesLeadingHere[0].VisualYPosition;
@@ -83,6 +92,7 @@ public class GenomeVisualizer : UIElement {
                     }
                     while (positionBlocked);
                 }
+                */
 
                 float xStart = xPosition;
                 float xEnd = xPosition + circleSizeX;
@@ -97,12 +107,13 @@ public class GenomeVisualizer : UIElement {
                 }
 
                 node.VisualNode = circle.gameObject;
+                
             }
         }
 
-        foreach (Connection c in g.Connections.Where(x => x.Enabled))
+        foreach (Connection c in g.EnabledConnections)
         {
-            c.VisualConnection = CreateDotConnection(c.From.VisualNode.transform.localPosition, c.To.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, c.InnovationNumber + "", drawIds, c.Weight <= 0 ? Color.blue : Color.green);
+            c.VisualConnection = CreateDotConnection(c.FromNode.VisualNode.transform.localPosition, c.ToNode.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, c.Id + "", drawIds, c.Weight <= 0 ? Color.blue : Color.green);
         }
 
         if (showNodeWeights) UpdateValues(g, false);
@@ -117,7 +128,7 @@ public class GenomeVisualizer : UIElement {
 
     public void UpdateValues(Genome g, bool displayOutputsAsBool)
     {
-        foreach (Node n in g.Nodes)
+        foreach (Node n in g.Nodes.Values)
         {
             if (n.Type == NodeType.Output && displayOutputsAsBool)
             {

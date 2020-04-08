@@ -24,47 +24,35 @@ public class CrossoverAlgorithm {
             unfitParent = parent1;
         }
 
-        // Find highest connection id and highest matching connection id
-        List<int> fitParentConnectionIds = fitParent.Connections.Select(x => x.InnovationNumber).ToList();
-        List<int> unfitParentConnectionIds = unfitParent.Connections.Select(x => x.InnovationNumber).ToList();
-        int highestMatchingConnectionId;
-        if (fitParentConnectionIds.Count == 0 || unfitParentConnectionIds.Count == 0) highestMatchingConnectionId = -1;
-        else highestMatchingConnectionId = Math.Min(fitParentConnectionIds.Max(x => x), unfitParentConnectionIds.Max(x => x));
-
-        // Find matching connections
-        List<int> matchingConnections = new List<int>();
-        for (int i = 0; i < highestMatchingConnectionId + 1; i++)
-            if (fitParentConnectionIds.Contains(i) && unfitParentConnectionIds.Contains(i)) matchingConnections.Add(i);
-
         // Create nodes for child (same nodes as fitter parent)
-        List<Node> childNodes = new List<Node>();
-        foreach(Node n in fitParent.Nodes)
-            childNodes.Add(new Node(n.Id, n.Type));
+        Dictionary<int, Node> childNodes = new Dictionary<int, Node>();
+        foreach(Node n in fitParent.Nodes.Values)
+            childNodes.Add(n.Id, new Node(n.Id, n.Type));
 
         // Create connections for child (same connections as fitter parent)
-        List<Connection> childConnections = new List<Connection>();
-        foreach (Connection c in fitParent.Connections)
+        Dictionary<int, Connection> childConnections = new Dictionary<int, Connection>();
+        foreach (Connection c in fitParent.Connections.Values)
         {
-            Node sourceNode = childNodes.First(x => x.Id == c.From.Id);
-            Node targetNode = childNodes.First(x => x.Id == c.To.Id);
-            Connection newConnection = new Connection(c.InnovationNumber, sourceNode, targetNode);
+            Node sourceNode = childNodes[c.FromNode.Id];
+            Node targetNode = childNodes[c.ToNode.Id];
+            Connection newConnection = new Connection(c.Id, sourceNode, targetNode);
             newConnection.Enabled = c.Enabled;
-            childConnections.Add(newConnection);
+            childConnections.Add(c.Id, newConnection);
             sourceNode.OutConnections.Add(newConnection);
             targetNode.InConnections.Add(newConnection);
         }
 
         // Set weights for child connections (50/50 for matching connections, from fitparent if only existing in fitparent)
-        foreach (Connection c in childConnections)
+        foreach (Connection c in childConnections.Values)
         {
-            Connection fitParentConnection = fitParent.Connections.First(x => x.InnovationNumber == c.InnovationNumber);
+            Connection fitParentConnection = fitParent.Connections[c.Id];
 
-            if (matchingConnections.Contains(c.InnovationNumber) && fitParentConnection.Enabled && unfitParent.Connections.First(x => x.InnovationNumber == c.InnovationNumber).Enabled) // Connection exists and is enabled in both parents
+            if (unfitParent.Connections.ContainsKey(c.Id) && fitParentConnection.Enabled && unfitParent.Connections[c.Id].Enabled) // Connection exists and is enabled in both parents
             {
                 if (Random.NextDouble() <= 0.5f)
                     c.Weight = fitParentConnection.Weight;
                 else
-                    c.Weight = unfitParent.Connections.First(x => x.InnovationNumber == c.InnovationNumber).Weight;
+                    c.Weight = unfitParent.Connections[c.Id].Weight;
 
             }
             else // Connection only exists in fit parent
@@ -73,16 +61,11 @@ public class CrossoverAlgorithm {
             }
         }
 
-        // Debug
-        // Uncomment and delete rest for normal
-        // return new Genome(GenomeId++, childNodes, childConnections);
-
-
         Genome newGenome = null;
         // Create Child
         try
         {
-             newGenome = new Genome(GenomeId++, childNodes, childConnections);
+             newGenome = new Genome(GenomeId++, childNodes, childConnections, fitParent.MaxConnectionWeight, fitParent.MinConnectionWeight);
         }
         catch(Exception e)
         {

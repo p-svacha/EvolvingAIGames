@@ -110,26 +110,26 @@ public class PlaygroundUI : MonoBehaviour
             Parent2Genome.InputNodes.Clear();
             Parent2Genome.HiddenNodes.Clear();
             Parent2Genome.OutputNodes.Clear();  
-            foreach(Node n in Parent1Genome.Nodes)
+            foreach(Node n in Parent1Genome.Nodes.Values)
             {
                 Node newNode = new Node(n.Id, n.Type);
-                Parent2Genome.Nodes.Add(newNode);
+                Parent2Genome.Nodes.Add(n.Id, newNode);
                 if (n.Type == NodeType.Input) Parent2Genome.InputNodes.Add(newNode);
                 if (n.Type == NodeType.Hidden) Parent2Genome.HiddenNodes.Add(newNode);
                 if (n.Type == NodeType.Output) Parent2Genome.OutputNodes.Add(newNode);
             }
 
             Parent2Genome.Connections.Clear();
-            foreach(Connection c in Parent1Genome.Connections)
+            foreach(Connection c in Parent1Genome.Connections.Values)
             {
-                Node fromNode = Parent2Genome.Nodes.First(x => x.Id == c.From.Id);
-                Node toNode = Parent2Genome.Nodes.First(x => x.Id == c.To.Id);
-                Connection newCon = new Connection(c.InnovationNumber, fromNode, toNode);
+                Node fromNode = Parent2Genome.Nodes[c.FromNode.Id];
+                Node toNode = Parent2Genome.Nodes[c.ToNode.Id];
+                Connection newCon = new Connection(c.Id, fromNode, toNode);
                 newCon.Enabled = c.Enabled;
                 newCon.Weight = c.Weight;
                 fromNode.OutConnections.Add(newCon);
                 toNode.InConnections.Add(newCon);
-                Parent2Genome.Connections.Add(newCon);
+                Parent2Genome.Connections.Add(c.Id, newCon);
             }
 
             Parent2Genome.CalculateDepths();
@@ -140,26 +140,25 @@ public class PlaygroundUI : MonoBehaviour
 
     private void ResetGenome(GenomeVisualizer gv)
     {
-        List<Node> inputs = new List<Node>();
-        List<Node> outputs = new List<Node>();
-        List<Connection> initialConnections = new List<Connection>();
+        Dictionary<int, Node> nodes = new Dictionary<int, Node>();
+        Dictionary<int, Connection> initialConnections = new Dictionary<int, Connection>();
 
         // Create input nodes
         for (int i = 0; i < NumInputs; i++)
-            inputs.Add(new Node(i, NodeType.Input));
+            nodes.Add(i, new Node(i, NodeType.Input));
 
         // Create output nodes
         for (int i = NumInputs; i < (NumInputs + NumOutputs); i++)
-            outputs.Add(new Node(i, NodeType.Output));
+            nodes.Add(i, new Node(i, NodeType.Output));
 
         if (gv == Parent1GV)
         {
-            Parent1Genome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections, 2, -2);
+            Parent1Genome = new Genome(CrossoverAlgorithm.GenomeId++, nodes, initialConnections, 2, -2);
             gv.VisualizeGenome(Parent1Genome, false, true);
         }
         else
         {
-            Parent2Genome = new Genome(CrossoverAlgorithm.GenomeId++, inputs, outputs, initialConnections, 2, -2);
+            Parent2Genome = new Genome(CrossoverAlgorithm.GenomeId++, nodes, initialConnections, 2, -2);
             gv.VisualizeGenome(Parent2Genome, false, true);
         }
         

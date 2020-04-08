@@ -112,7 +112,7 @@ public class Match
         {
             // UI
             MatchUI = matchUI;
-            MatchUI.Model = this;
+            MatchUI.Match = this;
             MatchUI.UpdatePlayerBar();
             MatchUI.UpdateTurnText();
             if (MatchType == MatchType.AI_vs_AI)

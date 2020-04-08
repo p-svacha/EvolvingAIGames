@@ -10,8 +10,8 @@ public class Genome {
     public List<Node> InputNodes; //all input nodes of the network, DOES NOT CHANGE
     public List<Node> HiddenNodes;
     public List<Node> OutputNodes; //all output nodes of the network, DOES NOT CHANGE
-    public List<Node> Nodes;//all (inputs, outputs, hidden) nodes of the network
-    public List<Connection> Connections; //all connections (between 2 nodes) of the network
+    public Dictionary<int, Node> Nodes;//all (inputs, outputs, hidden) nodes of the network
+    public Dictionary<int, Connection> Connections; // All Connections of the network accessible by id
     public int Depth; //longest amount of connections from an input node to an output node
     public float Fitness;
     public float AdjustedFitness;
@@ -20,49 +20,44 @@ public class Genome {
     public float MaxConnectionWeight;
     public float MinConnectionWeight;
 
-    public Genome(int id, List<Node> inputs, List<Node> outputs, List<Connection> initialConnections, float maxConnectionWeight, float minConnectionWeight)
+    public List<Connection> EnabledConnections
     {
-        Id = id;
-        InputNodes = inputs;
-        OutputNodes = outputs;
-        Connections = initialConnections;
-        MaxConnectionWeight = maxConnectionWeight;
-        MinConnectionWeight = minConnectionWeight;
-        Nodes = new List<Node>();
-        HiddenNodes = new List<Node>();
-        Nodes.AddRange(inputs);
-        Nodes.AddRange(outputs);
-        CalculateDepths();
+        get
+        {
+            return Connections.Values.Where(x => x.Enabled).ToList();
+        }
     }
 
-    public Genome(int id, List<Node> nodes, List<Connection> connections)
+    public Genome(int id, Dictionary<int, Node> nodes, Dictionary<int, Connection> connections, float maxConnectionWeight, float minConnectionWeight)
     {
         Id = id;
         Nodes = nodes;
-        InputNodes = nodes.Where(x => x.Type == NodeType.Input).ToList();
-        HiddenNodes = nodes.Where(x => x.Type == NodeType.Hidden).ToList();
-        OutputNodes = nodes.Where(x => x.Type == NodeType.Output).ToList();
+        MaxConnectionWeight = maxConnectionWeight;
+        MinConnectionWeight = minConnectionWeight;
+        InputNodes = nodes.Values.Where(x => x.Type == NodeType.Input).ToList();
+        HiddenNodes = nodes.Values.Where(x => x.Type == NodeType.Hidden).ToList();
+        OutputNodes = nodes.Values.Where(x => x.Type == NodeType.Output).ToList();
         Connections = connections;
         CalculateDepths();
     }
 
     public Genome Copy()
     {
-        List<Node> newNodes = new List<Node>();
-        List<Connection> newConnections = new List<Connection>();
-        foreach (Node n in Nodes) newNodes.Add(new Node(n.Id, n.Type));
-        foreach (Connection c in Connections)
+        Dictionary<int, Node> newNodes = new Dictionary<int, Node>();
+        Dictionary<int, Connection> newConnections = new Dictionary<int, Connection>();
+        foreach (Node n in Nodes.Values) newNodes.Add(n.Id, new Node(n.Id, n.Type));
+        foreach (Connection c in Connections.Values)
         {
-            Node sourceNode = newNodes.First(x => x.Id == c.From.Id);
-            Node targetNode = newNodes.First(x => x.Id == c.To.Id);
-            Connection newConnection = new Connection(c.InnovationNumber, sourceNode, targetNode);
-            newConnections.Add(newConnection);
+            Node sourceNode = newNodes[c.FromNode.Id];
+            Node targetNode = newNodes[c.ToNode.Id];
+            Connection newConnection = new Connection(c.Id, sourceNode, targetNode);
+            newConnections.Add(c.Id, newConnection);
             sourceNode.OutConnections.Add(newConnection);
             targetNode.InConnections.Add(newConnection);
             newConnection.Weight = c.Weight;
             newConnection.Enabled = c.Enabled;
         }
-        return new Genome(Id, newNodes, newConnections);
+        return new Genome(Id, newNodes, newConnections, MaxConnectionWeight, MinConnectionWeight);
     }
 
     public float[] FeedForward(float[] inputs)
@@ -76,13 +71,13 @@ public class Genome {
         // Calculate values for each depth layer
         for(int i = 1; i < Depth + 1; i++)
         {
-            List<Node> layerNodes = Nodes.Where(x => x.Depth == i).ToList();
+            List<Node> layerNodes = Nodes.Values.Where(x => x.Depth == i).ToList();
             foreach(Node n in layerNodes)
             {
                 n.Value = 0;
                 foreach(Connection c in n.InConnections.Where(x => x.Enabled))
                 {
-                    n.Value += c.From.Value * c.Weight;
+                    n.Value += c.FromNode.Value * c.Weight;
                 }
                 n.Value = Sigmoid(n.Value);
             }
@@ -93,7 +88,7 @@ public class Genome {
 
     public void CalculateDepths()
     {
-        foreach (Node n in Nodes)
+        foreach (Node n in Nodes.Values)
         {
             if (n.Type == NodeType.Hidden && n.InConnections.Count == 0 && n.OutConnections.Count == 0)
                 throw new Exception("Hidden Layer Node with Id " + n.Id + " has no connections!");
@@ -101,7 +96,7 @@ public class Genome {
         }
         foreach(Node input in InputNodes)
                 depthStep(input, 0);
-        Depth = Nodes.Max(x => x.Depth);
+        Depth = Nodes.Values.Max(x => x.Depth);
         foreach (Node n in OutputNodes) n.Depth = Depth;
 
         // Special starting case where there are no connections at all
@@ -122,7 +117,7 @@ public class Genome {
         {
             n.Depth = depth;
             foreach (Connection c in n.OutConnections.Where(x => x.Enabled))
-                if (depth >= c.To.Depth) depthStep(c.To, depth + 1);
+                if (depth >= c.ToNode.Depth) depthStep(c.ToNode, depth + 1);
         }
     }
 

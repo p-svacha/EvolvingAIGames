@@ -56,12 +56,22 @@ public class Speciator {
     public float CompatibilityDistance(Genome genome1, Genome genome2)
     {
         // Find highest gene id
-        List<int> genome1GeneIds = genome1.Connections.Select(x => x.InnovationNumber).ToList();
-        List<int> genome2GeneIds = genome2.Connections.Select(x => x.InnovationNumber).ToList();
+        List<int> genome1GeneIds = genome1.Connections.Keys.ToList();
+        List<int> genome2GeneIds = genome2.Connections.Keys.ToList();
 
-        int numNonMatchingGenes = genome1GeneIds.Except(genome2GeneIds).Count() + genome2GeneIds.Except(genome2GeneIds).Count();
+        int numNonMatchingGenes = genome1GeneIds.Except(genome2GeneIds).Count() + genome2GeneIds.Except(genome1GeneIds).Count();
 
-        return (1 * numNonMatchingGenes);// + (0.6f * avgWeightDifference);
+        List<int> matchingConnections = genome1GeneIds.Intersect(genome2GeneIds).ToList();
+        float totalWeightDiff = 0;
+        foreach(int connectionId in matchingConnections)
+        {
+            float g1Weight = genome1.Connections[connectionId].Weight;
+            float g2Weight = genome2.Connections[connectionId].Weight;
+            float weightDiff = Mathf.Abs(g1Weight - g2Weight);
+            totalWeightDiff += weightDiff;
+        }
+
+        return (1f * numNonMatchingGenes) + (0.5f * totalWeightDiff);
 
     }
 }

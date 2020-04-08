@@ -9,13 +9,17 @@ public class C013_Sacrifice : Card
     {
         Id = 13;
         Name = "Sacrifice";
-        Text = "Destroy a random friendly minion. Heal to full life.";
+        Text = "If you have at least 1 minion, destroy a random friendly minion and heal to full life.";
         Cost = 1;
     }
 
     public override void Action(Match Model, Player self, Player enemy)
     {
-        Model.DestroyMinions(self, Model.RandomMinionsFromPlayer(self, 1, withoutSummonProtection: false));
-        Model.Heal(self, self, self.MaxHealth);
+        List<Minion> toDestroy = Model.RandomMinionsFromPlayer(self, 1, withoutSummonProtection: false);
+        if (toDestroy.Count > 0)
+        {
+            Model.DestroyMinions(self, toDestroy);
+            Model.Heal(self, self, self.MaxHealth);
+        }
     }
 }

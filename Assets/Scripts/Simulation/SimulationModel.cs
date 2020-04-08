@@ -11,8 +11,8 @@ public class SimulationModel : MonoBehaviour
     public SimulationPhase SimulationPhase;
     public int MatchesPlayed;
 
-    private int PopulationSize = 2000;
-    private int MatchesPerGeneration = 16;
+    private int PopulationSize = 600;
+    private int MatchesPerGeneration = 12;
 
     // Matches
     public Match MatchModel;
@@ -61,7 +61,10 @@ public class SimulationModel : MonoBehaviour
         CardList.InitCardList();
 
         // Init population
-        Population = new Population(PopulationSize, 16, CardList.Cards.Count);
+        int inputSize = 16;
+        int outputSize = CardList.Cards.Count;
+        int hiddenSize = (inputSize + outputSize) / 2;
+        Population = new Population(PopulationSize, inputSize, new int[] { /*hiddenSize*/ }, outputSize);
         //EvolutionInformation info = Population.EvolveGeneration(7);
         //SimulationUI.EvoStats.UpdateStatistics(info);
         SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
@@ -94,6 +97,8 @@ public class SimulationModel : MonoBehaviour
             remainingSubjects.Remove(sub1);
             Subject sub2 = bestSubjects[1];
             remainingSubjects.Remove(sub2);
+            sub1.Opponents.Add(sub2);
+            sub2.Opponents.Add(sub1);
 
             Match match = new Match();
 
@@ -110,6 +115,8 @@ public class SimulationModel : MonoBehaviour
             remainingSubjects.Remove(sub1);
             Subject sub2 = remainingSubjects[Random.Range(0, remainingSubjects.Count)];
             remainingSubjects.Remove(sub2);
+            sub1.Opponents.Add(sub2);
+            sub2.Opponents.Add(sub1);
 
             Match match = new Match();
 

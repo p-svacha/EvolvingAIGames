@@ -12,14 +12,14 @@ public static class CardList
         Cards = new List<Card>();
 
         Cards.Add(new C000_SkipTurn());
-        Cards.Add(new C001_SummonYellow());
+        Cards.Add(new C001_YellowTrio());
         Cards.Add(new C002_SummonRed());
         Cards.Add(new C003_SummonBlue());
         Cards.Add(new C004_GreenBlood());
         Cards.Add(new C005_DestroyTwo());
         Cards.Add(new C006_DirectAction());
         Cards.Add(new C007_DestroyRedAndYellow());
-        Cards.Add(new C008_DestroyGreenAndBlue());
+        Cards.Add(new C008_TargetBomb());
         Cards.Add(new C009_SecondChance());
         Cards.Add(new C010_DecoyArmy());
         Cards.Add(new C011_Invest());

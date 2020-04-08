@@ -16,14 +16,14 @@ public static class CardSpriteList
                 cardSprites = new List<Sprite>();
                 int counter = 0;
                 string numberWithLeadingZeros = counter.ToString("000");
-                string path = "Assets/Prefabs/Cards/CardPictures/C" + numberWithLeadingZeros + ".png";
+                string path = "Assets/Resources/CardPictures/C" + numberWithLeadingZeros + ".png";
                 Sprite sprite = (Sprite)AssetDatabase.LoadAssetAtPath(path, typeof(Sprite));
                 while (sprite != null)
                 {
                     cardSprites.Add(sprite);
                     counter++;
                     numberWithLeadingZeros = counter.ToString("000");
-                    path = "Assets/Prefabs/Cards/CardPictures/C" + numberWithLeadingZeros + ".png";
+                    path = "Assets/Resources/CardPictures/C" + numberWithLeadingZeros + ".png";
                     sprite = (Sprite)AssetDatabase.LoadAssetAtPath(path, typeof(Sprite));
                 }
             }

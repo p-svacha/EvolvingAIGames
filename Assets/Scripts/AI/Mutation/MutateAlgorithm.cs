@@ -78,7 +78,7 @@ public class MutateAlgorithm {
     private void MutateGenome(Genome g, float topologyMutationChancePerGenome, float weightMutationChancePerGenome, bool multipleMutationsPerGenomeAllowed, float reducationFactor, MutationInformation info)
     {
         // If the genome has no connections, it can only mutate topology
-        if (g.Connections.Where(x => x.Enabled).Count() == 0)
+        if (g.EnabledConnections.Count() == 0)
         {
             topologyMutationChancePerGenome += weightMutationChancePerGenome;
             weightMutationChancePerGenome = 0;

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class MatchUI : MonoBehaviour
 {
-    public Match Model;
+    public Match Match;
 
     // Dimensions
     public float CanvasWidth;
@@ -18,13 +18,8 @@ public class MatchUI : MonoBehaviour
     public VisualCard VisualCardHidden;
     public Text TurnText;
 
-    public Text Player1Name;
-    public Text Player1Health;
-    public Text Player1Money;
-
-    public Text Player2Name;
-    public Text Player2Health;
-    public Text Player2Money;
+    public Playerbar Player1Bar;
+    public Playerbar Player2Bar;
 
     public CardValues Player1CV;
     public CardValues Player2CV;
@@ -61,36 +56,19 @@ public class MatchUI : MonoBehaviour
     /// </summary>
     public void UpdatePlayerBar()
     {
-        // Name
-        if (Model.MatchType == MatchType.AI_vs_AI)
-        {
-            Player1Name.text = Model.Player1.Name + " | " + ((AIPlayer)Model.Player1).Brain.Wins + " - " + ((AIPlayer)Model.Player1).Brain.Losses;
-            Player2Name.text = Model.Player2.Name + " | " + ((AIPlayer)Model.Player2).Brain.Wins + " - " + ((AIPlayer)Model.Player2).Brain.Losses;
-        }
-        else
-        {
-            Player1Name.text = Model.Player1.Name;
-            Player2Name.text = Model.Player2.Name + " | " + ((AIPlayer)Model.Player2).Brain.Wins + " - " + ((AIPlayer)Model.Player2).Brain.Losses;
-        }
-
-        // Health
-        Player1Health.text = Model.Player1.Health + "/" + Model.Player1.MaxHealth;
-        Player2Health.text = Model.Player2.Health + "/" + Model.Player2.MaxHealth;
-
-        // Money
-        Player1Money.text = Model.Player1.Money + " Money";
-        Player2Money.text = Model.Player2.Money + " Money";
+        Player1Bar.UpdatePlayerbar(Match, Match.Player1);
+        Player2Bar.UpdatePlayerbar(Match, Match.Player2);
     }
 
     public void UpdatePlayerGenomes()
     {
-        Player1GenomeVis.VisualizeGenome(((AIPlayer)Model.Player1).Brain.Genome, true, false);
-        Player2GenomeVis.VisualizeGenome(((AIPlayer)Model.Player2).Brain.Genome, true, false);
+        Player1GenomeVis.VisualizeGenome(((AIPlayer)Match.Player1).Brain.Genome, true, false);
+        Player2GenomeVis.VisualizeGenome(((AIPlayer)Match.Player2).Brain.Genome, true, false);
     }
 
     public void UpdateTurnText()
     {
-        TurnText.text = "Turn " + Model.Turn;
+        TurnText.text = "Turn " + Match.Turn;
     }
 
     public void ShowCards(List<Card> options, Player player, bool hidden, bool selectable)
@@ -125,8 +103,8 @@ public class MatchUI : MonoBehaviour
             // Set Card Position
             float xStart = CardMarginX + i * xStep + xGap / 2;
             float xEnd = CardMarginX + i * xStep + cardWidth + xGap / 2;
-            float yStart = player == Model.Player2 ? CardMarginY : 1 - CardMarginY - cardHeight;
-            float yEnd = player == Model.Player2 ? CardMarginY + cardHeight : 1 - CardMarginY;
+            float yStart = player == Match.Player2 ? CardMarginY : 1 - CardMarginY - cardHeight;
+            float yEnd = player == Match.Player2 ? CardMarginY + cardHeight : 1 - CardMarginY;
 
             RectTransform rectTransform = vc.GetComponent<RectTransform>();
             rectTransform.anchoredPosition = new Vector2(0, 0);

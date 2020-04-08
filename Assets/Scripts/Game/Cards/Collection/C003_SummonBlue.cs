@@ -10,7 +10,7 @@ public class C003_SummonBlue : Card
         Id = 3;
         Name = "Blue+";
         Text = "Summon a Blue";
-        Cost = 1;
+        Cost = 2;
     }
 
     public override void Action(Match Model, Player self, Player enemy)

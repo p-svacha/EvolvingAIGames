@@ -60,7 +60,7 @@ public class WeightMutator {
     /// </summary>
     public void ReplaceWeight(Genome g)
     {
-        List<Connection> candidates = g.Connections.Where(x => x.Enabled).ToList();
+        List<Connection> candidates = g.EnabledConnections.ToList();
         if (candidates.Count == 0) throw new Exception("Tried to mutate weight on a genome without any connections");
         Connection connectionToMutate = candidates[Random.Next(candidates.Count)];
         connectionToMutate.Weight = (float)(Random.NextDouble() * 2 - 1); ;
@@ -71,7 +71,7 @@ public class WeightMutator {
     /// </summary>
     public void ShiftWeight(Genome g)
     {
-        List<Connection> candidates = g.Connections.Where(x => x.Enabled).ToList();
+        List<Connection> candidates = g.EnabledConnections.ToList();
         if (candidates.Count == 0) throw new Exception("Tried to mutate weight on a genome without any connections");
         Connection connectionToMutate = candidates[Random.Next(candidates.Count)];
         connectionToMutate.Weight = (float)(connectionToMutate.Weight + ((Random.NextDouble() * 2) - 1));
@@ -80,7 +80,7 @@ public class WeightMutator {
 
     public void ScaleWeight(Genome g)
     {
-        List<Connection> candidates = g.Connections.Where(x => x.Enabled).ToList();
+        List<Connection> candidates = g.EnabledConnections.ToList();
         if (candidates.Count == 0) throw new Exception("Tried to mutate weight on a genome without any connections");
         Connection connectionToMutate = candidates[Random.Next(candidates.Count)];
         connectionToMutate.Weight = (float)(connectionToMutate.Weight * ((Random.NextDouble() * 1.5) + 0.5));
@@ -89,7 +89,7 @@ public class WeightMutator {
 
     public void InvertWeight(Genome g)
     {
-        List<Connection> candidates = g.Connections.Where(x => x.Enabled).ToList();
+        List<Connection> candidates = g.EnabledConnections.ToList();
         if (candidates.Count == 0) throw new Exception("Tried to mutate weight on a genome without any connections");
         Connection connectionToMutate = candidates[Random.Next(candidates.Count)];
         connectionToMutate.Weight *= -1;
@@ -97,13 +97,13 @@ public class WeightMutator {
     
     public bool CanSwapWeights(Genome g)
     {
-        List<Node> candidateNodes = g.Nodes.Where(x => x.InConnections.Where(y => y.Enabled).Count() + x.OutConnections.Where(y => y.Enabled).Count() > 1).ToList();
+        List<Node> candidateNodes = g.Nodes.Values.Where(x => x.InConnections.Where(y => y.Enabled).Count() + x.OutConnections.Where(y => y.Enabled).Count() > 1).ToList();
         return candidateNodes.Count > 0;
     }
 
     public void SwapWeights(Genome g)
     {
-        List<Node> candidateNodes = g.Nodes.Where(x => x.InConnections.Where(y => y.Enabled).Count() + x.OutConnections.Where(y => y.Enabled).Count() > 1).ToList();
+        List<Node> candidateNodes = g.Nodes.Values.Where(x => x.InConnections.Where(y => y.Enabled).Count() + x.OutConnections.Where(y => y.Enabled).Count() > 1).ToList();
         Node nodeToMutate = candidateNodes[Random.Next(candidateNodes.Count)];
 
         List<Connection> nodeConnections = nodeToMutate.InConnections.Where(x => x.Enabled).Concat(nodeToMutate.OutConnections.Where(x => x.Enabled)).ToList();
@@ -124,7 +124,7 @@ public class WeightMutator {
 
     public void RandomizeWeights(Genome genome)
     {
-        foreach(Connection c in genome.Connections)
+        foreach(Connection c in genome.Connections.Values)
             c.Weight = (float)(Random.NextDouble() * 2 - 1);
     }
 

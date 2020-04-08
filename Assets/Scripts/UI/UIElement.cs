@@ -12,12 +12,23 @@ public class UIElement : MonoBehaviour
 
     protected RectTransform Container;
 
+    protected float ContainerWidth;
+    protected float ContainerHeight;
+
     public void Awake()
     {
         objects = new List<GameObject>();
         Container = gameObject.GetComponent<RectTransform>();
     }
 
+    public void Start()
+    {
+        ContainerWidth = Container.rect.width;
+        ContainerHeight = Container.rect.height;
+        OnStart();
+    }
+
+    protected virtual void OnStart() { }
 
     /// <summary>
     /// Add a panel element. xStart, xEnd, yStart, yEnd are percentage values (between 0 and 1).

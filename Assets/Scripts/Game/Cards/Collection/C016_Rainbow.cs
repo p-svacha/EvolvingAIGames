@@ -10,7 +10,7 @@ public class C016_Rainbow : Card
         Id = 16;
         Name = "Rainbow";
         Text = "Summon three random minions from a different type.";
-        Cost = 2;
+        Cost = 3;
     }
 
     public override void Action(Match Model, Player self, Player enemy)
