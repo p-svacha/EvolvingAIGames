@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// A subject represents a participant in one generation of the simulation process with a static genome.
+/// <br/> Subjects will create a game-specific player instance for each match that handles match-specific data.
+/// </summary>
 public class Subject {
 
     public string Name;
@@ -10,14 +14,10 @@ public class Subject {
     public Genome Genome;
     public bool ImmuneToMutation;
 
-
-
-    // Match specific (delete this when copying projects)
-    public List<Subject> Opponents; 
+    // Match
+    public List<Subject> Opponents;
     public int Wins;
     public int Losses;
-    public int DamageDealt;
-    public int DamageReceived;
 
     public Subject(Genome g)
     {
@@ -25,11 +25,6 @@ public class Subject {
         Opponents = new List<Subject>();
     }
 
-    // This method handles the stuff a subject does every frame.
-	public virtual void UpdateSubject()
-    {
-
-	}
 
     // This method is only used if a generation has more than one simulation. Gets called when a simulation has ended.
     public virtual void EndCurrentSimulation()

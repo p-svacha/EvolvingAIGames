@@ -23,7 +23,10 @@ public class Population {
     public int Generation;
 
     // Evolution Parameters
-    public bool InitialGenomesAreFullyConnected = false; // If true, the initial genomes have connections from every input node to every output node
+    public bool InitialGenomesAreFullyConnected = true; // If true, the initial genomes have connections from every input node to every output node
+    public int FixedSpeciesAmount = 4; // if this is positive, a fixed amount of species is used that will always have the same amount of subjects.
+    public int FixedSpeciesSubjectSize; // How many subjects are in a species if fixed species amount is used.
+    public bool IsUsingDynamicSpecies => FixedSpeciesAmount <= 0;
 
     public float TakeOverBestRatio = 0.05f; // % of best subjects per species that are taken over to next generation
     public float TakeOverRandomRatio = 0.01f; // % of random subjects per species that are taken over to next generation
@@ -35,9 +38,10 @@ public class Population {
     public int RankNeededToSurvive = 5; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
     public int GenerationsBelowRankAllowed = 20; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
 
-    public float AdoptionRate = 1f; // % chance that an offspring will be checked which species it belongs to. otherwise it will get the species of its parents
+    public float AdoptionRate = 0f; // % chance that an offspring will automatically have the same species as its parents
 
-    /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species (default is 5 for no-con start and 10 for con-start)
+    /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species.
+    /// This only gets used when InitialGenomesAreFullyConnected is false.
     /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
     public float SpeciesCompatiblityThreshhold = 15;
 
@@ -173,7 +177,14 @@ public class Population {
         }
 
         // Speciate all subjects.
-        Speciator.Speciate(Subjects, Species);
+        if(IsUsingDynamicSpecies) Speciator.SpeciateByCompatibility(Subjects, Species);
+        else
+        {
+            FixedSpeciesSubjectSize = Size / FixedSpeciesAmount;
+            for (int i = 0; i < FixedSpeciesAmount; i++) Species.Add(Speciator.CreateNewSpecies(Subjects[i].Genome, Species));
+            Speciator.SpeciateRandomly(Subjects, Species);
+        }
+
         foreach (Subject s in Subjects) s.Genome.Species.Subjects.Add(s);
 
         TopologyMutator.NodeId = nodeIdCounter;
@@ -183,11 +194,6 @@ public class Population {
         {
             EvolveGeneration();
         }
-    }
-
-    public void Update()
-    {
-        foreach (Subject s in Subjects) s.UpdateSubject();
     }
 
     /// <summary>
@@ -328,10 +334,10 @@ public class Population {
 
     /// <summary>
     /// Creates offspring equal to each species' OffspringCount and adds them to the given list.
-    /// Only genomes above the IgnoreRatio threshhold can be chosen as parents.
-    /// There is a chance equal to AdoptionRate that a child will not automatically have the species of its parent and will be checked if it fits.
+    /// <br/> Only genomes above the IgnoreRatio threshhold can be chosen as parents.
+    /// <br/> There is a chance equal to AdoptionRate that a child will not automatically have the species of its parent and will be checked if it fits.
     /// </summary>
-    public List<Subject> CreateOffsprings(List<Subject> newSubjects)
+    public List<Subject> CreateOffsprings(List<Subject> newSubjects, float adoptionRate)
     {
         List<Subject> toSpeciate = new List<Subject>();
         foreach (Species s in Species)
@@ -340,7 +346,7 @@ public class Population {
             {
                 Genome newGenome = s.CreateOffspring(IgnoreRatio);
                 Subject newSubject = new Subject(newGenome);
-                if (Random.NextDouble() >= AdoptionRate) newSubject.Genome.Species = s;
+                if (UnityEngine.Random.value <= adoptionRate) newSubject.Genome.Species = s;
                 else toSpeciate.Add(newSubject);
                 newSubjects.Add(newSubject);
             }
@@ -354,7 +360,19 @@ public class Population {
         foreach (Subject subject in newSubjects) Subjects.Add(subject);
     }
 
+    /// <summary>
+    /// Evolves a generation of subjects by ranking them by their fitness and then selecting, mutating and creating offspring of them within their species.
+    /// </summary>
     public EvolutionInformation EvolveGeneration()
+    {
+        if (IsUsingDynamicSpecies) return EvolveWithDynamicSpecies();
+        else return EvolveWithFixedSpeciesAmount();
+    }
+
+    /// <summary>
+    /// Evolves the generation and calculates the species new, meaning bad species can be eliminiated and new ones can be formed.
+    /// </summary>
+    private EvolutionInformation EvolveWithDynamicSpecies()
     {
         DateTime startTimeStamp = DateTime.Now;
         DateTime stamp = DateTime.Now;
@@ -392,7 +410,7 @@ public class Population {
         if (DebugTimestamps) stamp = TimeStamp(stamp, "Calculate Offspring numbers");
 
         // Create offsprings with a chance to automatically have the same species as its parents
-        List<Subject> toSpeciate = CreateOffsprings(newSubjects);
+        List<Subject> toSpeciate = CreateOffsprings(newSubjects, AdoptionRate);
         int numSubjectsCheckedForAdoption = toSpeciate.Count;
         if (DebugTimestamps) stamp = TimeStamp(stamp, "Create Offsprings");
 
@@ -405,7 +423,8 @@ public class Population {
         if (DebugTimestamps) stamp = TimeStamp(stamp, "Mutate Population");
 
         // Speciate all subjects that haven't gotten a species yet
-        int numNewSpecies = Speciator.Speciate(toSpeciate, Species);
+        int numNewSpecies = 0;
+        if (FixedSpeciesAmount <= 0) numNewSpecies = Speciator.SpeciateByCompatibility(toSpeciate, Species);
         if (DebugTimestamps) stamp = TimeStamp(stamp, "Speciate unspeciated Subjects");
 
         // Fill species with new subjects
@@ -434,10 +453,78 @@ public class Population {
         // Create the evolution information object
         int evolutionTime = (int)((DateTime.Now - startTimeStamp).TotalMilliseconds);
         EvolutionInformation info = new EvolutionInformation(Generation, evolutionTime,
-            AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings, 
-            numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations, 
-            numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, SpeciesCompatiblityThreshhold, 
-            maxFitness, averageFitness, 
+            AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings,
+            numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations,
+            numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, SpeciesCompatiblityThreshhold,
+            maxFitness, averageFitness,
+            RankNeededToSurvive, GenerationsBelowRankAllowed);
+        Debug.Log(info.ToString());
+
+        // Reset the species fitness values
+        //foreach (Species s in Species) s.CalculateFitnessValues();
+
+        return info;
+    }
+
+    /// <summary>
+    /// Evolves the generation without changing the amount of species and the amount of subjects in them.
+    /// <br/> Still selects, mutates and creates offspring as usual.
+    /// </summary>
+    private EvolutionInformation EvolveWithFixedSpeciesAmount()
+    {
+        DateTime startTimeStamp = DateTime.Now;
+        List<Subject> newSubjects = new List<Subject>();
+
+        // Calculate fitness & rank of each subject and species
+        GetFitness();
+        float averageFitness = Subjects.Average(x => x.Genome.Fitness);
+        float maxFitness = Subjects.Max(x => x.Genome.Fitness);
+
+        int numSubjectsImmuneToMutations = 0;
+        // Take over best subjects of each species
+        int numBestSubjects = TakeOverBestSubjects(newSubjects, TakeOverBestRatio, AreTakeOversImmuneToMutation);
+        if (AreTakeOversImmuneToMutation) numSubjectsImmuneToMutations += numBestSubjects;
+
+        // Take over random lucky subjects of each species
+        int numRandomSubjects = TakeOverRandomSubjects(newSubjects, TakeOverRandomRatio, AreTakeOversImmuneToMutation);
+        if (AreTakeOversImmuneToMutation) numSubjectsImmuneToMutations += numRandomSubjects;
+
+        // Set amount of offspring so that the species size stay the same
+        int numOffsprings = Size - numBestSubjects - numRandomSubjects;
+        foreach (Species species in Species) species.OffspringCount = species.Size;
+        foreach (Subject subject in newSubjects) subject.Genome.Species.OffspringCount--;
+
+        // Create offsprings with the same species as their parents
+        List<Subject> toSpeciate = CreateOffsprings(newSubjects, adoptionRate: 1f);
+        int numSubjectsCheckedForAdoption = toSpeciate.Count;
+
+        // Moves subjects from the newSubjects list to the Subjects list (that it also clears)
+        ReplaceSubjects(newSubjects);
+
+        // Mutate the genomes in all subjects that are not marked immuneToMutation according to chances in the mutatealgorithm
+        MutationInformation mutationInfo = MutateAlgorithm.MutatePopulation(this, CurrentMutationChanceScaleFactor, MultipleMutationsPerGenomeAllowed, MutationChanceReductionFactorPerMutation);
+
+        // Fill species with new subjects
+        foreach (Species s in Species) s.Subjects.Clear();
+        foreach (Subject subject in Subjects) subject.Genome.Species.Subjects.Add(subject);
+
+        // Go to next generation
+        Generation++;
+        if (CurrentMutationChanceScaleFactor > MinMutationChanceFactor) CurrentMutationChanceScaleFactor -= MutationChanceFactorReductionPerGeneration;
+
+        // Name the subjects
+        for (int i = 0; i < Subjects.Count; i++)
+            if (String.IsNullOrEmpty(Subjects[i].Name)) Subjects[i].Name = Generation + "-" + Subjects[i].Genome.Species.Id + "-" + i;
+
+        if (Subjects.Count != Species.Sum(x => x.Subjects.Count)) throw new Exception("SPECIATION FAILED. The number of subjects in the species does not match the number of subjects in the population.");
+
+        // Create the evolution information object
+        int evolutionTime = (int)((DateTime.Now - startTimeStamp).TotalMilliseconds);
+        EvolutionInformation info = new EvolutionInformation(Generation, evolutionTime,
+            AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings,
+            numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations,
+            numPreviousSpecies: 0, numEliminatedSpecies: 0, numEmptySpecies: 0, numNewSpecies: 0, Species.Count, SpeciesCompatiblityThreshhold,
+            maxFitness, averageFitness,
             RankNeededToSurvive, GenerationsBelowRankAllowed);
         Debug.Log(info.ToString());
 

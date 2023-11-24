@@ -24,14 +24,14 @@ public class Species {
     public float OffspringCount;
 
 
-    public Species(int id, Genome rep, Color color, int genwoi)
+    public Species(int id, Genome rep, Color color)
     {
         Id = id;
         Random = new System.Random();
         Representative = rep;
         Color = color;
         Subjects = new List<Subject>();
-        GenerationsWithoutImprovement = genwoi;
+        GenerationsWithoutImprovement = 0;
     }
 
     public void CalculateFitnessValues()
