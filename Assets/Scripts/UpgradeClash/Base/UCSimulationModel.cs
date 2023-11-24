@@ -13,13 +13,16 @@ namespace UpgradeClash
 
         public override void InitSimulationParameters()
         {
-            PopulationSize = 100;
+            PopulationSize = 400;
 
-            SubjectInputSize = 16;
-            SubjectOutputSize = 16;
-            SubjectHiddenSizes = new int[] { 8, 8};
+            AIPlayer dummy = new AIPlayer(null); // Create a dummy player to get correct amount of inputs & outputs
+            dummy.Init(dummy);
 
-            MatchesPerGeneration = 12;
+            SubjectInputSize = dummy.GetInputs().Length;
+            SubjectOutputSize = dummy.UpgradeList.Count;
+            SubjectHiddenSizes = new int[] { dummy.GetInputs().Length, dummy.GetInputs().Length };
+
+            MatchesPerGeneration = 2;
         }
 
         public override void OnGenerationFinished()
@@ -29,7 +32,7 @@ namespace UpgradeClash
 
         public override void OnMatchRoundFinished()
         {
-            
+            DebugStandings();   
         }
     }
 }

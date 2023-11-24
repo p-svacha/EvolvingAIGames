@@ -26,7 +26,7 @@ namespace BlobCardGame
             // Feed forward network
             float[] inputs = new float[]
             {
-            1,                                                                                              // Bias
+            1,                                                                                                      // Bias
             ((float)(Match.NumMinions(this, MinionType.Red)) / BlobCardMatch.MaxMinionsPerType),                    // Own Red
             ((float)(Match.NumMinions(this, MinionType.Yellow)) / BlobCardMatch.MaxMinionsPerType),                 // Own Yellow
             ((float)(Match.NumMinions(this, MinionType.Blue)) / BlobCardMatch.MaxMinionsPerType),                   // Own Blue

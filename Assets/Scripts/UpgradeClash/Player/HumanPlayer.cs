@@ -7,7 +7,7 @@ namespace UpgradeClash
     public class HumanPlayer : Player
     {
         public override string DisplayName => "Human";
-        public override List<Upgrade> GetInputs()
+        public override List<Upgrade> GetDesiredUpgrades()
         {
             throw new System.NotImplementedException();
         }

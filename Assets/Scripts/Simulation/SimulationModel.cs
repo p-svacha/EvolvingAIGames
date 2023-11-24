@@ -48,7 +48,9 @@ public abstract class SimulationModel : MonoBehaviour
         MatchRound = 0;
 
         // UI
+        SimulationUI.gameObject.SetActive(true);
         SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
+        MatchUI.gameObject.SetActive(false);
     }
 
     public abstract void InitSimulationParameters();
@@ -116,7 +118,7 @@ public abstract class SimulationModel : MonoBehaviour
     public abstract void OnMatchRoundFinished();
 
     /// <summary>
-    /// Gets called when all matches of the last round in a generaion are finished.
+    /// Gets called when all matches of the last round in a generation are finished.
     /// </summary>
     public abstract void OnGenerationFinished();
 
@@ -137,6 +139,7 @@ public abstract class SimulationModel : MonoBehaviour
                     if (match.IsVisual)
                     {
                         SimulationUI.gameObject.SetActive(false);
+                        MatchUI.gameObject.SetActive(true);
                         MatchUI.Init(match);
                         VisualMatch = match;
                     }
@@ -155,6 +158,7 @@ public abstract class SimulationModel : MonoBehaviour
                     {
                         VisualMatch = null;
                         SimulationUI.gameObject.SetActive(true);
+                        MatchUI.gameObject.SetActive(false);
                     }
                 }
                 break;
@@ -177,6 +181,7 @@ public abstract class SimulationModel : MonoBehaviour
                         Matches.Add(match);
                         VisualMatch = match;
                         SimulationUI.gameObject.SetActive(false);
+                        MatchUI.gameObject.SetActive(true);
                         MatchUI.Init(match);
                         match.StartMatchSimulation();
                         SimulationPhase = SimulationPhase.MatchesReady;
@@ -211,14 +216,15 @@ public abstract class SimulationModel : MonoBehaviour
 
     #region Debug
 
-    private void DebugStandings()
+    public void DebugStandings()
     {
 
-        Debug.Log("---------------- Standings after " + MatchRound + " matches ----------------");
+        string text = "---------------- Standings after " + MatchRound + " matches ----------------";
         foreach (Subject s in Population.Subjects.OrderByDescending(x => x.Wins))
         {
-            Debug.Log(s.Name + ": " + s.Wins + "-" + s.Losses);
+            text += ("\n" + s.Name + ": " + s.Wins + "-" + s.Losses);
         }
+        Debug.Log(text);
 
     }
 

@@ -169,7 +169,6 @@ public class Population {
             // Create genome and add it to the subject
             Genome newGenome = new Genome(CrossoverAlgorithm.GenomeId++, allNodes, initialConnections, MaxConnectionWeight, MinConnectionWeight);
             Subject newSubject = new Subject(newGenome);
-            newSubject.Name = Generation + "-" + g;
             Subjects.Add(newSubject);
 
             // Randomize weights
@@ -185,12 +184,16 @@ public class Population {
             Speciator.SpeciateRandomly(Subjects, Species);
         }
 
-        foreach (Subject s in Subjects) s.Genome.Species.Subjects.Add(s);
+        foreach (Subject s in Subjects)
+        {
+            s.Genome.Species.Subjects.Add(s);
+            s.Name = GetStandardizedSubjectName(s);
+        }
 
         TopologyMutator.NodeId = nodeIdCounter;
         TopologyMutator.ConnectionId = connectionIdCounter;
 
-        if(!startWithConnections) // Instantly evolve once if starting with no connections
+        if (!startWithConnections) // Instantly evolve once if starting with no connections
         {
             EvolveGeneration();
         }
@@ -445,8 +448,7 @@ public class Population {
         if (CurrentMutationChanceScaleFactor > MinMutationChanceFactor) CurrentMutationChanceScaleFactor -= MutationChanceFactorReductionPerGeneration;
 
         // Name the subjects
-        for (int i = 0; i < Subjects.Count; i++)
-            if (String.IsNullOrEmpty(Subjects[i].Name)) Subjects[i].Name = Generation + "-" + Subjects[i].Genome.Species.Id + "-" + i;
+        foreach (Subject s in Subjects.Where(x => string.IsNullOrEmpty(x.Name))) s.Name = GetStandardizedSubjectName(s);
 
         if (Subjects.Count != Species.Sum(x => x.Subjects.Count)) throw new Exception("SPECIATION FAILED. The number of subjects in the species does not match the number of subjects in the population.");
 
@@ -513,8 +515,7 @@ public class Population {
         if (CurrentMutationChanceScaleFactor > MinMutationChanceFactor) CurrentMutationChanceScaleFactor -= MutationChanceFactorReductionPerGeneration;
 
         // Name the subjects
-        for (int i = 0; i < Subjects.Count; i++)
-            if (String.IsNullOrEmpty(Subjects[i].Name)) Subjects[i].Name = Generation + "-" + Subjects[i].Genome.Species.Id + "-" + i;
+        foreach (Subject s in Subjects.Where(x => string.IsNullOrEmpty(x.Name))) s.Name = GetStandardizedSubjectName(s);
 
         if (Subjects.Count != Species.Sum(x => x.Subjects.Count)) throw new Exception("SPECIATION FAILED. The number of subjects in the species does not match the number of subjects in the population.");
 
@@ -560,4 +561,6 @@ public class Population {
             return Subjects.Count;
         }
     }
+
+    private string GetStandardizedSubjectName(Subject s) => "S" + Generation + "/" + s.Genome.Species.Id + "/" + Subjects.IndexOf(s);
 }

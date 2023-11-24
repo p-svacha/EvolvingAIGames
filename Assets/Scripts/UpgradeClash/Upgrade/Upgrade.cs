@@ -25,14 +25,29 @@ namespace UpgradeClash
         public abstract string Name { get; }
 
         /// <summary>
+        /// Food cost of the upgrade.
+        /// </summary>
+        public virtual int FoodCost => 0;
+
+        /// <summary>
+        /// Wood cost of the upgrade.
+        /// </summary>
+        public virtual int WoodCost => 0;
+
+        /// <summary>
         /// Gold cost of the upgrade.
         /// </summary>
-        public abstract int GoldCost { get; }
+        public virtual int GoldCost => 0;
+
+        /// <summary>
+        /// Stone cost of the upgrade.
+        /// </summary>
+        public virtual int StoneCost => 0;
 
         /// <summary>
         /// How many ticks it takes for the upgrade to take effect.
         /// </summary>
-        public abstract int Duration { get; }
+        public abstract int BaseDuration { get; }
 
         /// <summary>
         /// If true, the upgrade can be clicked again after the duration.
@@ -99,14 +114,31 @@ namespace UpgradeClash
         /// <summary>
         /// Activate this upgrade, triggering the activation effect (OnActivate) and for unique (non-repeatable) upgrades also the permanent effect.
         /// </summary>
-        public void Activate()
+        public void TakeEffect()
         {
             RemainingDuration = 0;
             if (!Repeatable) IsInEffect = true;
 
-            OnActivate();
+            OnTakeEffect();
         }
 
-        protected virtual void OnActivate() { }
+        protected virtual void OnTakeEffect() { }
+
+        private const int MaxDurationForInput = 120;
+        /// <summary>
+        /// Returns the neural network input value for this upgrade:
+        /// 0 when generally possible to activate (disregarding resources and reqs)
+        /// 0 when in progress and timer > MaxDurationForInput.
+        /// 0.001 - 0.999 when in progress and timer <= MaxDurationForInput.
+        /// 1 when in effect (only for uninque techs).
+        /// Repeating techs ones will go from 0.999 back to 0 and will change some other stat (i.e.life).
+        /// </summary>
+        public float GetInputValue()
+        {
+            if (IsInEffect) return 1f;
+            if (RemainingDuration > 0 && RemainingDuration <= MaxDurationForInput) 
+                return (MaxDurationForInput - RemainingDuration) / (float)MaxDurationForInput;
+            return 0f;
+        }
     }
 }
