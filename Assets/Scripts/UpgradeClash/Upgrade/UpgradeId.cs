@@ -4,6 +4,10 @@ using UnityEngine;
 
 public enum UpgradeId
 {
-    GoldIncome,
-    Damage
+    TrainFoodWorker,
+    TrainWoodWorker,
+    TrainGoldWorker,
+    TrainStoneWorker,
+    Damage,
+    TrainMilitia
 }

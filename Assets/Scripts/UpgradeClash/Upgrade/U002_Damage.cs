@@ -7,7 +7,7 @@ namespace UpgradeClash
     public class U002_Damage : Upgrade
     {
         public override UpgradeId Id => UpgradeId.Damage;
-        public override string Name => "Damage";
+        public override string Name => "Test Damage";
         public override int GoldCost => 20;
         public override int BaseDuration => 5;
         public override bool Repeatable => true;

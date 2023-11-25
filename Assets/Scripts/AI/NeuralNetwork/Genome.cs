@@ -64,6 +64,10 @@ public class Genome {
     {
         if (inputs.Length != InputNodes.Count) throw new System.Exception("Wrong amount of inputs");
 
+        // Validate inputs (maybe make this optional?)
+        foreach (float f in inputs)
+            if (f < 0 || f > 1) throw new System.Exception("Input value is not within 0-1 range. Input value with index " + inputs.ToList().IndexOf(f) + " = " + f + "!");
+
         // Set input values
         for (int i = 0; i < inputs.Length; i++)
             InputNodes[i].Value = inputs[i];

@@ -14,9 +14,13 @@ namespace UpgradeClash
         [Header("Elements")]
         public TextMeshProUGUI PlayerNameText;
         public TextMeshProUGUI FoodText;
+        public TextMeshProUGUI FoodIncomeText;
         public TextMeshProUGUI WoodText;
+        public TextMeshProUGUI WoodIncomeText;
         public TextMeshProUGUI GoldText;
+        public TextMeshProUGUI GoldIncomeText;
         public TextMeshProUGUI StoneText;
+        public TextMeshProUGUI StoneIncomeText;
         public UI_HealthBar HealthBar;
         public GameObject UpgradeProgressPanel;
 
@@ -30,10 +34,17 @@ namespace UpgradeClash
 
         public void UpdateValues()
         {
-            FoodText.text = Player.Food.ToString() + " (+" + Player.GetFoodIncome() + ")";
-            WoodText.text = Player.Wood.ToString() + " (+" + Player.GetWoodIncome() + ")";
-            GoldText.text = Player.Gold.ToString() + " (+" + Player.GetGoldIncome() + ")";
-            StoneText.text = Player.Stone.ToString() + " (+" + Player.GetStoneIncome() + ")";
+            // Resources
+            FoodText.text = Player.Food.ToString();
+            FoodIncomeText.text = Player.GetFoodIncome().ToString();
+            WoodText.text = Player.Wood.ToString();
+            WoodIncomeText.text = Player.GetWoodIncome().ToString();
+            GoldText.text = Player.Gold.ToString();
+            GoldIncomeText.text = Player.GetGoldIncome().ToString();
+            StoneText.text = Player.Stone.ToString();
+            StoneIncomeText.text = Player.GetStoneIncome().ToString();
+
+            // Health
             HealthBar.UpdateValues();
 
             // Upgrade Progress

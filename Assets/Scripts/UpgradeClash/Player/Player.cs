@@ -8,42 +8,75 @@ namespace UpgradeClash
     public abstract class Player
     {
         public abstract string DisplayName { get; }
+        protected UCMatch Match;
         protected Player Opponent;
 
         // Attributes
         public int MaxHealth { get; private set; }
         public int CurrentHealth { get; private set; }
-        public float RelativeHealth => Mathf.Min((float)CurrentHealth / UCMatch.StartHealth, 1f); // used as neural net input
+        
         public int Food { get; private set; }
         public int Wood { get; private set; }
         public int Gold { get; private set; }
         public int Stone { get; private set; }
-        public float RelativeFood => (float)Food / UCMatch.ResourceCap; // used as neural net input
-        public float RelativeWood => (float)Wood / UCMatch.ResourceCap; // used as neural net input
-        public float RelativeGold => (float)Gold / UCMatch.ResourceCap; // used as neural net input
-        public float RelativeStone => (float)Stone / UCMatch.ResourceCap; // used as neural net input
+
+        public int FoodWorkers { get; private set; }
+        public int WoodWorkers { get; private set; }
+        public int GoldWorkers { get; private set; }
+        public int StoneWorkers { get; private set; }
+
+        public int Militia { get; private set; }
+        private int LastMilitiaAttackTick;
+
+
+
+        // Neural net inputs
+        public float RelativeHealth => (float)CurrentHealth / UCMatch.StartHealth;
+        public float RelativeFood => (float)Food / UCMatch.ResourceCap;
+        public float RelativeWood => (float)Wood / UCMatch.ResourceCap;
+        public float RelativeGold => (float)Gold / UCMatch.ResourceCap;
+        public float RelativeStone => (float)Stone / UCMatch.ResourceCap;
+
+        public float RelativeFoodWorkers => (float)FoodWorkers / UCMatch.WorkerCap;
+        public float RelativeWoodWorkers => (float)WoodWorkers / UCMatch.WorkerCap;
+        public float RelativeGoldWorkers => (float)GoldWorkers / UCMatch.WorkerCap;
+        public float RelativeStoneWorkers => (float)StoneWorkers / UCMatch.WorkerCap;
+
+        public float RelativeMilitia => (float)Militia / UCMatch.ArmyCap;
 
         // Upgrades (same references stored in 2 different data structures for performance).
         public Dictionary<UpgradeId, Upgrade> UpgradeDictionary = new Dictionary<UpgradeId, Upgrade>();
         public List<Upgrade> UpgradeList;
 
-        public void Init(Player opponent)
+        public void Init(UCMatch match, Player opponent)
         {
+            Match = match;
             Opponent = opponent;
 
             // Init health
             MaxHealth = UCMatch.StartHealth;
             CurrentHealth = UCMatch.StartHealth;
+
+            // Init resources
             Food = UCMatch.StartFood;
             Wood = UCMatch.StartWood;
             Gold = UCMatch.StartGold;
             Stone = UCMatch.StartStone;
 
+            FoodWorkers = 0;
+            WoodWorkers = 0;
+            GoldWorkers = 0;
+            StoneWorkers = 0;
+
             // Create and init all upgrades
             UpgradeList = new List<Upgrade>()
             {
-                new U001_GoldIncome(),
-                new U002_Damage()
+                new U001_TrainFoodWorker(),
+                //new U002_Damage(),
+                new U003_TrainWoodWorker(),
+                new U004_TrainGoldWorker(),
+                new U005_TrainStoneWorker(),
+                new U006_TrainMilitia(),
             };
 
             foreach (Upgrade upgrade in UpgradeList)
@@ -78,6 +111,14 @@ namespace UpgradeClash
             {
                 if (CanActivateUpgrade(upgrade)) ActivateUpgrade(upgrade);
             }
+
+            // Militia
+            if(Match.Ticks - LastMilitiaAttackTick > GetMilitiaAttackSpeed())
+            {
+                LastMilitiaAttackTick = Match.Ticks;
+                int damage = Militia * GetMilitiaAttackDamage();
+                Opponent.DealDamage(damage);
+            }
         }
 
         /// <summary>
@@ -95,6 +136,7 @@ namespace UpgradeClash
         {
             if (upgrade.IsInEffect) return false; // Upgrade is unique and already active
             if (upgrade.IsInProgress) return false; // Upgrade is currently being activated
+            if (!upgrade.CanActivate()) return false; // Requirements not met
             if (Food < upgrade.FoodCost) return false; // Not enough food
             if (Wood < upgrade.WoodCost) return false; // Not enough wood
             if (Gold < upgrade.GoldCost) return false; // Not enough gold
@@ -152,6 +194,28 @@ namespace UpgradeClash
             Stone -= amount;
         }
 
+        public void AddFoodWorker()
+        {
+            if(FoodWorkers < UCMatch.WorkerCap) FoodWorkers += 1;
+        }
+        public void AddWoodWorker()
+        {
+            if (WoodWorkers < UCMatch.WorkerCap) WoodWorkers += 1;
+        }
+        public void AddGoldWorker()
+        {
+            if (GoldWorkers < UCMatch.WorkerCap) GoldWorkers += 1;
+        }
+        public void AddStoneWorker()
+        {
+            if (StoneWorkers < UCMatch.WorkerCap) StoneWorkers += 1;
+        }
+
+        public void AddMilitia()
+        {
+            if (Militia < UCMatch.ArmyCap) Militia += 1;
+        }
+
         public void DealDamage(int amount)
         {
             CurrentHealth -= amount;
@@ -161,12 +225,21 @@ namespace UpgradeClash
 
         #region Attributes
 
+        public bool IsWorkerInProgress()
+        {
+            if (UpgradeDictionary[UpgradeId.TrainFoodWorker].IsInProgress) return true;
+            if (UpgradeDictionary[UpgradeId.TrainWoodWorker].IsInProgress) return true;
+            if (UpgradeDictionary[UpgradeId.TrainGoldWorker].IsInProgress) return true;
+            if (UpgradeDictionary[UpgradeId.TrainStoneWorker].IsInProgress) return true;
+            return false;
+        }
+
         /// <summary>
         /// Food income per tick.
         /// </summary>
         public int GetFoodIncome()
         {
-            int income = UCMatch.BaseFoodIncome;
+            int income = FoodWorkers;
             return income;
         }
         /// <summary>
@@ -174,7 +247,7 @@ namespace UpgradeClash
         /// </summary>
         public int GetWoodIncome()
         {
-            int income = UCMatch.BaseWoodIncome;
+            int income = WoodWorkers;
             return income;
         }
         /// <summary>
@@ -182,9 +255,7 @@ namespace UpgradeClash
         /// </summary>
         public int GetGoldIncome()
         {
-            int income = UCMatch.BaseGoldIncome;
-            foreach (Upgrade upgrade in UpgradeList.Where(x => x.IsInEffect && x.PermanentEffect != null))
-                income += upgrade.PermanentEffect.GoldIncomeBonus;
+            int income = GoldWorkers;
             return income;
         }
         /// <summary>
@@ -192,8 +263,19 @@ namespace UpgradeClash
         /// </summary>
         public int GetStoneIncome()
         {
-            int income = UCMatch.BaseStoneIncome;
+            int income = StoneWorkers;
             return income;
+        }
+
+        private int GetMilitiaAttackSpeed()
+        {
+            int cooldown = UCMatch.MilitiaBaseAttackCooldown;
+            return cooldown;
+        }
+        private int GetMilitiaAttackDamage()
+        {
+            int damage = UCMatch.MilitiaBaseAttackDamage;
+            return damage;
         }
 
         #endregion

@@ -92,16 +92,7 @@ namespace UpgradeClash
         {
             Self = self;
             Opponent = opponent;
-
-            PermanentEffect = GetPermanentEffect();
-
-            if (Repeatable && PermanentEffect != null) throw new System.Exception("Repeatable upgrades can't have permanent effects.");
         }
-
-        /// <summary>
-        /// Returns the unique and constant instance of this upgrade's permanent effect.
-        /// </summary>
-        protected virtual UpgradePermanentEffect GetPermanentEffect() => null;
 
         /// <summary>
         /// Sets the remaining ticks until the effect takes place.
@@ -112,7 +103,7 @@ namespace UpgradeClash
         }
 
         /// <summary>
-        /// Activate this upgrade, triggering the activation effect (OnActivate) and for unique (non-repeatable) upgrades also the permanent effect.
+        /// Activate this upgrade, triggering the activation effect "OnTakeEffect".
         /// </summary>
         public void TakeEffect()
         {
@@ -122,6 +113,7 @@ namespace UpgradeClash
             OnTakeEffect();
         }
 
+        public virtual bool CanActivate() => true;
         protected virtual void OnTakeEffect() { }
 
         private const int MaxDurationForInput = 120;

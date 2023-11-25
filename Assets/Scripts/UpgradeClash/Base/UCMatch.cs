@@ -16,10 +16,12 @@ namespace UpgradeClash
         public const int StartGold = 100;
         public const int StartStone = 100;
 
-        public const int BaseFoodIncome = 1;
-        public const int BaseWoodIncome = 0;
-        public const int BaseGoldIncome = 0;
-        public const int BaseStoneIncome = 0;
+        public const int WorkerCap = 10; // Max amount of workers per resource
+        public const int ArmyCap = 10; // Max amount of units per type
+
+        // Unit Stats
+        public const int MilitiaBaseAttackCooldown = 10;
+        public const int MilitiaBaseAttackDamage = 1;
 
         // Players
         public Player Player1;
@@ -27,7 +29,7 @@ namespace UpgradeClash
 
         // Match progress
         public const int SimulatedTicksPerUpdate = 10; // mutiple ticks are done per update to increase background simulation speed
-        public int Ticks;
+        public int Ticks { get; private set; }
 
         // Visual
         public int TicksPerSecond;
@@ -48,8 +50,8 @@ namespace UpgradeClash
                 Player2 = new AIPlayer(subject2);
             }
 
-            Player1.Init(opponent: Player2);
-            Player2.Init(opponent: Player1);
+            Player1.Init(this, opponent: Player2);
+            Player2.Init(this, opponent: Player1);
         }
 
         public void Tick()
@@ -58,33 +60,37 @@ namespace UpgradeClash
 
             // Update players
             Player1.Tick();
+            if(CheckGameOver()) return;
             Player2.Tick();
-
-            // Check if game ended
-            CheckGameOver();
+            if (CheckGameOver()) return;
         }
 
         /// <summary>
         /// Ends the game is a victory condition is reached.
         /// </summary>
-        private void CheckGameOver()
+        private bool CheckGameOver()
         {
             
             if (Player1.CurrentHealth <= 0)
             {
                 if (SimulationMode == MatchSimulationMode.Play) EndGame(null);
                 else EndGame(((AIPlayer)Player2).Subject);
+                return true;
             }
             else if (Player2.CurrentHealth <= 0)
             {
                 if (SimulationMode == MatchSimulationMode.Play) EndGame(null);
                 else EndGame(((AIPlayer)Player1).Subject);
+                return true;
             }
             else if(Ticks >= MaxGameLength) // Forfreit to player 2 if it would take too long
             {
                 if (SimulationMode == MatchSimulationMode.Play) EndGame(null);
                 else EndGame(((AIPlayer)Player2).Subject);
+                return true;
             }
+
+            return false;
         }
 
         public override void Update()

@@ -25,7 +25,7 @@ namespace UpgradeClash
 
         public void UpdateValues()
         {
-            DurationText.text = System.TimeSpan.FromSeconds(Upgrade.RemainingDuration).ToString(@"mm\:ss");
+            DurationText.text = System.TimeSpan.FromSeconds(Upgrade.RemainingDuration).ToString(@"m\:ss");
 
             float fullWidth = Background.GetComponent<RectTransform>().rect.width;
             float dynamicBarWidth = (1f - ((float)Upgrade.RemainingDuration / Upgrade.BaseDuration)) * fullWidth;

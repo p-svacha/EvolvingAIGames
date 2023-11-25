@@ -1,20 +1,13 @@
+tooltips for upgrades
+
+buildings
+
+cooldown reduction for militia
+militia damage upgrade
+
+look into multithreading
+
+
 UI
 -----
-add stat how long games take (group by num ticks)
-
-3D
--------------
-add vis for 
-
-
-
-Upgrades
------------
-add military units that do something every x ticks
-	> first is militia (deal 1 dmg to enemy every 10 ticks)
-	> add new rule unitcap that sets max amount of unit per type (10?)
-	> add new node per unit with num / cap
-
-add repeatabale upgrade "train militia" (costs 30f 10g, 21 ticks cd)
-
-add vills and vilcap per resource that all have an upgrade "train [res] vil" costs 50f with 25cd
+add stat how long games take (group by num ticks
