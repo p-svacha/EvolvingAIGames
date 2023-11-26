@@ -1,27 +1,49 @@
-add progress bar for food income
-show tick number in match ui
+Input validation:
+
+disable stone input and stone upgrade to test
+somehow validate if input values are as expected (make toggleable genome vis / only on pause)
+add permanent display for most wanted upgrades
+
+--------------------------------------------
+
+AI:
+
+Make different matching systems:
+	> random (like now)
+	> swiss system (order by wins then random value and match 1st vs 2nd, 3rd vs 4th etc. etc.)
+	> only allow even population sizes
+
+change sim model to 128 size, 8 rounds with new swiss system
+
+--------------------------------------------
+
+Content:
+
 start with 1 food vill
-
-tooltips for upgrades
-
-remove amount of 2nd hidden layer by 0.5
-
 add unique barrack uograde
 	> is req for miltia
 	> has 2 upgrades to reduce cd and food cost
 
-cooldown reduction for militia
-militia damage upgrade
+tie all upgrades to a building
+	> only 1 upgrade per building at a time
 
-add display for most wanted upgrades
+--------------------------------------------
 
-change into swiss system kinda
+UI 2:
 
-somehow validate if input values are as expected (make toggleable genome vis / only on pause)
+Add tooltips to upgrades
+
+--------------------------------------------
+
+Statistics:
+
+Create graph framework for showing values over multiple generations
+Make a graph stat for
+> avg game length
+> avg per unit
+
+--------------------------------------------
+
+Framework:
 
 look into multithreading
-
-
-UI
------
-add stat how long games take (group by num ticks

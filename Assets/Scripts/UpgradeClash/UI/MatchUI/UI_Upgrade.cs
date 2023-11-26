@@ -11,10 +11,8 @@ namespace UpgradeClash
         public Upgrade Upgrade { get; private set; }
 
         [Header("Elements")]
-        public Image Background;
         public Image Icon;
-        public GameObject ProgressBar;
-        public TextMeshProUGUI DurationText;
+        public UI_ProgressBar ProgressBar;
 
         public void Init(Upgrade upgrade)
         {
@@ -25,11 +23,7 @@ namespace UpgradeClash
 
         public void UpdateValues()
         {
-            DurationText.text = System.TimeSpan.FromSeconds(Upgrade.RemainingDuration).ToString(@"m\:ss");
-
-            float fullWidth = Background.GetComponent<RectTransform>().rect.width;
-            float dynamicBarWidth = (1f - ((float)Upgrade.RemainingDuration / Upgrade.GetDuration())) * fullWidth;
-            ProgressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(dynamicBarWidth, ProgressBar.GetComponent<RectTransform>().sizeDelta.y);
+            ProgressBar.UpdateValues(Upgrade.RemainingDuration, Upgrade.GetDuration(), System.TimeSpan.FromSeconds(Upgrade.RemainingDuration).ToString(@"m\:ss"), reverse: true);
         }
     }
 }

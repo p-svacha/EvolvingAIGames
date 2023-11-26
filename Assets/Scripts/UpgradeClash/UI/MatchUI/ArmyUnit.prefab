@@ -513,6 +513,7 @@ GameObject:
   - component: {fileID: 3841586562042105575}
   - component: {fileID: 3492472737666244169}
   - component: {fileID: 2325346862309078083}
+  - component: {fileID: 1340840229113368475}
   m_Layer: 5
   m_Name: ProgressBar
   m_TagString: Untagged
@@ -580,6 +581,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1340840229113368475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4437547288843928997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ca39ad9a534b84aa1a4504edbfaf2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Container: {fileID: 5465634288062995428}
+  ProgressBar: {fileID: 8520701079039009442}
+  ProgressText: {fileID: 7006812141054783877}
 --- !u!1 &5465634288062995428
 GameObject:
   m_ObjectHideFlags: 0
@@ -590,7 +606,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3248106811124347211}
   m_Layer: 5
-  m_Name: Content
+  m_Name: Container
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -836,6 +852,7 @@ MonoBehaviour:
   Icon: {fileID: 1706924590773271581}
   DamageText: {fileID: 6015372415562926838}
   CooldownText: {fileID: 4428225494951889636}
+  ProgressBar: {fileID: 1340840229113368475}
   ProgressBarContainer: {fileID: 5465634288062995428}
   ProgressDynamicBar: {fileID: 8520701079039009442}
   ProgressText: {fileID: 7006812141054783877}

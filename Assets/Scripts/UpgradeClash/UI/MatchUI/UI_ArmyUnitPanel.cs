@@ -16,9 +16,7 @@ namespace UpgradeClash
         public TextMeshProUGUI DamageText;
         public TextMeshProUGUI CooldownText;
 
-        public GameObject ProgressBarContainer;
-        public GameObject ProgressDynamicBar;
-        public TextMeshProUGUI ProgressText;
+        public UI_ProgressBar ProgressBar;
 
         public GameObject UnitContainer1;
         public GameObject UnitContainer2;
@@ -37,10 +35,7 @@ namespace UpgradeClash
             DamageText.text = Army.GetAttackDamage().ToString();
             CooldownText.text = Army.GetCooldown().ToString();
 
-            float fullWidth = ProgressBarContainer.GetComponent<RectTransform>().rect.width;
-            float dynamicBarWidth = (1f - ((float)Army.RemainingCooldown / Army.GetCooldown())) * fullWidth;
-            ProgressDynamicBar.GetComponent<RectTransform>().sizeDelta = new Vector2(dynamicBarWidth, ProgressDynamicBar.GetComponent<RectTransform>().sizeDelta.y);
-            ProgressText.text = System.TimeSpan.FromSeconds(Army.RemainingCooldown).ToString(@"m\:ss");
+            ProgressBar.UpdateValues(Army.RemainingCooldown, Army.GetCooldown(), System.TimeSpan.FromSeconds(Army.RemainingCooldown).ToString(@"m\:ss"), reverse: true);
 
             HelperFunctions.DestroyAllChildredImmediately(UnitContainer1);
             HelperFunctions.DestroyAllChildredImmediately(UnitContainer2);

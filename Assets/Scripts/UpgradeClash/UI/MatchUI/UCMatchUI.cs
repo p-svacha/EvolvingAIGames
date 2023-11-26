@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace UpgradeClash
 {
@@ -10,6 +11,8 @@ namespace UpgradeClash
         public UCMatch UCMatch { get; private set; }
 
         [Header("Elements")]
+        public TextMeshProUGUI TickText;
+
         public UI_SpeedControl SpeedControls;
 
         public UI_PlayerPanel Player1Panel;
@@ -50,6 +53,8 @@ namespace UpgradeClash
 
         private void Update()
         {
+            TickText.text = UCMatch.Ticks.ToString();
+
             Player1Panel.UpdateValues();
             Player2Panel.UpdateValues();
 
