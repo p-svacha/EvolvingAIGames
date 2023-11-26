@@ -1,14 +1,3 @@
-AI:
-
-Make different matching systems:
-	> random (like now)
-	> swiss system (order by wins then random value and match 1st vs 2nd, 3rd vs 4th etc. etc.)
-	> only allow even population sizes
-
-change sim model to 128 size, 8 rounds with new swiss system
-
---------------------------------------------
-
 Content:
 
 start with 1 food vill

@@ -20,13 +20,27 @@ public abstract class SimulationModel : MonoBehaviour
 
     // Population
     private Population Population;
-    protected int PopulationSize;
+
+    /// <summary>
+    /// Total amount of subjects.
+    /// </summary>
+    protected abstract int PopulationSize { get; }
 
     // Matches
     public List<Match> Matches = new List<Match>();
-    protected int MatchesPerGeneration = 12;
+
+    /// <summary>
+    /// How many matches each subject plays before the population gets evolution'd.
+    /// </summary>
+    protected abstract int MatchesPerGeneration { get; }
+
     public int MatchRound;
     public Match VisualMatch; // Match that is currently visually simulated
+
+    /// <summary>
+    /// With what algorithm matches are generated each round
+    /// </summary>
+    protected virtual MatchingTypeId MatchingType => MatchingTypeId.SwissSystem;
 
     // UI
     public SimulationUI SimulationUI;
@@ -68,29 +82,52 @@ public abstract class SimulationModel : MonoBehaviour
         List<Subject> remainingSubjects = new List<Subject>();
         remainingSubjects.AddRange(Population.Subjects);
 
-        // If last round of generation, let the best two subjects play against each other and watch the game
-        if (GetLastMatchSimulationMode() == MatchSimulationMode.Watch && MatchRound == MatchesPerGeneration - 1)
+        switch(MatchingType)
         {
-            List<Subject> bestSubjects = remainingSubjects.OrderByDescending(x => x.Wins).Take(2).ToList();
-            Subject sub1 = bestSubjects[0];
-            remainingSubjects.Remove(sub1);
-            Subject sub2 = bestSubjects[1];
-            remainingSubjects.Remove(sub2);
+            case MatchingTypeId.Random:
+                // If last round of generation, let the best two subjects play against each other and watch the game
+                if (GetLastMatchSimulationMode() == MatchSimulationMode.Watch && MatchRound == MatchesPerGeneration - 1)
+                {
+                    List<Subject> bestSubjects = remainingSubjects.OrderByDescending(x => x.Wins).Take(2).ToList();
+                    Subject sub1 = bestSubjects[0];
+                    remainingSubjects.Remove(sub1);
+                    Subject sub2 = bestSubjects[1];
+                    remainingSubjects.Remove(sub2);
 
-            Match match = GetMatch(sub1, sub2, MatchSimulationMode.Watch);
-            Matches.Add(match);
-        }
+                    Match match = GetMatch(sub1, sub2, MatchSimulationMode.Watch);
+                    Matches.Add(match);
+                }
 
-        // Generate random matches
-        while(remainingSubjects.Count > 0)
-        {
-            Subject sub1 = remainingSubjects[Random.Range(0, remainingSubjects.Count)];
-            remainingSubjects.Remove(sub1);
-            Subject sub2 = remainingSubjects[Random.Range(0, remainingSubjects.Count)];
-            remainingSubjects.Remove(sub2);
+                // Generate random matches
+                while (remainingSubjects.Count > 0)
+                {
+                    Subject sub1 = remainingSubjects[Random.Range(0, remainingSubjects.Count)];
+                    remainingSubjects.Remove(sub1);
+                    Subject sub2 = remainingSubjects[Random.Range(0, remainingSubjects.Count)];
+                    remainingSubjects.Remove(sub2);
 
-            Match match = GetMatch(sub1, sub2, MatchSimulationMode.SimulateInBackground);
-            Matches.Add(match);
+                    Match match = GetMatch(sub1, sub2, MatchSimulationMode.SimulateInBackground);
+                    Matches.Add(match);
+                }
+                break;
+
+            case MatchingTypeId.SwissSystem:
+                // Sort all subjects by wins and then by random value within the same amount of wins
+                remainingSubjects = remainingSubjects.OrderByDescending(x => x.Wins).ThenBy(x => Random.value).ToList();
+
+                // Match up 1st vs 2nd, 3rd vs 4th etc. etc.
+                for(int i = 0; i < remainingSubjects.Count; i += 2)
+                {
+                    Subject sub1 = remainingSubjects[i];
+                    Subject sub2 = remainingSubjects[i + 1];
+                    MatchSimulationMode simMode = 
+                        (i == 0 &&GetLastMatchSimulationMode() == MatchSimulationMode.Watch && MatchRound == MatchesPerGeneration - 1) ? 
+                        MatchSimulationMode.Watch : MatchSimulationMode.SimulateInBackground;
+
+                    Match match = GetMatch(sub1, sub2, simMode);
+                    Matches.Add(match);
+                }
+                break;
         }
 
         SimulationPhase = SimulationPhase.MatchesReady;
@@ -220,13 +257,21 @@ public abstract class SimulationModel : MonoBehaviour
     {
 
         string text = "---------------- Standings after " + MatchRound + " matches ----------------";
-        foreach (Subject s in Population.Subjects.OrderByDescending(x => x.Wins))
+        List<Subject> orderedStandings = Population.Subjects.OrderByDescending(x => x.Wins).ToList();
+        for(int i = 0; i < orderedStandings.Count; i++)
         {
-            text += ("\n" + s.Name + ": " + s.Wins + "-" + s.Losses);
+            Subject s = orderedStandings[i];
+            text += ("\n" + (i+1) + ". " + s.Name + ": " + s.Wins + "-" + s.Losses);
         }
         Debug.Log(text);
 
     }
 
     #endregion
+
+    protected enum MatchingTypeId
+    {
+        Random,
+        SwissSystem
+    }
 }

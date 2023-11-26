@@ -27,6 +27,10 @@ namespace BlobCardGame
 
         // Match Statistics
         public new List<BlobCardMatch> Matches => base.Matches.Select(x => (BlobCardMatch)x).ToList();
+
+        protected override int PopulationSize => 600;
+        protected override int MatchesPerGeneration => 12;
+
         public int Player1WonMatches;
         public int TotalMatches;
         public int TotalTurns;
@@ -37,13 +41,9 @@ namespace BlobCardGame
         {
             CardList.InitCardList();
 
-            PopulationSize = 600;
-
             SubjectInputSize = 16;
             SubjectOutputSize = CardList.Cards.Count;
             SubjectHiddenSizes = new int[0];
-
-            MatchesPerGeneration = 12;
 
             // UI
             ResetStatistics();

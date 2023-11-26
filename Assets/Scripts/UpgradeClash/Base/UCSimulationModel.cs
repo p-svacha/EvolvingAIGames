@@ -6,6 +6,9 @@ namespace UpgradeClash
 {
     public class UCSimulationModel : SimulationModel
     {
+        protected override int PopulationSize => 128;
+        protected override int MatchesPerGeneration => 7; // Like this the watched match is always the 2 subjects left that won all games so far
+
         public override Match GetMatch(Subject sub1, Subject sub2, MatchSimulationMode simulationMode)
         {
             return new UCMatch(this, sub1, sub2, simulationMode);
@@ -13,16 +16,12 @@ namespace UpgradeClash
 
         public override void InitSimulationParameters()
         {
-            PopulationSize = 32;
-
             AIPlayer dummy = new AIPlayer(null); // Create a dummy player to get correct amount of inputs & outputs
             dummy.Init(null, dummy);
 
             SubjectInputSize = dummy.GetInputs().Length;
             SubjectOutputSize = dummy.UpgradeList.Count;
             SubjectHiddenSizes = new int[] { dummy.GetInputs().Length, dummy.GetInputs().Length / 2 };
-
-            MatchesPerGeneration = 2;
         }
 
         public override void OnGenerationFinished() { }

@@ -74,8 +74,8 @@ namespace UpgradeClash
             P1_ArmyPanel.UpdateValues();
             P2_ArmyPanel.UpdateValues();
 
-            P1_DesiredUpgrades.UpdateValues(UCMatch.Player1);
-            P2_DesiredUpgrades.UpdateValues(UCMatch.Player2);
+            if(UCMatch.Player1 is AIPlayer ai1) P1_DesiredUpgrades.UpdateValues(ai1);
+            if(UCMatch.Player2 is AIPlayer ai2) P2_DesiredUpgrades.UpdateValues(ai2);
 
             // Genome Visualization
             if (Input.GetKeyDown(KeyCode.Space))

@@ -13,12 +13,12 @@ namespace UpgradeClash
         [Header("Prefabs")]
         public UI_DesiredUpgradeRow RowPrefab;
 
-        public void UpdateValues(Player player)
+        public void UpdateValues(AIPlayer player)
         {
             HelperFunctions.DestroyAllChildredImmediately(Container);
 
             // Get outputs
-            float[] outputs = ((AIPlayer)player).GetOutputs();
+            float[] outputs = player.GetOutputs();
 
             // Sort
             Dictionary<UpgradeId, float> values = new Dictionary<UpgradeId, float>();
