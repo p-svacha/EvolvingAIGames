@@ -22,10 +22,8 @@ namespace UpgradeClash
 
         public override List<Upgrade> GetDesiredUpgrades()
         {
-            float[] inputs = GetInputs();
-
             // Get output of neural net
-            float[] outputs = Subject.Genome.FeedForward(inputs);
+            float[] outputs = GetOutputs();
 
             // Get desired upgrades (all above a threshhold)
             Dictionary<Upgrade, float> desiredUpgrades = new Dictionary<Upgrade, float>();
@@ -67,6 +65,14 @@ namespace UpgradeClash
             foreach (Upgrade upgrade in Opponent.UpgradeList) inputs.Add(upgrade.GetInputValue());
 
             return inputs.ToArray();
+        }
+
+        public float[] GetOutputs()
+        {
+            float[] inputs = GetInputs();
+
+            // Get output of neural net
+            return Subject.Genome.FeedForward(inputs);
         }
     }
 }

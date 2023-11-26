@@ -34,6 +34,9 @@ namespace UpgradeClash
         public UI_ArmyPanel P1_ArmyPanel;
         public UI_ArmyPanel P2_ArmyPanel;
 
+        public UI_DesiredUpgrades P1_DesiredUpgrades;
+        public UI_DesiredUpgrades P2_DesiredUpgrades;
+
         private void Start()
         {
             SpeedControls.Init(this);  
@@ -58,9 +61,6 @@ namespace UpgradeClash
             Player1Panel.UpdateValues();
             Player2Panel.UpdateValues();
 
-            if (Player1GV != null && Player1GV.gameObject.activeSelf) Player1GV.VisualizeGenome(UCMatch.Subject1.Genome, true, false);
-            if (Player2GV != null && Player2GV.gameObject.activeSelf) Player2GV.VisualizeGenome(UCMatch.Subject2.Genome, true, false);
-
             SetWorkerAmount(P1_FoodWorkerContainer, UCMatch.Player1.Units[UnitId.FoodWorker].Amount);
             SetWorkerAmount(P1_WoodWorkerContainer, UCMatch.Player1.Units[UnitId.WoodWorker].Amount);
             SetWorkerAmount(P1_GoldWorkerContainer, UCMatch.Player1.Units[UnitId.GoldWorker].Amount);
@@ -73,6 +73,19 @@ namespace UpgradeClash
 
             P1_ArmyPanel.UpdateValues();
             P2_ArmyPanel.UpdateValues();
+
+            P1_DesiredUpgrades.UpdateValues(UCMatch.Player1);
+            P2_DesiredUpgrades.UpdateValues(UCMatch.Player2);
+
+            // Genome Visualization
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                Player1GV.gameObject.SetActive(!Player1GV.gameObject.activeSelf);
+                Player2GV.gameObject.SetActive(!Player2GV.gameObject.activeSelf);
+            }
+
+            if (Player1GV != null && Player1GV.gameObject.activeSelf) Player1GV.VisualizeGenome(UCMatch.Subject1.Genome, showConnections: false);
+            if (Player2GV != null && Player2GV.gameObject.activeSelf) Player2GV.VisualizeGenome(UCMatch.Subject2.Genome, showConnections: false);
         }
 
         private void SetWorkerAmount(GameObject container, int numWorkers)

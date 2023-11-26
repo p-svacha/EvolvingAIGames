@@ -17,10 +17,11 @@ public class GenomeVisualizer : UIElement {
 
     /// <summary>
     /// Visualizes the neural network of a genome.
+    /// If showConnections is true, connections between nodes are drawn
     /// If showNodeWeights is true, the nodes are colored according to their value, where black = 0 and white = 1.
     /// If drawIds is true, the Ids of nodes and connection will be drawn onto them.
     /// </summary>
-    public void VisualizeGenome(Genome g, bool showNodeWeights, bool drawIds)
+    public void VisualizeGenome(Genome g, bool showConnections = true, bool showNodeWeights = true, bool drawIds = false)
     {
         Clear();
 
@@ -32,7 +33,7 @@ public class GenomeVisualizer : UIElement {
         else SetBackgroundColor(Color.grey);
 
         // Set fitness text
-        if(FitnessText!= null) FitnessText.text = g.Fitness.ToString("0.#") + " / " + g.AdjustedFitness.ToString("0.#");
+        if(FitnessText != null) FitnessText.text = g.Fitness.ToString("0.#") + " / " + g.AdjustedFitness.ToString("0.#");
 
         // Set fixed y positions of inputs and outputs
         for (int i = 0; i < g.InputNodes.Count; i++)
@@ -111,9 +112,12 @@ public class GenomeVisualizer : UIElement {
             }
         }
 
-        foreach (Connection c in g.EnabledConnections)
+        if (showConnections)
         {
-            c.VisualConnection = CreateDotConnection(c.FromNode.VisualNode.transform.localPosition, c.ToNode.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, c.Id + "", drawIds, c.Weight <= 0 ? Color.blue : Color.green);
+            foreach (Connection c in g.EnabledConnections)
+            {
+                c.VisualConnection = CreateDotConnection(c.FromNode.VisualNode.transform.localPosition, c.ToNode.VisualNode.transform.localPosition, c.Weight <= 0 ? Color.white : Color.black, (Math.Abs(c.Weight) * 6) + 0.5f, c.Id + "", drawIds, c.Weight <= 0 ? Color.blue : Color.green);
+            }
         }
 
         if (showNodeWeights) UpdateValues(g, false);

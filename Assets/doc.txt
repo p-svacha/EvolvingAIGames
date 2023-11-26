@@ -1,11 +1,3 @@
-Input validation:
-
-disable stone input and stone upgrade to test
-somehow validate if input values are as expected (make toggleable genome vis / only on pause)
-add permanent display for most wanted upgrades
-
---------------------------------------------
-
 AI:
 
 Make different matching systems:
@@ -31,6 +23,7 @@ tie all upgrades to a building
 
 UI 2:
 
+Show upgrades in belonging buildings
 Add tooltips to upgrades
 
 --------------------------------------------
