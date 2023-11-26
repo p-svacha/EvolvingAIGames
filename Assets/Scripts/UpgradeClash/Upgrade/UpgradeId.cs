@@ -8,6 +8,11 @@ public enum UpgradeId
     TrainWoodWorker,
     TrainGoldWorker,
     TrainStoneWorker,
-    Damage,
-    TrainMilitia
+
+    TrainMilitia,
+
+    BuildPalisade,
+    BuildBarracks,
+
+    Forging
 }

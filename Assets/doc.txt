@@ -1,15 +1,3 @@
-Content:
-
-start with 1 food vill
-add unique barrack uograde
-	> is req for miltia
-	> has 2 upgrades to reduce cd and food cost
-
-tie all upgrades to a building
-	> only 1 upgrade per building at a time
-
---------------------------------------------
-
 UI 2:
 
 Show upgrades in belonging buildings

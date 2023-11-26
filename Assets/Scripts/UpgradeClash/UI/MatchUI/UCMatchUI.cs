@@ -15,24 +15,17 @@ namespace UpgradeClash
 
         public UI_SpeedControl SpeedControls;
 
-        public UI_PlayerPanel Player1Panel;
-        public UI_PlayerPanel Player2Panel;
+        public UI_PlayerHeader P1_Header;
+        public UI_PlayerHeader P2_Header;
 
-        public GenomeVisualizer Player1GV;
-        public GenomeVisualizer Player2GV;
-
-        public GameObject P1_FoodWorkerContainer;
-        public GameObject P1_WoodWorkerContainer;
-        public GameObject P1_GoldWorkerContainer;
-        public GameObject P1_StoneWorkerContainer;
-
-        public GameObject P2_FoodWorkerContainer;
-        public GameObject P2_WoodWorkerContainer;
-        public GameObject P2_GoldWorkerContainer;
-        public GameObject P2_StoneWorkerContainer;
+        public UI_Map P1_Map;
+        public UI_Map P2_Map;
 
         public UI_ArmyPanel P1_ArmyPanel;
         public UI_ArmyPanel P2_ArmyPanel;
+
+        public GenomeVisualizer Player1GV;
+        public GenomeVisualizer Player2GV;
 
         public UI_DesiredUpgrades P1_DesiredUpgrades;
         public UI_DesiredUpgrades P2_DesiredUpgrades;
@@ -45,8 +38,12 @@ namespace UpgradeClash
         public override void OnInit()
         {
             UCMatch = (UCMatch)Match;
-            Player1Panel.Init(UCMatch.Player1);
-            Player2Panel.Init(UCMatch.Player2);
+
+            P1_Header.Init(UCMatch.Player1);
+            P2_Header.Init(UCMatch.Player2);
+
+            P1_Map.Init(UCMatch.Player1);
+            P2_Map.Init(UCMatch.Player2);
 
             P1_ArmyPanel.Init(UCMatch.Player1);
             P2_ArmyPanel.Init(UCMatch.Player2);
@@ -58,23 +55,16 @@ namespace UpgradeClash
         {
             TickText.text = UCMatch.Ticks.ToString();
 
-            Player1Panel.UpdateValues();
-            Player2Panel.UpdateValues();
+            P1_Header.UpdateValues();
+            P2_Header.UpdateValues();
 
-            SetWorkerAmount(P1_FoodWorkerContainer, UCMatch.Player1.Units[UnitId.FoodWorker].Amount);
-            SetWorkerAmount(P1_WoodWorkerContainer, UCMatch.Player1.Units[UnitId.WoodWorker].Amount);
-            SetWorkerAmount(P1_GoldWorkerContainer, UCMatch.Player1.Units[UnitId.GoldWorker].Amount);
-            SetWorkerAmount(P1_StoneWorkerContainer, UCMatch.Player1.Units[UnitId.StoneWorker].Amount);
-
-            SetWorkerAmount(P2_FoodWorkerContainer, UCMatch.Player2.Units[UnitId.FoodWorker].Amount);
-            SetWorkerAmount(P2_WoodWorkerContainer, UCMatch.Player2.Units[UnitId.WoodWorker].Amount);
-            SetWorkerAmount(P2_GoldWorkerContainer, UCMatch.Player2.Units[UnitId.GoldWorker].Amount);
-            SetWorkerAmount(P2_StoneWorkerContainer, UCMatch.Player2.Units[UnitId.StoneWorker].Amount);
+            P1_Map.UpdateVales();
+            P2_Map.UpdateVales();
 
             P1_ArmyPanel.UpdateValues();
             P2_ArmyPanel.UpdateValues();
 
-            if(UCMatch.Player1 is AIPlayer ai1) P1_DesiredUpgrades.UpdateValues(ai1);
+            if (UCMatch.Player1 is AIPlayer ai1) P1_DesiredUpgrades.UpdateValues(ai1);
             if(UCMatch.Player2 is AIPlayer ai2) P2_DesiredUpgrades.UpdateValues(ai2);
 
             // Genome Visualization
@@ -86,12 +76,6 @@ namespace UpgradeClash
 
             if (Player1GV != null && Player1GV.gameObject.activeSelf) Player1GV.VisualizeGenome(UCMatch.Subject1.Genome, showConnections: false);
             if (Player2GV != null && Player2GV.gameObject.activeSelf) Player2GV.VisualizeGenome(UCMatch.Subject2.Genome, showConnections: false);
-        }
-
-        private void SetWorkerAmount(GameObject container, int numWorkers)
-        {
-            HelperFunctions.DestroyAllChildredImmediately(container);
-            for (int i = 0; i < numWorkers; i++) Instantiate(UCResourceManager.Singleton.UnitPrefab, container.transform);
         }
 
         public void SetSpeed0()
@@ -106,12 +90,12 @@ namespace UpgradeClash
         }
         public void SetSpeed2()
         {
-            UCMatch.SetTicksPerSecond(4);
+            UCMatch.SetTicksPerSecond(6);
             SpeedControls.HighlightButton(SpeedControls.Speed2Button);
         }
         public void SetSpeed3()
         {
-            UCMatch.SetTicksPerSecond(16);
+            UCMatch.SetTicksPerSecond(24);
             SpeedControls.HighlightButton(SpeedControls.Speed3Button);
         }
     }

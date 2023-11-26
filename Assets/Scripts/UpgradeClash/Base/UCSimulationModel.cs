@@ -6,8 +6,8 @@ namespace UpgradeClash
 {
     public class UCSimulationModel : SimulationModel
     {
-        protected override int PopulationSize => 128;
-        protected override int MatchesPerGeneration => 7; // Like this the watched match is always the 2 subjects left that won all games so far
+        protected override int PopulationSize => 256;
+        protected override int MatchesPerGeneration => 8; // Like this the watched match is always the 2 subjects left that won all games so far, inc by 1 for doubling pop
 
         public override Match GetMatch(Subject sub1, Subject sub2, MatchSimulationMode simulationMode)
         {

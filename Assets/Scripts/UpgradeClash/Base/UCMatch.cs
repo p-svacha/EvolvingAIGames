@@ -11,10 +11,10 @@ namespace UpgradeClash
         public const int ResourceCap = 1000;
         public const int MaxGameLength = 3600;
 
-        public const int StartFood = 100;
-        public const int StartWood = 100;
-        public const int StartGold = 100;
-        public const int StartStone = 100;
+        public const int StartFood = 200;
+        public const int StartWood = 200;
+        public const int StartGold = 200;
+        public const int StartStone = 200;
 
         public const int WorkerCap = 10; // Max amount of workers per resource
         public const int ArmyCap = 10; // Max amount of units per type
@@ -114,7 +114,7 @@ namespace UpgradeClash
 
         public override void OnMatchEnd()
         {
-            Debug.Log("Game ended after " + Ticks + " ticks.   " + Winner.Name + " won.");
+            Debug.Log("Game ended after " + Ticks + " ticks.   " + Winner.Name + " won and is now at " + Winner.Wins + "-" + Winner.Losses + ".");
         }
 
         /// <summary>

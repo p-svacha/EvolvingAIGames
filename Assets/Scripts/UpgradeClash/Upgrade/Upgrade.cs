@@ -17,12 +17,23 @@ namespace UpgradeClash
         /// <summary>
         /// Unique identifier of this upgrade.
         /// </summary>
-        public abstract UpgradeId Id {get;}
+        public abstract UpgradeId Id { get; }
 
         /// <summary>
         /// Display name of the upgrade.
         /// </summary>
         public abstract string Name { get; }
+
+        /// <summary>
+        /// Description of the upgrade.
+        /// </summary>
+        public virtual string Description => "";
+
+        /// <summary>
+        /// To which building this upgrade belongs to.
+        /// <br/> Only one upgrade can be done per building at a time.
+        /// </summary>
+        public abstract BuildingId Building { get; }
 
         /// <summary>
         /// Food cost of the upgrade.

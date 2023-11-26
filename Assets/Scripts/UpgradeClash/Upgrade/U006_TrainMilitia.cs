@@ -8,6 +8,7 @@ namespace UpgradeClash
     {
         public override UpgradeId Id => UpgradeId.TrainMilitia;
         public override string Name => "Train Militia";
+        public override BuildingId Building => BuildingId.Barracks;
         public override int FoodCost => 60;
         public override int GoldCost => 20;
         public override int BaseDuration => 21;

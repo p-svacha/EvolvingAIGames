@@ -17,7 +17,9 @@ namespace UpgradeClash
         public Sprite GoldWorkerIcon;
         public Sprite StoneWorkerIcon;
         public Sprite MilitiaIcon;
-        public Sprite U_Damage;
+        public Sprite BarracksIcon;
+        public Sprite PalisadeIcon;
+        public Sprite ForgingIcon;
 
         private Dictionary<UpgradeId, Sprite> UpgradeSprites;
         private Dictionary<UnitId, Sprite> UnitSprites;
@@ -37,7 +39,9 @@ namespace UpgradeClash
                 {UpgradeId.TrainGoldWorker, GoldWorkerIcon },
                 {UpgradeId.TrainStoneWorker, StoneWorkerIcon },
                 {UpgradeId.TrainMilitia, MilitiaIcon },
-                {UpgradeId.Damage, U_Damage },
+                {UpgradeId.BuildBarracks, BarracksIcon },
+                {UpgradeId.BuildPalisade, PalisadeIcon },
+                {UpgradeId.Forging, ForgingIcon },
             };
 
             UnitSprites = new Dictionary<UnitId, Sprite>()

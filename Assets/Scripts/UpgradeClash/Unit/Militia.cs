@@ -15,7 +15,10 @@ namespace UpgradeClash
 
         public override int GetAttackDamage()
         {
-            return BaseAttackDamage;
+            int damage = BaseAttackDamage; // Base damage
+            if (Self.UpgradeDictionary[UpgradeId.Forging].IsInEffect) damage += U008_Forging.BonusDamage; // Forging upgrade
+            if (Opponent.UpgradeDictionary[UpgradeId.BuildPalisade].IsInEffect) damage -= U002_BuildPalisade.BaseDamageReduction; // Palisade reduction
+            return damage;
         }
 
         public override int GetCooldown()

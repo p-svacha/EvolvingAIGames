@@ -8,6 +8,7 @@ namespace UpgradeClash
     {
         public override UpgradeId Id => UpgradeId.TrainStoneWorker;
         public override string Name => "Stone Worker";
+        public override BuildingId Building => BuildingId.Base;
         public override int FoodCost => 50;
         public override int BaseDuration => 25;
         public override bool Repeatable => true;
@@ -20,7 +21,6 @@ namespace UpgradeClash
         public override bool CanActivate()
         {
             if (Self.Units[UnitId.StoneWorker].IsAtMaxAmount) return false;
-            if (Self.IsWorkerInProgress()) return false;
             return true;
         }
 

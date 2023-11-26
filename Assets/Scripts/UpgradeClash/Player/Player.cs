@@ -34,6 +34,11 @@ namespace UpgradeClash
         public Dictionary<UpgradeId, Upgrade> UpgradeDictionary = new Dictionary<UpgradeId, Upgrade>();
         public List<Upgrade> UpgradeList;
 
+        /// <summary>
+        /// Dictionary that maps which upgrade defines if a building exists.
+        /// </summary>
+        public Dictionary<BuildingId, Upgrade> BuildingUpgrades;
+
         public void Init(UCMatch match, Player opponent)
         {
             Match = match;
@@ -59,15 +64,20 @@ namespace UpgradeClash
                 { UnitId.Militia,  new Militia(this) },
             };
 
+            // Get starting units
+            // AddFoodWorker();
+
             // Create and init all upgrades
             UpgradeList = new List<Upgrade>()
             {
                 new U001_TrainFoodWorker(),
-                //new U002_Damage(),
                 new U003_TrainWoodWorker(),
                 new U004_TrainGoldWorker(),
                 new U005_TrainStoneWorker(),
                 new U006_TrainMilitia(),
+                new U002_BuildPalisade(),
+                new U007_BuildBarracks(),
+                new U008_Forging()
             };
 
             foreach (Upgrade upgrade in UpgradeList)
@@ -75,6 +85,13 @@ namespace UpgradeClash
                 upgrade.Init(this, opponent);
                 UpgradeDictionary.Add(upgrade.Id, upgrade);
             }
+
+            // Init building upgrade map
+            BuildingUpgrades = new Dictionary<BuildingId, Upgrade>()
+            {
+                { BuildingId.Barracks, UpgradeDictionary[UpgradeId.BuildBarracks] },
+                { BuildingId.Palisade, UpgradeDictionary[UpgradeId.BuildPalisade] },
+            };
         }
 
         public void Tick()
@@ -124,7 +141,10 @@ namespace UpgradeClash
         {
             if (upgrade.IsInEffect) return false; // Upgrade is unique and already active
             if (upgrade.IsInProgress) return false; // Upgrade is currently being activated
-            if (!upgrade.CanActivate()) return false; // Requirements not met
+            if (!upgrade.CanActivate()) return false; // Upgrade-specific requirements not met
+            if (upgrade.Building != BuildingId.Base && !BuildingUpgrades[upgrade.Building].IsInEffect) return false; // Upgrade building is not yet built
+            foreach (Upgrade u in UpgradeList.Where(x => x.Building == upgrade.Building))
+                if (u.IsInProgress) return false; // Another upgrade is in progress of the same building
             if (Food < upgrade.FoodCost) return false; // Not enough food
             if (Wood < upgrade.WoodCost) return false; // Not enough wood
             if (Gold < upgrade.GoldCost) return false; // Not enough gold
@@ -191,19 +211,6 @@ namespace UpgradeClash
         public void DealDamage(int amount)
         {
             CurrentHealth -= amount;
-        }
-
-        #endregion
-
-        #region Attributes
-
-        public bool IsWorkerInProgress()
-        {
-            if (UpgradeDictionary[UpgradeId.TrainFoodWorker].IsInProgress) return true;
-            if (UpgradeDictionary[UpgradeId.TrainWoodWorker].IsInProgress) return true;
-            if (UpgradeDictionary[UpgradeId.TrainGoldWorker].IsInProgress) return true;
-            if (UpgradeDictionary[UpgradeId.TrainStoneWorker].IsInProgress) return true;
-            return false;
         }
 
         #endregion
