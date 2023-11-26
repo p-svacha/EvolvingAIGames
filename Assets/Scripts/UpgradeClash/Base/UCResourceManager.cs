@@ -12,19 +12,19 @@ namespace UpgradeClash
         public static UCResourceManager Singleton => _Singleton;
 
         [Header("Upgrade Icons")]
-        public Sprite U_FoodWorker;
-        public Sprite U_WoodWorker;
-        public Sprite U_GoldWorker;
-        public Sprite U_StoneWorker;
+        public Sprite FoodWorkerIcon;
+        public Sprite WoodWorkerIcon;
+        public Sprite GoldWorkerIcon;
+        public Sprite StoneWorkerIcon;
         public Sprite MilitiaIcon;
         public Sprite U_Damage;
 
         private Dictionary<UpgradeId, Sprite> UpgradeSprites;
+        private Dictionary<UnitId, Sprite> UnitSprites;
 
         [Header("Prefabs")]
         public UI_Upgrade UpgradePrefab;
-        public GameObject WorkerPrefab;
-        public Image ArmyPrefab;
+        public GameObject UnitPrefab;
 
         public void Start()
         {
@@ -32,16 +32,26 @@ namespace UpgradeClash
 
             UpgradeSprites = new Dictionary<UpgradeId, Sprite>()
             {
-                {UpgradeId.TrainFoodWorker, U_FoodWorker },
-                {UpgradeId.TrainWoodWorker, U_WoodWorker },
-                {UpgradeId.TrainGoldWorker, U_GoldWorker },
-                {UpgradeId.TrainStoneWorker, U_StoneWorker },
+                {UpgradeId.TrainFoodWorker, FoodWorkerIcon },
+                {UpgradeId.TrainWoodWorker, WoodWorkerIcon },
+                {UpgradeId.TrainGoldWorker, GoldWorkerIcon },
+                {UpgradeId.TrainStoneWorker, StoneWorkerIcon },
                 {UpgradeId.TrainMilitia, MilitiaIcon },
                 {UpgradeId.Damage, U_Damage },
             };
+
+            UnitSprites = new Dictionary<UnitId, Sprite>()
+            {
+                {UnitId.FoodWorker, FoodWorkerIcon },
+                {UnitId.WoodWorker, WoodWorkerIcon },
+                {UnitId.GoldWorker, GoldWorkerIcon },
+                {UnitId.StoneWorker, StoneWorkerIcon },
+                {UnitId.Militia, MilitiaIcon },
+            };
         }
 
-        public Sprite GetUpgradeSprite(Upgrade upgrade) => UpgradeSprites[upgrade.Id];
+        public Sprite GetUpgradeSprite(UpgradeId id) => UpgradeSprites[id];
+        public Sprite GetUnitSprite(UnitId id) => UnitSprites[id];
 
     }
 }

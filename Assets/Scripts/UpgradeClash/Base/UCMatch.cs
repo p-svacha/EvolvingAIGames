@@ -19,10 +19,6 @@ namespace UpgradeClash
         public const int WorkerCap = 10; // Max amount of workers per resource
         public const int ArmyCap = 10; // Max amount of units per type
 
-        // Unit Stats
-        public const int MilitiaBaseAttackCooldown = 10;
-        public const int MilitiaBaseAttackDamage = 1;
-
         // Players
         public Player Player1;
         public Player Player2;

@@ -28,8 +28,8 @@ namespace UpgradeClash
         public GameObject P2_GoldWorkerContainer;
         public GameObject P2_StoneWorkerContainer;
 
-        public GameObject P1_ArmyContainer;
-        public GameObject P2_ArmyContainer;
+        public UI_ArmyPanel P1_ArmyPanel;
+        public UI_ArmyPanel P2_ArmyPanel;
 
         private void Start()
         {
@@ -42,6 +42,9 @@ namespace UpgradeClash
             Player1Panel.Init(UCMatch.Player1);
             Player2Panel.Init(UCMatch.Player2);
 
+            P1_ArmyPanel.Init(UCMatch.Player1);
+            P2_ArmyPanel.Init(UCMatch.Player2);
+
             SetSpeed1();
         }
 
@@ -50,37 +53,27 @@ namespace UpgradeClash
             Player1Panel.UpdateValues();
             Player2Panel.UpdateValues();
 
-            if (Player1GV != null) Player1GV.VisualizeGenome(UCMatch.Subject1.Genome, true, false);
-            if (Player2GV != null) Player2GV.VisualizeGenome(UCMatch.Subject2.Genome, true, false);
+            if (Player1GV != null && Player1GV.gameObject.activeSelf) Player1GV.VisualizeGenome(UCMatch.Subject1.Genome, true, false);
+            if (Player2GV != null && Player2GV.gameObject.activeSelf) Player2GV.VisualizeGenome(UCMatch.Subject2.Genome, true, false);
 
-            SetWorkerAmount(P1_FoodWorkerContainer, UCMatch.Player1.FoodWorkers);
-            SetWorkerAmount(P1_WoodWorkerContainer, UCMatch.Player1.WoodWorkers);
-            SetWorkerAmount(P1_GoldWorkerContainer, UCMatch.Player1.GoldWorkers);
-            SetWorkerAmount(P1_StoneWorkerContainer, UCMatch.Player1.StoneWorkers);
+            SetWorkerAmount(P1_FoodWorkerContainer, UCMatch.Player1.Units[UnitId.FoodWorker].Amount);
+            SetWorkerAmount(P1_WoodWorkerContainer, UCMatch.Player1.Units[UnitId.WoodWorker].Amount);
+            SetWorkerAmount(P1_GoldWorkerContainer, UCMatch.Player1.Units[UnitId.GoldWorker].Amount);
+            SetWorkerAmount(P1_StoneWorkerContainer, UCMatch.Player1.Units[UnitId.StoneWorker].Amount);
 
-            SetWorkerAmount(P2_FoodWorkerContainer, UCMatch.Player2.FoodWorkers);
-            SetWorkerAmount(P2_WoodWorkerContainer, UCMatch.Player2.WoodWorkers);
-            SetWorkerAmount(P2_GoldWorkerContainer, UCMatch.Player2.GoldWorkers);
-            SetWorkerAmount(P2_StoneWorkerContainer, UCMatch.Player2.StoneWorkers);
+            SetWorkerAmount(P2_FoodWorkerContainer, UCMatch.Player2.Units[UnitId.FoodWorker].Amount);
+            SetWorkerAmount(P2_WoodWorkerContainer, UCMatch.Player2.Units[UnitId.WoodWorker].Amount);
+            SetWorkerAmount(P2_GoldWorkerContainer, UCMatch.Player2.Units[UnitId.GoldWorker].Amount);
+            SetWorkerAmount(P2_StoneWorkerContainer, UCMatch.Player2.Units[UnitId.StoneWorker].Amount);
 
-            SetArmy(P1_ArmyContainer, UCMatch.Player1);
-            SetArmy(P2_ArmyContainer, UCMatch.Player2);
+            P1_ArmyPanel.UpdateValues();
+            P2_ArmyPanel.UpdateValues();
         }
 
         private void SetWorkerAmount(GameObject container, int numWorkers)
         {
             HelperFunctions.DestroyAllChildredImmediately(container);
-            for (int i = 0; i < numWorkers; i++) Instantiate(UCResourceManager.Singleton.WorkerPrefab, container.transform);
-        }
-
-        private void SetArmy(GameObject container, Player player)
-        {
-            HelperFunctions.DestroyAllChildredImmediately(container);
-            for(int i = 0; i < player.Militia; i++)
-            {
-                Image img = Instantiate(UCResourceManager.Singleton.ArmyPrefab, container.transform);
-                img.sprite = UCResourceManager.Singleton.MilitiaIcon;
-            }
+            for (int i = 0; i < numWorkers; i++) Instantiate(UCResourceManager.Singleton.UnitPrefab, container.transform);
         }
 
         public void SetSpeed0()

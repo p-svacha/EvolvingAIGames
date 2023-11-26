@@ -19,9 +19,11 @@ namespace UpgradeClash
 
         public override bool CanActivate()
         {
-            if (Self.GoldWorkers >= UCMatch.WorkerCap) return false;
+            if (Self.Units[UnitId.GoldWorker].IsAtMaxAmount) return false;
             if (Self.IsWorkerInProgress()) return false;
             return true;
         }
+
+        public override float GetInputValue() => GetUnitInputValue(Self.Units[UnitId.GoldWorker]);
     }
 }

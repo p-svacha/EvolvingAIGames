@@ -19,9 +19,11 @@ namespace UpgradeClash
 
         public override bool CanActivate()
         {
-            if (Self.FoodWorkers >= UCMatch.WorkerCap) return false;
+            if (Self.Units[UnitId.FoodWorker].IsAtMaxAmount) return false;
             if (Self.IsWorkerInProgress()) return false;
             return true;
         }
+
+        public override float GetInputValue() => GetUnitInputValue(Self.Units[UnitId.FoodWorker]);
     }
 }

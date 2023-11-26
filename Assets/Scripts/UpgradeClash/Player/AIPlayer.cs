@@ -54,13 +54,6 @@ namespace UpgradeClash
             inputs.Add(RelativeGold);
             inputs.Add(RelativeStone);
 
-            inputs.Add(RelativeFoodWorkers);
-            inputs.Add(RelativeWoodWorkers);
-            inputs.Add(RelativeGoldWorkers);
-            inputs.Add(RelativeStoneWorkers);
-
-            inputs.Add(RelativeMilitia);
-
             foreach (Upgrade upgrade in UpgradeList) inputs.Add(upgrade.GetInputValue());
 
             // Opponent
@@ -70,13 +63,6 @@ namespace UpgradeClash
             inputs.Add(Opponent.RelativeWood);
             inputs.Add(Opponent.RelativeGold);
             inputs.Add(Opponent.RelativeStone);
-
-            inputs.Add(Opponent.RelativeFoodWorkers);
-            inputs.Add(Opponent.RelativeWoodWorkers);
-            inputs.Add(Opponent.RelativeGoldWorkers);
-            inputs.Add(Opponent.RelativeStoneWorkers);
-
-            inputs.Add(Opponent.RelativeMilitia);
 
             foreach (Upgrade upgrade in Opponent.UpgradeList) inputs.Add(upgrade.GetInputValue());
 

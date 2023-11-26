@@ -19,7 +19,7 @@ namespace UpgradeClash
         public void Init(Upgrade upgrade)
         {
             Upgrade = upgrade;
-            Icon.sprite = UCResourceManager.Singleton.GetUpgradeSprite(Upgrade);
+            Icon.sprite = UCResourceManager.Singleton.GetUpgradeSprite(Upgrade.Id);
             UpdateValues();
         }
 
@@ -28,7 +28,7 @@ namespace UpgradeClash
             DurationText.text = System.TimeSpan.FromSeconds(Upgrade.RemainingDuration).ToString(@"m\:ss");
 
             float fullWidth = Background.GetComponent<RectTransform>().rect.width;
-            float dynamicBarWidth = (1f - ((float)Upgrade.RemainingDuration / Upgrade.BaseDuration)) * fullWidth;
+            float dynamicBarWidth = (1f - ((float)Upgrade.RemainingDuration / Upgrade.GetDuration())) * fullWidth;
             ProgressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(dynamicBarWidth, ProgressBar.GetComponent<RectTransform>().sizeDelta.y);
         }
     }

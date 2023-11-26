@@ -36,13 +36,13 @@ namespace UpgradeClash
         {
             // Resources
             FoodText.text = Player.Food.ToString();
-            FoodIncomeText.text = Player.GetFoodIncome().ToString();
+            FoodIncomeText.text = ((WorkerUnit)Player.Units[UnitId.FoodWorker]).GetIncome().ToString() + " / " + Player.Units[UnitId.FoodWorker].GetCooldown().ToString();
             WoodText.text = Player.Wood.ToString();
-            WoodIncomeText.text = Player.GetWoodIncome().ToString();
+            WoodIncomeText.text = ((WorkerUnit)Player.Units[UnitId.WoodWorker]).GetIncome().ToString() + " / " + Player.Units[UnitId.WoodWorker].GetCooldown().ToString(); ;
             GoldText.text = Player.Gold.ToString();
-            GoldIncomeText.text = Player.GetGoldIncome().ToString();
+            GoldIncomeText.text = ((WorkerUnit)Player.Units[UnitId.GoldWorker]).GetIncome().ToString() + " / " + Player.Units[UnitId.GoldWorker].GetCooldown().ToString(); ;
             StoneText.text = Player.Stone.ToString();
-            StoneIncomeText.text = Player.GetStoneIncome().ToString();
+            StoneIncomeText.text = ((WorkerUnit)Player.Units[UnitId.StoneWorker]).GetIncome().ToString() + " / " + Player.Units[UnitId.StoneWorker].GetCooldown().ToString(); ;
 
             // Health
             HealthBar.UpdateValues();

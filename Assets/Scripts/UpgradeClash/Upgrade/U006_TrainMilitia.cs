@@ -20,8 +20,10 @@ namespace UpgradeClash
 
         public override bool CanActivate()
         {
-            if (Self.Militia >= UCMatch.ArmyCap) return false;
+            if (Self.Units[UnitId.Militia].IsAtMaxAmount) return false;
             return true;
         }
+
+        public override float GetInputValue() => GetUnitInputValue(Self.Units[UnitId.Militia]);
     }
 }

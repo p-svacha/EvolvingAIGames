@@ -20,9 +20,9 @@ namespace UpgradeClash
 
             SubjectInputSize = dummy.GetInputs().Length;
             SubjectOutputSize = dummy.UpgradeList.Count;
-            SubjectHiddenSizes = new int[] { dummy.GetInputs().Length, dummy.GetInputs().Length };
+            SubjectHiddenSizes = new int[] { dummy.GetInputs().Length, dummy.GetInputs().Length / 2 };
 
-            MatchesPerGeneration = 10;
+            MatchesPerGeneration = 4;
         }
 
         public override void OnGenerationFinished() { }

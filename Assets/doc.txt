@@ -1,9 +1,23 @@
+add progress bar for food income
+show tick number in match ui
+start with 1 food vill
+
 tooltips for upgrades
 
-buildings
+remove amount of 2nd hidden layer by 0.5
+
+add unique barrack uograde
+	> is req for miltia
+	> has 2 upgrades to reduce cd and food cost
 
 cooldown reduction for militia
 militia damage upgrade
+
+add display for most wanted upgrades
+
+change into swiss system kinda
+
+somehow validate if input values are as expected (make toggleable genome vis / only on pause)
 
 look into multithreading
 
