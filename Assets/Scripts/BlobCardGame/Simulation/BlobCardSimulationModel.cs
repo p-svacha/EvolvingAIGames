@@ -37,7 +37,7 @@ namespace BlobCardGame
         public int WinnerNumCardOptions;
         public int LoserNumCardOptions;
 
-        public override void InitSimulationParameters()
+        public override void Init()
         {
             CardList.InitCardList();
 

@@ -8,8 +8,8 @@ namespace UpgradeClash
     {
         public override UnitId Id => UnitId.Militia;
         public override string Name => "Militia";
-        private const int BaseAttackDamage = 1;
-        private const int BaseAttackCooldown = 10;
+        private const int BaseAttackDamage = 2;
+        private const int BaseAttackCooldown = 16;
 
         public Militia(Player player) : base(player) { }
 

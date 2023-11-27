@@ -4,8 +4,9 @@ using UnityEngine;
 
 namespace UpgradeClash
 {
-    public class UCSimulationUI : SimulationUI
+    public enum SimulationStatId
     {
-
+        None,
+        AvgGameTime
     }
 }

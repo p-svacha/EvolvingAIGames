@@ -20,6 +20,7 @@ public abstract class SimulationModel : MonoBehaviour
 
     // Population
     private Population Population;
+    public int Generation => Population.Generation;
 
     /// <summary>
     /// Total amount of subjects.
@@ -51,10 +52,12 @@ public abstract class SimulationModel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InitSimulationParameters();
+        Init();
 
         // Initialize population with random subjects
         Population = new Population(PopulationSize, SubjectInputSize, SubjectHiddenSizes, SubjectOutputSize);
+
+        OnGenerationStarted();
 
         // Generate matches of first generation
         GenerateMatches();
@@ -67,7 +70,7 @@ public abstract class SimulationModel : MonoBehaviour
         MatchUI.gameObject.SetActive(false);
     }
 
-    public abstract void InitSimulationParameters();
+    public abstract void Init();
 
     #endregion
 
@@ -152,12 +155,17 @@ public abstract class SimulationModel : MonoBehaviour
     /// <summary>
     /// Gets called when all matches in a round are finished.
     /// </summary>
-    public abstract void OnMatchRoundFinished();
+    public virtual void OnMatchRoundFinished() { }
+
+    /// <summary>
+    /// Gets called when the population of a new generation is generated and before any matches are created.
+    /// </summary>
+    public virtual void OnGenerationStarted() { }
 
     /// <summary>
     /// Gets called when all matches of the last round in a generation are finished.
     /// </summary>
-    public abstract void OnGenerationFinished();
+    public virtual void OnGenerationFinished() { }
 
     #endregion
 
@@ -238,8 +246,11 @@ public abstract class SimulationModel : MonoBehaviour
                 // Reset stats
                 MatchRound = 0;
 
-                // Evolve and Update UI
+                // Evolve
                 EvolutionInformation info = Population.EvolveGeneration();
+                OnGenerationStarted();
+
+                // Update UI
                 SimulationUI.EvoStats.UpdateStatistics(info);
                 SimulationUI.SpeciesScoreboard.UpdateScoreboard(Population);
 

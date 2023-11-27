@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class SimulationUI : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class SimulationUI : MonoBehaviour
     public float Factor;
 
     // Elements
-    public Text TitleText;
+    public TextMeshProUGUI TitleText;
     public Toggle WatchGame;
     public Toggle PlayGame;
     public EvolutionStatistics EvoStats;

@@ -12,8 +12,8 @@ public class UIElement : MonoBehaviour
 
     protected RectTransform Container;
 
-    protected float ContainerWidth;
-    protected float ContainerHeight;
+    public float Width;
+    public float Height;
 
     public void Awake()
     {
@@ -23,8 +23,8 @@ public class UIElement : MonoBehaviour
 
     public void Start()
     {
-        ContainerWidth = Container.rect.width;
-        ContainerHeight = Container.rect.height;
+        Width = Container.rect.width;
+        Height = Container.rect.height;
         OnStart();
     }
 

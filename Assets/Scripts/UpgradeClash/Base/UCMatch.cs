@@ -67,26 +67,42 @@ namespace UpgradeClash
         private bool CheckGameOver()
         {
             
-            if (Player1.CurrentHealth <= 0)
+            if (Player1.CurrentHealth <= 0) // Player 1 has no health left
+                EndGame(((AIPlayer)Player2).Subject);
+
+            else if (Player2.CurrentHealth <= 0) // Player 2 has no health left
+                EndGame(((AIPlayer)Player1).Subject);
+
+
+            else if(Ticks >= MaxGameLength) // Game reached max length
             {
-                if (SimulationMode == MatchSimulationMode.Play) EndGame(null);
+                // Tiebreaker 1: More health wins
+                if(Player1.CurrentHealth > Player2.CurrentHealth)
+                    EndGame(((AIPlayer)Player1).Subject);
+
+                else if (Player2.CurrentHealth > Player1.CurrentHealth)
+                    EndGame(((AIPlayer)Player2).Subject);
+
+                // Tiebreaker 2: More units wins
+                else if(Player1.TotalUnitAmount > Player2.TotalUnitAmount)
+                    EndGame(((AIPlayer)Player1).Subject);
+
+                else if (Player2.TotalUnitAmount > Player1.TotalUnitAmount)
+                    EndGame(((AIPlayer)Player2).Subject);
+
+                // Tiebreaker 3: More resources wins
+                else if (Player1.TotalResources > Player2.TotalResources)
+                    EndGame(((AIPlayer)Player1).Subject);
+
+                else if (Player2.TotalResources > Player1.TotalResources)
+                    EndGame(((AIPlayer)Player2).Subject);
+
+                // Tiebreaker 4: Random
+                else if(Random.value > 0.5f) EndGame(((AIPlayer)Player1).Subject);
                 else EndGame(((AIPlayer)Player2).Subject);
-                return true;
-            }
-            else if (Player2.CurrentHealth <= 0)
-            {
-                if (SimulationMode == MatchSimulationMode.Play) EndGame(null);
-                else EndGame(((AIPlayer)Player1).Subject);
-                return true;
-            }
-            else if(Ticks >= MaxGameLength) // Forfreit to player 2 if it would take too long
-            {
-                if (SimulationMode == MatchSimulationMode.Play) EndGame(null);
-                else EndGame(((AIPlayer)Player2).Subject);
-                return true;
             }
 
-            return false;
+            return MatchPhase == MatchPhase.Finished;
         }
 
         public override void Update()

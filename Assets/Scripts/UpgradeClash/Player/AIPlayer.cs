@@ -13,7 +13,7 @@ namespace UpgradeClash
         /// <summary>
         /// Neural network output values above this threshhold are considered upgrades that the player wants to click.
         /// </summary>
-        private const float DesiredUpgradeThreshhold = 0.8f;
+        public const float DesiredUpgradeThreshhold = 0.65f;
 
         public AIPlayer(Subject subject)
         {

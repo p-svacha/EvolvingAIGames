@@ -21,4 +21,9 @@ public class UI_ProgressBar : MonoBehaviour
         ProgressBar.GetComponent<RectTransform>().sizeDelta = new Vector2(dynamicBarWidth, ProgressBar.GetComponent<RectTransform>().sizeDelta.y);
         if(ProgressText != null) ProgressText.text = text;
     }
+
+    public void SetBarColor(Color color)
+    {
+        ProgressBar.GetComponent<Image>().color = color;
+    }
 }

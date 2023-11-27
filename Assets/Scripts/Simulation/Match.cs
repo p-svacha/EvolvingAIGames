@@ -52,7 +52,10 @@ public abstract class Match
     /// </summary>
     public virtual void EndGame(Subject winner)
     {
-        if(winner == Subject1)
+        MatchPhase = MatchPhase.Finished;
+        if (SimulationMode == MatchSimulationMode.Play) return;
+
+        if (winner == Subject1)
         {
             Winner = Subject1;
             Loser = Subject2;
@@ -63,13 +66,8 @@ public abstract class Match
             Loser = Subject1;
         }
 
-        if(SimulationMode != MatchSimulationMode.Play)
-        {
-            Winner.Wins++;
-            Loser.Losses++;
-        }
-
-        MatchPhase = MatchPhase.Finished;
+        Winner.Wins++;
+        Loser.Losses++;
 
         OnMatchEnd();
     }

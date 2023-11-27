@@ -15,6 +15,9 @@ namespace UpgradeClash
         {
             Icon.sprite = UCResourceManager.Singleton.GetUpgradeSprite(id);
             ProgressBar.UpdateValues(value, 1f, value.ToString(".0%"));
+
+            if (value > AIPlayer.DesiredUpgradeThreshhold) ProgressBar.SetBarColor(new Color(0f, 1f, 0f, 0.3f));
+            else ProgressBar.SetBarColor(new Color(0f, 0f, 0f, 0.3f));
         }
     }
 }

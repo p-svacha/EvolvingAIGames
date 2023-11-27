@@ -1,16 +1,22 @@
-UI 2:
+--------------------------------------------
 
-Show upgrades in belonging buildings
-Add tooltips to upgrades
+Content:
+
+initial worker cap is 2 at start for all resources
+> create mill that increases cap by 2
+
+add blacksmith building
+	> move forging to blacksmith
+
+add barracks upgrade to make militia cheaper
 
 --------------------------------------------
 
-Statistics:
+Play:
 
-Create graph framework for showing values over multiple generations
-Make a graph stat for
-> avg game length
-> avg per unit
+Show upgrades in belonging buildings
+Add tooltips to upgrades
+add play mode
 
 --------------------------------------------
 

@@ -26,7 +26,7 @@ public class GenomeVisualizer : UIElement {
         Clear();
 
         float circleSizeX = CircleSize;
-        float circleSizeY = CircleSize * (ContainerWidth / ContainerHeight);
+        float circleSizeY = CircleSize * (Width / Height);
 
         // Set background according to species
         if (g.Species != null) SetBackgroundColor(g.Species.Color);

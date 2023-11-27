@@ -214,5 +214,8 @@ namespace UpgradeClash
         }
 
         #endregion
+
+        public int TotalUnitAmount => Units.Sum(x => x.Value.Amount);
+        public int TotalResources => Food + Wood + Gold + Stone;
     }
 }

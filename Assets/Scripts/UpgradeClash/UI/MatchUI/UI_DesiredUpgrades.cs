@@ -21,15 +21,17 @@ namespace UpgradeClash
             float[] outputs = player.GetOutputs();
 
             // Sort
-            Dictionary<UpgradeId, float> values = new Dictionary<UpgradeId, float>();
-            for (int i = 0; i < player.UpgradeList.Count; i++) values.Add(player.UpgradeList[i].Id, outputs[i]);
+            Dictionary<Upgrade, float> values = new Dictionary<Upgrade, float>();
+            for (int i = 0; i < player.UpgradeList.Count; i++) values.Add(player.UpgradeList[i], outputs[i]);
             values = values.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-            // Show
-            foreach(KeyValuePair<UpgradeId, float> kvp in values)
+            // Filter and Show
+            foreach(KeyValuePair<Upgrade, float> kvp in values)
             {
+                if (kvp.Key.IsInEffect) continue; // Don't show unique ones that are already researched
+
                 UI_DesiredUpgradeRow row = Instantiate(RowPrefab, Container.transform);
-                row.Init(kvp.Key, kvp.Value);
+                row.Init(kvp.Key.Id, kvp.Value);
             }
         }
     }
