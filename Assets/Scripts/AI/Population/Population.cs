@@ -43,7 +43,7 @@ public class Population {
     /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species.
     /// This only gets used when InitialGenomesAreFullyConnected is false.
     /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
-    public float SpeciesCompatiblityThreshhold = 15;
+    public float SpeciesCompatiblityThreshold = 15;
 
 
     // Mutation parameters
@@ -60,15 +60,21 @@ public class Population {
     public float MaxConnectionWeight = 1; // The maximum value the weight of a connection inside a genome can have
     public float MinConnectionWeight = -1; // The minimum value the weight of a connection inside a genome can have
 
+    // Fitness calculation
+    private Func<Subject, float> FitnessFunction; // The function used to get a subjects fitness value at the end of a generation when evolving the population.
+
     // Debug
     public bool DebugTimestamps = true; // If true, evolution steps taking longer than 5 seconds are logged to console
 
-    public Population(int size, int numInputs, int[] hiddenLayers, int numOutputs)
+    public Population(int size, int numInputs, int[] hiddenLayers, int numOutputs, Func<Subject, float> fitnessFunction)
     {
+        // Initialized functions
+        FitnessFunction = fitnessFunction;
+
         // Initialize objects
         Subjects = new List<Subject>();
         Species = new List<Species>();
-        Speciator = new Speciator(SpeciesCompatiblityThreshhold);
+        Speciator = new Speciator(SpeciesCompatiblityThreshold);
         TopologyMutator = new TopologyMutator();
         WeightMutator = new WeightMutator();
         MutateAlgorithm = new MutateAlgorithm(TopologyMutator, WeightMutator, BaseWeightMutationChancePerGenome, BaseTopologyMutationChancePerGenome);
@@ -208,7 +214,11 @@ public class Population {
     {
         // Set Fitness, AdjustedFitness in the genome of all subjects
         foreach (Subject subject in Subjects)
-            subject.CalculateFitnessValues();
+        {
+            float fitnessValue = FitnessFunction(subject);
+            subject.Genome.Fitness = fitnessValue;
+            subject.Genome.AdjustedFitness = fitnessValue / subject.Genome.Species.Size;
+        }
 
         // Set Rank of all subjects
         List<Subject> orderedSubjects = Subjects.OrderByDescending(x => x.Genome.Fitness).ToList();
@@ -216,7 +226,9 @@ public class Population {
 
         // Set Fitness and MaxFitness for all species
         foreach (Species s in Species)
+        {
             s.CalculateFitnessValues();
+        }
 
         // Set Rank of each species
         List<Species> orderedSpecies = Species.OrderByDescending(x => x.AverageFitness).ToList();
@@ -457,13 +469,10 @@ public class Population {
         EvolutionInformation info = new EvolutionInformation(Generation, evolutionTime,
             AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings,
             numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations,
-            numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, SpeciesCompatiblityThreshhold,
+            numPreviousSpecies, numEliminatedSpecies, numEmptySpecies, numNewSpecies, Species.Count, SpeciesCompatiblityThreshold,
             maxFitness, averageFitness,
             RankNeededToSurvive, GenerationsBelowRankAllowed);
         Debug.Log(info.ToString());
-
-        // Reset the species fitness values
-        //foreach (Species s in Species) s.CalculateFitnessValues();
 
         return info;
     }
@@ -524,27 +533,12 @@ public class Population {
         EvolutionInformation info = new EvolutionInformation(Generation, evolutionTime,
             AreTakeOversImmuneToMutation, mutationInfo, numBestSubjects, numRandomSubjects, numOffsprings,
             numSubjectsCheckedForAdoption, numSubjectsImmuneToMutations,
-            numPreviousSpecies: 0, numEliminatedSpecies: 0, numEmptySpecies: 0, numNewSpecies: 0, Species.Count, SpeciesCompatiblityThreshhold,
+            numPreviousSpecies: 0, numEliminatedSpecies: 0, numEmptySpecies: 0, numNewSpecies: 0, Species.Count, SpeciesCompatiblityThreshold,
             maxFitness, averageFitness,
             RankNeededToSurvive, GenerationsBelowRankAllowed);
         Debug.Log(info.ToString());
 
-        // Reset the species fitness values
-        //foreach (Species s in Species) s.CalculateFitnessValues();
-
         return info;
-    }
-
-    // This method is only used if a generation has more than one simulations. Call this when ending a simulation.
-    public void EndCurrentSimulation()
-    {
-        foreach (Subject subject in Subjects)
-        {
-            subject.EndCurrentSimulation();
-            subject.CalculateFitnessValues();
-        }
-
-        foreach (Species species in Species) species.CalculateFitnessValues();
     }
 
     private DateTime TimeStamp(DateTime stamp, string message)

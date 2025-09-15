@@ -1801,6 +1801,7 @@ MonoBehaviour:
   MilitiaIcon: {fileID: 21300000, guid: 22b73f7830e81804cb191279422a9b9f, type: 3}
   BarracksIcon: {fileID: 21300000, guid: a6df3b7919945c04c9142641afd8696a, type: 3}
   PalisadeIcon: {fileID: 21300000, guid: 11e502a9d2c13b741aa5861508f17a95, type: 3}
+  MillIcon: {fileID: 0}
   ForgingIcon: {fileID: 21300000, guid: ae8ec25039ef8134bbcde33d96ed1711, type: 3}
   UpgradePrefab: {fileID: 2811986158670154485, guid: 6bf51ac45f31dcb48bbda0c3edb097e6,
     type: 3}
@@ -4266,7 +4267,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1827064754
 RectTransform:
   m_ObjectHideFlags: 0
