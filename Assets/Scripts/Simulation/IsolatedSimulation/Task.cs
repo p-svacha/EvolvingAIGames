@@ -12,7 +12,7 @@ public abstract class Task
     /// <summary>
     /// The subject associated with this task.
     /// </summary>
-    protected Subject Subject { get; private set; }
+    public Subject Subject { get; private set; }
 
     /// <summary>
     /// The current state of this task. (Ready / Running / Done)
@@ -57,6 +57,7 @@ public abstract class Task
     public void Tick()
     {
         if (State != TaskState.Running) return;
+        TickNumber++;
         OnTick();
     }
     protected abstract void OnTick();

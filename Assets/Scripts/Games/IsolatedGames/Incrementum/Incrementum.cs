@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Incrementum
@@ -35,13 +36,31 @@ namespace Incrementum
             // Network size
             IncrementumTask dummyTask = new IncrementumTask(null);
             SubjectInputSize = dummyTask.GetInputs().Length;
-            SubjectHiddenSizes = new int[2] { 16, 16 };
+            SubjectHiddenSizes = new int[1] { 16 };
             SubjectOutputSize = UpgradeDefs.Defs.Count;
         }
 
         protected override Task CreateTaskFor(Subject s)
         {
             return new IncrementumTask(s);
+        }
+
+        protected override void OnUpdate()
+        {
+            if (SimulationPhase == IsolatedSimulationPhase.Ready) StartGeneration();
+            else if (SimulationPhase == IsolatedSimulationPhase.Done) InitializeNextGeneration();
+        }
+
+        protected override void OnGenerationStarted()
+        {
+        }
+
+        protected override void OnGenerationFinished()
+        {
+            List<Task> ranking = Tasks[Generation].Values.OrderByDescending(x => x.Fitness).ToList();
+            IncrementumTask winnerTask = (IncrementumTask)ranking.First();
+            Subject winner = winnerTask.Subject;
+            Debug.Log($"Gen {Generation}: {winner.Name} has won with a gold amount of {winnerTask.Fitness}. History:\n{winnerTask.GetHistoryLog()}");
         }
     }
 }

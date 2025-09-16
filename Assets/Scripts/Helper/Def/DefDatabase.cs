@@ -40,11 +40,8 @@ public static class DefDatabase<T> where T : Def
 
 			defsList.Add(def);
 			defsByName.Add(def.DefName, def);
-		}
 
-		// After adding all defs, bind each one to its corresponding DefOf field.
-		foreach (T def in defCollection)
-		{
+			// Immediately bind Def to all DefOf fields
 			DefDatabaseRegistry.BindDefToAllDefOfs(def);
 		}
 	}

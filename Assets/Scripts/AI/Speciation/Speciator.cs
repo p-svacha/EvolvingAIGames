@@ -40,6 +40,7 @@ public class Speciator {
                     speciesFound = true;
                 }
             }
+            Debug.Log($"Lowest distance to another species: {lowestDistance}");
             if (!speciesFound)
             {
                 Species newSpecies = CreateNewSpecies(Subject.Genome, existingSpecies);

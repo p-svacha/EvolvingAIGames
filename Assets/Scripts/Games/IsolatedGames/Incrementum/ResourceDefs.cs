@@ -34,6 +34,15 @@ namespace Incrementum
                 ApproxAmountCap = 1000,
                 ApproxIncomeCap = 8,
             },
+
+            new ResourceDef()
+            {
+                DefName = "Food",
+                Label = "food",
+                BaseIncomePerTick = 0,
+                ApproxAmountCap = 1200,
+                ApproxIncomeCap = 6,
+            },
         };
     }
 }

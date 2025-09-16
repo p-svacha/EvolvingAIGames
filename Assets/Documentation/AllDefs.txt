@@ -1,11 +1,46 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿=== SOURCE DEF LISTS ===
 
-namespace Incrementum
-{
-    public static class UpgradeDefs
-    {
+--- ResourceDefs.cs ---
+        public static List<ResourceDef> Defs => new List<ResourceDef>()
+        {
+            new ResourceDef()
+            {
+                DefName = "Gold",
+                Label = "gold",
+                BaseIncomePerTick = 0,
+                ApproxAmountCap = 5000,
+                ApproxIncomeCap = 10,
+            },
+
+            new ResourceDef()
+            {
+                DefName = "Wood",
+                Label = "wood",
+                BaseIncomePerTick = Incrementum.BASE_WOOD_INCOME,
+                ApproxAmountCap = 1000,
+                ApproxIncomeCap = 8,
+            },
+
+            new ResourceDef()
+            {
+                DefName = "Stone",
+                Label = "stone",
+                BaseIncomePerTick = Incrementum.BASE_STONE_INCOME,
+                ApproxAmountCap = 1000,
+                ApproxIncomeCap = 8,
+            },
+
+            new ResourceDef()
+            {
+                DefName = "Food",
+                Label = "food",
+                BaseIncomePerTick = 0,
+                ApproxAmountCap = 1200,
+                ApproxIncomeCap = 6,
+            },
+        };
+
+--- UpgradeDefs.cs ---
         public static List<UpgradeDef> Defs => new List<UpgradeDef>()
         {
 
@@ -222,5 +257,4 @@ namespace Incrementum
             },
 
         };
-    }
-}
+

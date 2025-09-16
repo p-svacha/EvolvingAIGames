@@ -20,7 +20,7 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     protected int[] SubjectHiddenSizes; // Amount of hidden nodes (per layer) each genome has
 
     // Population
-    private Population Population;
+    protected Population Population { get; private set; }
     public int Generation => Population.Generation;
 
     /// <summary>
@@ -31,7 +31,7 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     /// <summary>
     /// Dictionary holding all tasks ever performed (ordered by generation, then by subject).
     /// </summary>
-    private Dictionary<int,Dictionary<Subject,Task>> Tasks;
+    protected Dictionary<int,Dictionary<Subject,Task>> Tasks;
 
     #region Initialization
 
@@ -71,6 +71,11 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     /// Gets called when all subjects of a generation are done performing and all fitness values and ranks are assigned.
     /// </summary>
     protected virtual void OnGenerationFinished() { }
+
+    /// <summary>
+    /// Gets called every frame regardless of the simulation phase.
+    /// </summary>
+    protected virtual void OnUpdate() { }
 
     #endregion
 
@@ -152,6 +157,8 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
                 EndGeneration();
             }
         }
+
+        OnUpdate();
     }
 
     private void EndGeneration()

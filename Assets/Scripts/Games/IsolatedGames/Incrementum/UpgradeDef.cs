@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Incrementum
@@ -7,7 +8,20 @@ namespace Incrementum
     public class UpgradeDef : Def
     {
         public Dictionary<ResourceDef, int> Cost { get; init; } = new Dictionary<ResourceDef, int>();
-        public List<UpgradeDef> Requirements { get; init; } = new List<UpgradeDef>();
+        public List<UpgradeDef> Requirements { get; private set; }
+        public List<string> RequirementDefNames { get; init; } = new List<string>();
         public Dictionary<ResourceDef, int> ResourceGenerationModifiers { get; init; } = new Dictionary<ResourceDef, int>();
+
+        public override void ResolveReferences()
+        {
+            Requirements = new List<UpgradeDef>();
+            foreach (var name in RequirementDefNames)
+                Requirements.Add(DefDatabase<UpgradeDef>.GetNamed(name));
+        }
+
+        public override void OnLoadingDefsDone()
+        {
+            if (Requirements.Any(r => r == null)) throw new System.Exception($"UpgradeDef {DefName} has a requirement that is null.");
+        }
     }
 }
