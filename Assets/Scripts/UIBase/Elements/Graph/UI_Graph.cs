@@ -57,6 +57,8 @@ public class UI_Graph : MonoBehaviour
 
     void Start()
     {
+        GraphContainer = GetComponent<RectTransform>();
+
         ContainerWidth = GraphContainer.rect.width;
         ContainerHeight = GraphContainer.rect.height;
 
@@ -270,84 +272,163 @@ public class UI_Graph : MonoBehaviour
         }
     }
 
+    public void ShowRandomBarGraph()
+    {
+        int n = Random.Range(3, 9);
+        int maxValue = Random.Range(4, 13) * 10;
+        float spacing = Random.Range(1, 4);
+        int step = Random.Range(1, 3) * 10;
+        List<GraphDataPoint> testList = new List<GraphDataPoint>();
+        for (int i = 0; i < n; i++)
+        {
+            testList.Add(new GraphDataPoint("P" + i, Random.Range(0, maxValue), new Color(Random.value, Random.value, Random.value)));
+        }
+        ShowBarGraph(testList, maxValue, step, spacing * 0.1f, Color.white, Color.grey);
+    }
+
     #endregion
 
     #region Line Graph
 
-    public void ShowLineGraph(List<GraphDataPoint> dataPoints, float yMax, string title)
+    // Back-compat convenience overload (single line)
+    public void ShowLineGraph(List<GraphDataPoint> dataPoints, float yMax, string title, Color lineColor, Color axisColor)
+    {
+        var lines = new List<LineData> { new LineData(title, dataPoints, lineColor, thickness: 5f) };
+        ShowLineGraph(lines, yMax, title, axisColor);
+    }
+
+    // New multi-line version
+    public void ShowLineGraph(List<LineData> lines, float yMax, string title, Color axisColor, bool showDataPoints = true)
     {
         ClearGraph();
 
-        // Const layout attributes
-        float paddingAbs = 10; // space to edge of container on all sides
-        float axisSizeAbs = 50; // How much space the axis take up
-        float circleSizeAbs = 16; // Size of the value nodes
-        float lineThicknessAbs = 5; // Thickness of the line in the graph
+        if (lines == null || lines.Count == 0)
+            return;
 
+        // Use the first line’s labels for the X axis; enforce consistent length if you rely on labels per index.
+        var primary = lines[0];
+        int n = Mathf.Max((primary.Points?.Count ?? 0), 1);
+        if (n < 2) n = 2; // avoid div-by-zero in xStep
+
+        // ---- Layout constants
+        float paddingAbs = 10f;  // outer padding
+        float axisSizeAbs = 50f;  // reserved size for axis labels
+        float circleSizeAbs = 16f;  // point marker size
+        float axisThicknessAbs = 3f;
+        float axisTicksLength = 10f;
         int titleSize = 20;
+        int axisFontSize = (int)circleSizeAbs;
 
-        float axisThicknessAbs = 3;
-        float axisTicksLength = 10;
+        float numYAxisSteps = 10f;
+        float yStepWidth = 2f;
+        Color yStepColor = new Color(0.2f, 0.2f, 0.2f);
 
-        float numYAxisSteps = 10;
-        float yStepWidth = 2;
-        Color yStepColor = Color.gray;
+        yMax = Mathf.Approximately(yMax, 0f) ? 1f : yMax;
 
-        // Init important layout values
-        float graphStartXAbs = paddingAbs + axisSizeAbs + circleSizeAbs / 2;
-        float graphStartYAbs = paddingAbs + axisSizeAbs + circleSizeAbs / 2;
+        // ---- Derived layout
+        float graphStartXAbs = paddingAbs + axisSizeAbs + circleSizeAbs / 2f;
+        float graphStartYAbs = paddingAbs + axisSizeAbs + circleSizeAbs / 2f;
 
-        float graphWidthAbs = ContainerWidth - 2 * paddingAbs - axisSizeAbs - circleSizeAbs;
-        float graphHeightAbs = ContainerHeight - 2 * paddingAbs - axisSizeAbs - titleSize - circleSizeAbs;
+        float graphWidthAbs = ContainerWidth - 2f * paddingAbs - axisSizeAbs - circleSizeAbs;
+        float graphHeightAbs = ContainerHeight - 2f * paddingAbs - axisSizeAbs - titleSize - circleSizeAbs;
 
-        float xStep = graphWidthAbs / (dataPoints.Count - 1);
+        float xStep = graphWidthAbs / (n - 1);
 
-        // Init absolute value node positions
-        List<Vector2> nodePositions = new List<Vector2>();
-        for (int i = 0; i < dataPoints.Count; i++)
-        {
-            float xPos = graphStartXAbs + (i * xStep);
-            float yPos = graphStartYAbs + (graphHeightAbs * (dataPoints[i].Value / yMax));
-            nodePositions.Add(new Vector2(xPos, yPos));
-        }
+        // ---- Title
+        DrawText(title,
+            new Vector2(ContainerWidth / 2f, ContainerHeight - paddingAbs - titleSize / 2f),
+            new Vector2(ContainerWidth, titleSize),
+            axisColor, // title in axis color looks consistent
+            titleSize);
 
-        // Create value circle nodes
-        for (int i = 0; i < dataPoints.Count; i++) DrawCircle(nodePositions[i], circleSizeAbs, dataPoints[i].Color);
-
-        // Create connections
-        for (int i = 0; i < dataPoints.Count - 1; i++) DrawLine(nodePositions[i], nodePositions[i + 1], Color.black, lineThicknessAbs);
-
-        // Title
-        DrawText(title, new Vector2(ContainerWidth / 2f, ContainerHeight - paddingAbs - titleSize / 2f), new Vector2(ContainerWidth, titleSize), Color.black, titleSize);
-
-        // X axis
-        int axisFontSize = (int)(circleSizeAbs);
+        // ---- X axis line + ticks + labels
         float xAxisYPos = paddingAbs + axisSizeAbs - axisThicknessAbs / 2f;
-        DrawRectangle(new Vector2(ContainerCenterX, xAxisYPos), new Vector2(ContainerWidth - 2 * paddingAbs, axisThicknessAbs), Color.black);
-        for (int i = 0; i < dataPoints.Count; i++)
+        DrawRectangle(new Vector2(ContainerCenterX, xAxisYPos),
+                      new Vector2(ContainerWidth - 2f * paddingAbs, axisThicknessAbs), axisColor);
+
+        for (int i = 0; i < n; i++)
         {
-            DrawRectangle(new Vector2(nodePositions[i].x, xAxisYPos), new Vector2(axisThicknessAbs, axisTicksLength), Color.black);
-            DrawText(dataPoints[i].Label, new Vector2(nodePositions[i].x, paddingAbs + axisSizeAbs / 2f), new Vector2(xStep, axisSizeAbs), Color.black, axisFontSize);
+            float xPos = graphStartXAbs + i * xStep;
+            DrawRectangle(new Vector2(xPos, xAxisYPos),
+                          new Vector2(axisThicknessAbs, axisTicksLength), axisColor);
+
+            string lbl = (i < (primary.Points?.Count ?? 0)) ? primary.Points[i].Label : "";
+            DrawText(lbl,
+                new Vector2(xPos, paddingAbs + axisSizeAbs / 2f),
+                new Vector2(xStep, axisSizeAbs),
+                axisColor, axisFontSize);
         }
 
-        // Y axis
+        // ---- Y axis line + grid + labels
         float yAxisXPos = paddingAbs + axisSizeAbs - axisThicknessAbs / 2f;
-        DrawRectangle(new Vector2(yAxisXPos, ContainerCenterY), new Vector2(axisThicknessAbs, ContainerHeight - 2 * paddingAbs), Color.black);
+        DrawRectangle(new Vector2(yAxisXPos, ContainerCenterY),
+                      new Vector2(axisThicknessAbs, ContainerHeight - 2f * paddingAbs), axisColor);
+
         float yStepAbs = graphHeightAbs / numYAxisSteps;
         float yValueStep = yMax / numYAxisSteps;
-        for(int i = 0; i < numYAxisSteps; i++)
+
+        for (int i = 0; i < numYAxisSteps; i++)
         {
             float yPos = graphStartYAbs + (i + 1) * yStepAbs;
-            DrawRectangle(new Vector2(graphStartXAbs + graphWidthAbs / 2f, yPos), new Vector2(graphWidthAbs, yStepWidth), yStepColor, insertInBackground: true);
 
-            // Value texts
+            // grid line
+            DrawRectangle(new Vector2(graphStartXAbs + graphWidthAbs / 2f, yPos),
+                          new Vector2(graphWidthAbs, yStepWidth), yStepColor, insertInBackground: true);
+
+            // label
             float yValue = (i + 1) * yValueStep;
-            string format = "";
-            if (yMax <= 1) format = "N2";
-            else if (yMax <= 100) format = "N1";
-            else format = "N0";
-            DrawText(yValue.ToString(format), new Vector2(paddingAbs + axisSizeAbs / 2f, yPos), new Vector2(axisSizeAbs, yStepAbs), Color.black, axisFontSize);
+            string format = (yMax <= 1f) ? "N2" : (yMax <= 100f ? "N1" : "N0");
+            DrawText(yValue.ToString(format),
+                new Vector2(paddingAbs + axisSizeAbs / 2f, yPos),
+                new Vector2(axisSizeAbs, yStepAbs),
+                axisColor, axisFontSize);
         }
+
+        // ---- Lines (each with own color & thickness)
+        foreach (var line in lines)
+        {
+            if (line?.Points == null || line.Points.Count == 0) continue;
+
+            // Build node positions from this line’s values (aligned by index to primary X)
+            int count = Mathf.Min(line.Points.Count, n);
+            var positions = new List<Vector2>(count);
+            for (int i = 0; i < count; i++)
+            {
+                float xPos = graphStartXAbs + i * xStep;
+                float norm = Mathf.Clamp01(line.Points[i].Value / yMax);
+                float yPos = graphStartYAbs + graphHeightAbs * norm;
+                positions.Add(new Vector2(xPos, yPos));
+            }
+
+            // Circles
+            if (showDataPoints)
+            {
+                for (int i = 0; i < positions.Count; i++)
+                    DrawCircle(positions[i], circleSizeAbs, line.LineColor);
+            }
+
+            // Segments
+            for (int i = 0; i < positions.Count - 1; i++)
+                DrawLine(positions[i], positions[i + 1], line.LineColor, Mathf.Max(1f, line.Thickness));
+        }
+    }
+
+    public void ShowTestLineGraph()
+    {
+        int n = Random.Range(5, 16);
+        var l1 = new List<GraphDataPoint>();
+        var l2 = new List<GraphDataPoint>();
+        for (int i = 0; i < n; i++)
+        {
+            l1.Add(new GraphDataPoint(i.ToString(), Random.value, Color.white));
+            l2.Add(new GraphDataPoint(i.ToString(), Mathf.Clamp01(Random.value * 0.7f + 0.15f), Color.white));
+        }
+        var lines = new List<LineData>
+    {
+        new LineData("A", l1, new Color(0.2f,0.7f,1f), 5f),
+        new LineData("B", l2, new Color(1f,0.5f,0.2f), 3f),
+    };
+        ShowLineGraph(lines, 1f, "Test Graph", axisColor: Color.white);
     }
 
     #endregion
@@ -442,7 +523,7 @@ public class UI_Graph : MonoBehaviour
 
         // Rotation
         rectTransform.localEulerAngles = new Vector3(0, 0, GetDirectionVectorAngle(dir));
-        gameObject.transform.SetSiblingIndex(0);
+        // gameObject.transform.SetSiblingIndex(0);
 
         return img;
     }
@@ -484,27 +565,7 @@ public class UI_Graph : MonoBehaviour
 
     #region Debug
 
-    public void ShowRandomBarGraph()
-    {
-        int n = Random.Range(3, 9);
-        int maxValue = Random.Range(4, 13) * 10;
-        float spacing = Random.Range(1, 4);
-        int step = Random.Range(1, 3) * 10;
-        List<GraphDataPoint> testList = new List<GraphDataPoint>();
-        for (int i = 0; i < n; i++)
-        {
-            testList.Add(new GraphDataPoint("P" + i, Random.Range(0, maxValue), new Color(Random.value, Random.value, Random.value)));
-        }
-        ShowBarGraph(testList, maxValue, step, spacing * 0.1f, Color.white, Color.grey);
-    }
-
-    public void ShowRandomLineGraph()
-    {
-        int n = Random.Range(3, 20);
-        List<GraphDataPoint> values = new List<GraphDataPoint>();
-        for (int i = 0; i < n; i++) values.Add(new GraphDataPoint(i.ToString(), Random.value, Color.white));
-        ShowLineGraph(values, 1f, "Test Graph");
-    }
+    
 
     #endregion
 }

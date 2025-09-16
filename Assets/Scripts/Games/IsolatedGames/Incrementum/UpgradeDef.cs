@@ -23,5 +23,15 @@ namespace Incrementum
         {
             if (Requirements.Any(r => r == null)) throw new System.Exception($"UpgradeDef {DefName} has a requirement that is null.");
         }
+
+        public string GetCostString()
+        {
+            return Cost != null && Cost.Count > 0 ? string.Join(", ", Cost.Select(c => $"{c.Value} {c.Key.Label}")) : "–";
+        }
+
+        public string GetEffectString()
+        {
+            return ResourceGenerationModifiers != null && ResourceGenerationModifiers.Count > 0 ? string.Join(", ", ResourceGenerationModifiers.Select(m => $"{(m.Value >= 0 ? "+" : "")}{m.Value} {m.Key.Label}/t")) : "–";
+        }
     }
 }

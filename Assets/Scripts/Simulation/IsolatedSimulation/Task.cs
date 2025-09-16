@@ -22,18 +22,14 @@ public abstract class Task
     /// <summary>
     /// The final fitness value of this task/subject at the end of a generation.
     /// </summary>
-    public int Fitness { get; private set; }
-
-    /// <summary>
-    /// The final rank of the subject performing this task at the end of a generation within the population. 1-indexed.
-    /// </summary>
-    public int Rank { get; private set; }
+    private int Fitness;
 
     /// <summary>
     /// The current tick number of this task.
     /// </summary>
     public int TickNumber { get; private set; }
 
+    public Task() { }
     public Task(Subject subject)
     {
         Subject = subject;
@@ -57,10 +53,11 @@ public abstract class Task
     public void Tick()
     {
         if (State != TaskState.Running) return;
-        TickNumber++;
+        IncrementTick();
         OnTick();
     }
     protected abstract void OnTick();
+    protected void IncrementTick() { TickNumber++; }
 
     /// <summary>
     /// Ends this task.
@@ -74,7 +71,6 @@ public abstract class Task
     }
     protected abstract void OnEnd();
     protected abstract int CalculateFitnessValue();
-    public void SetRank(int rank) => Rank = rank;
 
     /// <summary>
     /// Returns the fitness value of a finished task.

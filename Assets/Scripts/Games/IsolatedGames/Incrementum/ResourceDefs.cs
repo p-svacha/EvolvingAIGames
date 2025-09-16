@@ -13,7 +13,7 @@ namespace Incrementum
                 DefName = "Gold",
                 Label = "gold",
                 BaseIncomePerTick = 0,
-                ApproxAmountCap = 5000,
+                ApproxAmountCap = 3000,
                 ApproxIncomeCap = 10,
             },
 
@@ -40,8 +40,8 @@ namespace Incrementum
                 DefName = "Food",
                 Label = "food",
                 BaseIncomePerTick = 0,
-                ApproxAmountCap = 1200,
-                ApproxIncomeCap = 6,
+                ApproxAmountCap = 1000,
+                ApproxIncomeCap = 8,
             },
         };
     }

@@ -36,7 +36,7 @@ namespace UpgradeClash
                 else
                 {
                     List<GraphDataPoint> dataPoints = stat.Values.Select((value, index) => new GraphDataPoint(index.ToString(), value, Color.white)).ToList();
-                    Graph.ShowLineGraph(dataPoints, Mathf.RoundToInt(dataPoints.Max(x => x.Value)), stat.DisplayName);
+                    Graph.ShowLineGraph(dataPoints, Mathf.RoundToInt(dataPoints.Max(x => x.Value)), stat.DisplayName, lineColor: Color.black, axisColor: Color.black);
                 }
             }
         }

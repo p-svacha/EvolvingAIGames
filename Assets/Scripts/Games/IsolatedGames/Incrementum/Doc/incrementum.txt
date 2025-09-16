@@ -1,0 +1,10 @@
+remove output threshold, replace with explicit WAIT output that means do nothing if highest. else purchase highest affordable upgrade
+
+fix SpeciesCompatiblityThreshold ...with FixedSpeciesAmount = 0
+
+add upgrade that isn't a building but IN a building (building as requirement)
+
+add additional upgrade generating gold
+
+dynamically calculate resource amount cap by just taking most expensive building with that cost for that resource
+dynamically calculate income amount cap by just iterating through all upgrade effects and applying them if > 0

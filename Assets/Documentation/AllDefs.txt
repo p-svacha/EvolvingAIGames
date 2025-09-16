@@ -8,7 +8,7 @@
                 DefName = "Gold",
                 Label = "gold",
                 BaseIncomePerTick = 0,
-                ApproxAmountCap = 5000,
+                ApproxAmountCap = 3000,
                 ApproxIncomeCap = 10,
             },
 
@@ -35,8 +35,8 @@
                 DefName = "Food",
                 Label = "food",
                 BaseIncomePerTick = 0,
-                ApproxAmountCap = 1200,
-                ApproxIncomeCap = 6,
+                ApproxAmountCap = 1000,
+                ApproxIncomeCap = 8,
             },
         };
 
@@ -149,8 +149,8 @@
                 Label = "Workshop",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 180 },
-                    { ResourceDefOf.Stone, 180 },
+                    { ResourceDefOf.Wood, 200 },
+                    { ResourceDefOf.Stone, 200 },
                 },
                 RequirementDefNames = new List<string>()
                 {
@@ -159,8 +159,8 @@
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 1 },
-                    { ResourceDefOf.Stone, 1 },
+                    { ResourceDefOf.Wood, 2 },
+                    { ResourceDefOf.Stone, 2 },
                 }
             },
 
@@ -253,6 +253,52 @@
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Gold, 1 },
+                }
+            },
+            new UpgradeDef()
+            {
+                DefName = "TradeContract_I",
+                Label   = "Trade Contract I",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 150 },
+                    { ResourceDefOf.Stone, 150 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "Marketplace",
+                    "TownHall_I"
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood,  -1 },
+                    { ResourceDefOf.Stone, -1 },
+                    { ResourceDefOf.Gold,   2 },
+                }
+            },
+
+            // --------------- Guild Hall ---------------
+            new UpgradeDef()
+            {
+                DefName = "GuildHall",
+                Label   = "Guild Hall",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold, 500 },
+                    { ResourceDefOf.Wood, 200 },
+                    { ResourceDefOf.Stone, 200 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "Marketplace",
+                    "TownHall_II"
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold,   1 },
+                    { ResourceDefOf.Wood,   1 },
+                    { ResourceDefOf.Stone,  1 },
+                    { ResourceDefOf.Food,   1 },
                 }
             },
 

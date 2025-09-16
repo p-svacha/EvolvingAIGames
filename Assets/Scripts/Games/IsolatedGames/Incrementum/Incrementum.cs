@@ -22,7 +22,10 @@ namespace Incrementum
 
         protected override int PopulationSize => 625;
 
-        public override void OnInit()
+        [Header("References")]
+        public UI_Incrementum UI;
+
+        public override void OnPrePopulationInit()
         {
             // Defs
             DefDatabaseRegistry.ClearAllDatabases();
@@ -38,6 +41,13 @@ namespace Incrementum
             SubjectInputSize = dummyTask.GetInputs().Length;
             SubjectHiddenSizes = new int[1] { 16 };
             SubjectOutputSize = UpgradeDefs.Defs.Count;
+
+            // UI
+            UI.Init(this);
+        }
+
+        public override void OnPostPopulationInit()
+        {
         }
 
         protected override Task CreateTaskFor(Subject s)
@@ -47,20 +57,33 @@ namespace Incrementum
 
         protected override void OnUpdate()
         {
-            if (SimulationPhase == IsolatedSimulationPhase.Ready) StartGeneration();
-            else if (SimulationPhase == IsolatedSimulationPhase.Done) InitializeNextGeneration();
+            if (UI.AutoRunToggle.IsToggled)
+            {
+                if (SimulationPhase == IsolatedSimulationPhase.Ready) StartGeneration();
+                else if (SimulationPhase == IsolatedSimulationPhase.Done) InitializeNextGeneration();
+            }
+        }
+
+        public override GenerationStats CreateGenerationStats(EvolutionInformation info)
+        {
+            return new IncrementumGenerationStats(info);
+        }
+
+        protected override void OnGenerationInitialized(EvolutionInformation info)
+        {
+            UI.OnGenerationInitialized();
         }
 
         protected override void OnGenerationStarted()
         {
+            UI.OnGenerationStarted();
         }
 
         protected override void OnGenerationFinished()
         {
-            List<Task> ranking = Tasks[Generation].Values.OrderByDescending(x => x.Fitness).ToList();
-            IncrementumTask winnerTask = (IncrementumTask)ranking.First();
-            Subject winner = winnerTask.Subject;
-            Debug.Log($"Gen {Generation}: {winner.Name} has won with a gold amount of {winnerTask.Fitness}. History:\n{winnerTask.GetHistoryLog()}");
+            Debug.Log($"Gen {Generation}: {GenerationHistory.Last().BestPerformingSubject.Name} has won with a gold amount of {GenerationHistory.Last().BestPerformingTask.GetFitnessValue()}. History:\n{((IncrementumTask)GenerationHistory.Last().BestPerformingTask).GetHistoryLog()}");
+
+            UI.OnGenerationFinished();
         }
     }
 }

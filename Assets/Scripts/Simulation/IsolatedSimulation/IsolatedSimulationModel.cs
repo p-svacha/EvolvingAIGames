@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,26 +30,43 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     protected abstract int PopulationSize { get; }
 
     /// <summary>
-    /// Dictionary holding all tasks ever performed (ordered by generation, then by subject).
+    /// Dictionary containing the task for each subject in the current generation.
     /// </summary>
-    protected Dictionary<int,Dictionary<Subject,Task>> Tasks;
+    private Dictionary<Subject, Task> CurrentTasks;
+
+    /// <summary>
+    /// List containing all relevant information for each generation. Index of each element equals the generation number.
+    /// </summary>
+    public List<GenerationStats> GenerationHistory;
+
+    private DateTime CurrentGenerationStartTime;
 
     #region Initialization
 
     // Start is called before the first frame update
     void Start()
     {
-        Tasks = new Dictionary<int, Dictionary<Subject, Task>>();
+        GenerationHistory = new List<GenerationStats>();
 
-        OnInit();
-
+        OnPrePopulationInit();
         InitializeFirstGeneration();
+        OnPostPopulationInit();
     }
 
     /// <summary>
-    /// Gets called once at the very start of the simulation. Use this to set Network sizes and initialize other relevant stuff.
+    /// Gets called once at the very start of the simulation before the initial population has been created. Use this to set Network sizes.
     /// </summary>
-    public abstract void OnInit();
+    public abstract void OnPrePopulationInit();
+
+    /// <summary>
+    /// Gets called once at the very start of the simulation after the initial population has been created. Use this initialize relevant stuff that requires the initial generation.
+    /// </summary>
+    public abstract void OnPostPopulationInit();
+
+    /// <summary>
+    /// Function to create a generation stats object of the correct subtype.
+    /// </summary>
+    public abstract GenerationStats CreateGenerationStats(EvolutionInformation info);
 
     #endregion
 
@@ -81,18 +99,22 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
 
     #region Base Loop (to call)
 
-    protected void InitializeNextGeneration()
+    public void InitializeNextGeneration()
     {
         if (SimulationPhase != IsolatedSimulationPhase.Done) return;
 
         // Create next generation population
+        Debug.Log($"Creating population for generation {Generation + 1}.");
         EvolutionInformation info = Population.EvolveGeneration();
 
+        // Initialize generation stats
+        GenerationHistory.Add(CreateGenerationStats(info));
+
         // Create a task for each subject in this generation's population
-        Tasks.Add(Generation, new Dictionary<Subject, Task>());
+        CurrentTasks = new Dictionary<Subject, Task>();
         foreach (Subject s in Population.Subjects)
         {
-            Tasks[Generation].Add(s, CreateTaskFor(s));
+            CurrentTasks.Add(s, CreateTaskFor(s));
         }
 
         SimulationPhase = IsolatedSimulationPhase.Ready;
@@ -104,11 +126,15 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     /// <summary>
     /// Call this to make all subjects of this generation start performing their task.
     /// </summary>
-    protected void StartGeneration()
+    public void StartGeneration()
     {
         if (SimulationPhase != IsolatedSimulationPhase.Ready) return;
 
-        foreach (Task task in Tasks[Generation].Values)
+        Debug.Log($"Starting Generation {Generation}.");
+
+        CurrentGenerationStartTime = DateTime.Now;
+
+        foreach (Task task in CurrentTasks.Values)
         {
             task.Start();
         }
@@ -128,11 +154,14 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
         // Initialize population with random subjects
         Population = new Population(PopulationSize, SubjectInputSize, SubjectHiddenSizes, SubjectOutputSize, GetFitnessValueFor);
 
+        // Initialize generation stats
+        GenerationHistory.Add(CreateGenerationStats(null));
+
         // Create a task for each subject in this generation's population
-        Tasks.Add(Generation, new Dictionary<Subject, Task>());
+        CurrentTasks = new Dictionary<Subject, Task>();
         foreach (Subject s in Population.Subjects)
         {
-            Tasks[Generation].Add(s, CreateTaskFor(s));
+            CurrentTasks.Add(s, CreateTaskFor(s));
         }
 
         SimulationPhase = IsolatedSimulationPhase.Ready;
@@ -146,13 +175,13 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
         if (SimulationPhase == IsolatedSimulationPhase.Running)
         {
             // Advance all tasks
-            foreach (Task task in Tasks[Generation].Values)
+            foreach (Task task in CurrentTasks.Values)
             {
                 task.Tick();
             }
 
             // End generation if all tasks are done
-            if (Tasks[Generation].Values.All(t => t.IsDone))
+            if (CurrentTasks.Values.All(t => t.IsDone))
             {
                 EndGeneration();
             }
@@ -165,9 +194,9 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     {
         if (SimulationPhase != IsolatedSimulationPhase.Running) return;
 
-        // Set rank of all subjects in their tasks
-        List<Subject> orderedSubjects = Tasks[Generation].OrderByDescending(t => t.Value.GetFitnessValue()).Select(t => t.Key).ToList();
-        for (int i = 0; i < orderedSubjects.Count; i++) Tasks[Generation][orderedSubjects[i]].SetRank(i + 1);
+        // Complete generation info, calculating all generation stats
+        float runtime = (int)((DateTime.Now - CurrentGenerationStartTime).TotalSeconds);
+        GenerationHistory.Last().SetComplete(runtime, CurrentTasks);
 
         SimulationPhase = IsolatedSimulationPhase.Done;
 
@@ -175,7 +204,7 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
         OnGenerationFinished();
     }
 
-    private float GetFitnessValueFor(Subject s) => Tasks[Generation][s].GetFitnessValue();
+    private float GetFitnessValueFor(Subject s) => CurrentTasks[s].GetFitnessValue();
 
     #endregion
 }

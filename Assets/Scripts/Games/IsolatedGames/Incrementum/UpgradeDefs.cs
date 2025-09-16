@@ -114,8 +114,8 @@ namespace Incrementum
                 Label = "Workshop",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 180 },
-                    { ResourceDefOf.Stone, 180 },
+                    { ResourceDefOf.Wood, 200 },
+                    { ResourceDefOf.Stone, 200 },
                 },
                 RequirementDefNames = new List<string>()
                 {
@@ -124,8 +124,8 @@ namespace Incrementum
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 1 },
-                    { ResourceDefOf.Stone, 1 },
+                    { ResourceDefOf.Wood, 2 },
+                    { ResourceDefOf.Stone, 2 },
                 }
             },
 
@@ -218,6 +218,52 @@ namespace Incrementum
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Gold, 1 },
+                }
+            },
+            new UpgradeDef()
+            {
+                DefName = "TradeContract_I",
+                Label   = "Trade Contract I",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 150 },
+                    { ResourceDefOf.Stone, 150 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "Marketplace",
+                    "TownHall_I"
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood,  -1 },
+                    { ResourceDefOf.Stone, -1 },
+                    { ResourceDefOf.Gold,   2 },
+                }
+            },
+
+            // --------------- Guild Hall ---------------
+            new UpgradeDef()
+            {
+                DefName = "GuildHall",
+                Label   = "Guild Hall",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold, 400 },
+                    { ResourceDefOf.Wood, 200 },
+                    { ResourceDefOf.Stone, 200 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "Marketplace",
+                    "TownHall_II"
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold,   2 },
+                    { ResourceDefOf.Wood,   1 },
+                    { ResourceDefOf.Stone,  1 },
+                    { ResourceDefOf.Food,   1 },
                 }
             },
 

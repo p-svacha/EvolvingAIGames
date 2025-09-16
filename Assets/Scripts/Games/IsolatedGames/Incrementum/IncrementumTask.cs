@@ -14,7 +14,7 @@ namespace Incrementum
         /// <summary>
         /// Containing data storing the time each upgrade was acquired.
         /// </summary>
-        private Dictionary<int, UpgradeDef> History;
+        public Dictionary<int, UpgradeDef> History;
 
         public IncrementumTask(Subject s) : base(s)
         {
@@ -31,6 +31,8 @@ namespace Incrementum
             AcquiredUpgrades = new Dictionary<UpgradeDef, bool>();
             foreach (UpgradeDef def in DefDatabase<UpgradeDef>.AllDefs) AcquiredUpgrades.Add(def, false);
         }
+
+        public IncrementumTask() { }
 
         protected override int CalculateFitnessValue()
         {
@@ -50,10 +52,7 @@ namespace Incrementum
         protected override void OnTick()
         {
             // Income phase
-            foreach (ResourceDef res in DefDatabase<ResourceDef>.AllDefs)
-            {
-                Resources[res] += GetResourceIncomePerTick(res);
-            }
+            ApplyIncome();
 
             // Decision phase
             float[] inputs = GetInputs();
@@ -64,11 +63,31 @@ namespace Incrementum
             if (upgradeToAcquire != null) AcquireUpgrade(upgradeToAcquire);
 
             // Check for end
-            if (TickNumber == Incrementum.NUM_TICKS)
+            CheckEnd();
+        }
+
+        public void ApplyIncome()
+        {
+            foreach (ResourceDef res in DefDatabase<ResourceDef>.AllDefs)
+            {
+                Resources[res] += GetResourceIncomePerTick(res);
+            }
+        }
+
+        public void CheckEnd()
+        {
+            if (TickNumber >= Incrementum.NUM_TICKS)
             {
                 End();
                 return;
             }
+        }
+
+        /// <summary>Advance one tick for the player UI without running NN logic.</summary>
+        public void PlayerAdvanceTickNoAI()
+        {
+            IncrementTick();
+            ApplyIncome();
         }
 
         /// <summary>
@@ -134,7 +153,7 @@ namespace Incrementum
             return toBuy;
         }
 
-        private int GetResourceIncomePerTick(ResourceDef def)
+        public int GetResourceIncomePerTick(ResourceDef def)
         {
             int value = def.BaseIncomePerTick;
 
@@ -152,15 +171,12 @@ namespace Incrementum
         /// <summary>
         /// Checks and returns if all requirements would be met to acquire an upgrade in the current state.
         /// </summary>
-        private bool CanAcquireUpgrade(UpgradeDef upgrade)
+        public bool CanAcquireUpgrade(UpgradeDef upgrade)
         {
             if (AcquiredUpgrades[upgrade]) return false;
             if (upgrade.Cost.Any(x => Resources[x.Key] < x.Value)) return false;
-
-            if (!AcquiredUpgrades.ContainsKey(upgrade)) Debug.Log(AcquiredUpgrades.Keys.ToList().DebugList());
-            if (upgrade == null) Debug.Log(AcquiredUpgrades.Keys.ToList().DebugList());
-            if (upgrade.Requirements == null) Debug.Log(AcquiredUpgrades.Keys.ToList().DebugList());
             if (upgrade.Requirements.Any(x => !AcquiredUpgrades[x])) return false;
+            if (upgrade.ResourceGenerationModifiers.Any(x => x.Value < 0 && GetResourceIncomePerTick(x.Key) < Mathf.Abs(x.Value))) return false;
 
             return true;
         }
@@ -179,7 +195,19 @@ namespace Incrementum
             History.Add(TickNumber, def);
         }
 
+        /// <summary>
+        /// Acquires an upgrade if is possible to get it.
+        /// Returns if the upgrade was acquired.
+        /// </summary>
+        public bool TryAcquireUpgrade(UpgradeDef def)
+        {
+            if (!CanAcquireUpgrade(def)) return false;
 
+            AcquiredUpgrades[def] = true;
+            foreach (var r in def.Cost) Resources[r.Key] -= r.Value;
+            History.Add(TickNumber, def);
+            return true;
+        }
 
 
         public string GetHistoryLog()
@@ -193,15 +221,16 @@ namespace Incrementum
             float acquiredPct = totalUpgrades > 0 ? (100f * acquiredCount) / totalUpgrades : 0f;
 
             var sb = new StringBuilder();
-            sb.AppendLine("=== INCREMENTUM RUN =====================================");
             sb.AppendLine($"Subject: {Subject?.Name ?? "(unnamed)"}");
             sb.AppendLine($"Ticks:   {TickNumber}/{Incrementum.NUM_TICKS}");
 
             // Final resources
+            sb.AppendLine();
             sb.Append("Final Resources: ");
             sb.AppendLine(string.Join(", ", resources.Select(r => $"{r.Label}={Resources[r]}")));
 
             // Current income rates
+            sb.AppendLine();
             sb.Append("Rates / tick:   ");
             sb.AppendLine(string.Join(", ", resources.Select(r => $"{r.Label}={GetResourceIncomePerTick(r)}")));
 
@@ -212,6 +241,7 @@ namespace Incrementum
             sb.AppendLine($"Upgrades acquired: {acquiredCount}/{totalUpgrades} ({acquiredPct:0.0}%)");
 
             // Timeline
+            sb.AppendLine();
             sb.AppendLine("Purchases:");
             if (History.Count == 0)
             {
@@ -230,11 +260,9 @@ namespace Incrementum
                         ? string.Join(", ", def.ResourceGenerationModifiers.Select(m => $"{(m.Value >= 0 ? "+" : "")}{m.Value} {m.Key.Label}/t"))
                         : "–";
 
-                    sb.AppendLine($"  t={kv.Key,4}: {def.Label,-16} | cost: {cost,-18} | effect: {effects}");
+                    sb.AppendLine($"  t={kv.Key}: {def.Label} ({cost})");
                 }
             }
-
-            sb.AppendLine("=========================================================");
 
             return sb.ToString();
         }
