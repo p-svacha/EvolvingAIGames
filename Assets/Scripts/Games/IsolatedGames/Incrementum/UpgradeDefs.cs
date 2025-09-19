@@ -12,11 +12,11 @@ namespace Incrementum
             // --------------- Lumberyard ---------------
             new UpgradeDef()
             {
-                DefName = "LumberYard_I",
-                Label = "Lumber Yard I",
+                DefName = "LumberYardSmall",
+                Label = "Small Lumber Yard",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Stone, 40 },
+                    { ResourceDefOf.Wood, 40 },
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -25,15 +25,15 @@ namespace Incrementum
             },
             new UpgradeDef()
             {
-                DefName = "LumberYard_II",
-                Label = "Lumber Yard II",
+                DefName = "LumberYardMedium",
+                Label = "Medium Lumber Yard",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Stone, 120 },
+                    { ResourceDefOf.Wood, 120 },
                 },
                 RequirementDefNames = new List<string>()
                 {
-                    "LumberYard_I",
+                    "LumberYardSmall",
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -42,15 +42,16 @@ namespace Incrementum
             },
             new UpgradeDef()
             {
-                DefName = "LumberYard_III",
-                Label = "Lumber Yard III",
+                DefName = "LumberYardBig",
+                Label = "Big Lumber Yard",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Stone, 260 },
+                    { ResourceDefOf.Wood, 260 },
+                    { ResourceDefOf.Stone, 50 },
                 },
                 RequirementDefNames = new List<string>()
                 {
-                    "LumberYard_II",
+                    "LumberYardMedium",
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -61,11 +62,11 @@ namespace Incrementum
             // --------------- Quarry ---------------
             new UpgradeDef()
             {
-                DefName = "Quarry_I",
-                Label = "Quarry I",
+                DefName = "QuarrySmall",
+                Label = "Small Quarry",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 40 },
+                    { ResourceDefOf.Wood, 100 },
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -74,32 +75,15 @@ namespace Incrementum
             },
             new UpgradeDef()
             {
-                DefName = "Quarry_II",
-                Label = "Quarry II",
+                DefName = "QuarryBig",
+                Label = "Big Quarry",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 120 },
+                    { ResourceDefOf.Wood, 250 },
                 },
                 RequirementDefNames = new List<string>()
                 {
-                    "Quarry_I",
-                },
-                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
-                {
-                    { ResourceDefOf.Stone, 1 },
-                }
-            },
-            new UpgradeDef()
-            {
-                DefName = "Quarry_III",
-                Label = "Quarry III",
-                Cost = new Dictionary<ResourceDef, int>()
-                {
-                    { ResourceDefOf.Wood, 260 },
-                },
-                RequirementDefNames = new List<string>()
-                {
-                    "Quarry_II",
+                    "QuarrySmall",
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -115,29 +99,44 @@ namespace Incrementum
                 Cost = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Wood, 200 },
-                    { ResourceDefOf.Stone, 200 },
                 },
                 RequirementDefNames = new List<string>()
                 {
-                    "LumberYard_I",
-                    "Quarry_I",
+                    "LumberYardSmall",
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 2 },
-                    { ResourceDefOf.Stone, 2 },
+                    { ResourceDefOf.Wood, 1 },
+                    { ResourceDefOf.Stone, 1 },
+                }
+            },
+            new UpgradeDef()
+            {
+                DefName = "Toolsmiths",
+                Label = "Toolsmiths",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold, 100 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "Workshop",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood,  1 },
+                    { ResourceDefOf.Stone, 1 },
                 }
             },
 
             // --------------- Farm ---------------
             new UpgradeDef()
             {
-                DefName = "Farm_I",
-                Label = "Farm I",
+                DefName = "Farm",
+                Label = "Farm",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Wood, 120 },
-                    { ResourceDefOf.Stone, 40 },
                 },
                 RequirementDefNames = new List<string>() { },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
@@ -149,12 +148,11 @@ namespace Incrementum
             // --------------- Town Hall ---------------
             new UpgradeDef()
             {
-                DefName = "TownHall_I",
-                Label = "TownHall I",
+                DefName = "TownHallSmall",
+                Label = "Small Town Hall",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 60 },
-                    { ResourceDefOf.Stone, 60 },
+                    { ResourceDefOf.Wood, 80 },
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -163,17 +161,17 @@ namespace Incrementum
             },
             new UpgradeDef()
             {
-                DefName = "TownHall_II",
-                Label = "TownHall II",
+                DefName = "TownHallMedium",
+                Label = "Medium Town Hall",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Wood, 200 },
-                    { ResourceDefOf.Stone, 200 },
-                    { ResourceDefOf.Food, 80 },
+                    { ResourceDefOf.Stone, 60 },
+                    { ResourceDefOf.Food, 60 },
                 },
                 RequirementDefNames = new List<string>()
                 {
-                    "TownHall_I",
+                    "TownHallSmall",
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -182,17 +180,17 @@ namespace Incrementum
             },
             new UpgradeDef()
             {
-                DefName = "TownHall_III",
-                Label = "TownHall III",
+                DefName = "TownHallBig",
+                Label = "Big Town Hall",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Wood, 600 },
-                    { ResourceDefOf.Stone, 600 },
+                    { ResourceDefOf.Stone, 400 },
                     { ResourceDefOf.Food, 160 },
                 },
                 RequirementDefNames = new List<string>()
                 {
-                    "TownHall_II",
+                    "TownHallMedium",
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -207,13 +205,8 @@ namespace Incrementum
                 Label = "Marketplace",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 150 },
-                    { ResourceDefOf.Stone, 150 },
-                },
-                RequirementDefNames = new List<string>()
-                {
-                    "LumberYard_I",
-                    "Quarry_I",
+                    { ResourceDefOf.Wood, 140 },
+                    { ResourceDefOf.Stone, 70 },
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -222,17 +215,17 @@ namespace Incrementum
             },
             new UpgradeDef()
             {
-                DefName = "TradeContract_I",
-                Label   = "Trade Contract I",
+                DefName = "TradeContract",
+                Label   = "Trade Contract",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Wood, 150 },
-                    { ResourceDefOf.Stone, 150 },
+                    { ResourceDefOf.Wood, 100 },
+                    { ResourceDefOf.Stone, 100 },
+                    { ResourceDefOf.Gold, 50 },
                 },
                 RequirementDefNames = new List<string>()
                 {
                     "Marketplace",
-                    "TownHall_I"
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
@@ -249,14 +242,14 @@ namespace Incrementum
                 Label   = "Guild Hall",
                 Cost = new Dictionary<ResourceDef, int>()
                 {
-                    { ResourceDefOf.Gold, 400 },
+                    { ResourceDefOf.Gold, 300 },
                     { ResourceDefOf.Wood, 200 },
                     { ResourceDefOf.Stone, 200 },
                 },
                 RequirementDefNames = new List<string>()
                 {
                     "Marketplace",
-                    "TownHall_II"
+                    "TownHallSmall"
                 },
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {

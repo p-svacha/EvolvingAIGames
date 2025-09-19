@@ -1,10 +1,48 @@
-remove output threshold, replace with explicit WAIT output that means do nothing if highest. else purchase highest affordable upgrade
+FRAMEWORK CHANGES
 
-fix SpeciesCompatiblityThreshold ...with FixedSpeciesAmount = 0
+add small chance to reenable any disabled connections when making offspring
 
-add upgrade that isn't a building but IN a building (building as requirement)
+add to elimination logic so species are eliminated if they are not improving max fitness for x turns (should replace ranking logic from now but keep it in as an option)
 
-add additional upgrade generating gold
+in species ranking (for elimination), only consider top 30% of subjects in species (because many get useless from mutations in bottom half that can skew average hard)
+	- this metric should replace "average fitness" everywhere that it is currently used for
+	- also centralize this so UI (species scoreboard) uses same ranking for sure as elimination ranking in Population.cs
 
 dynamically calculate resource amount cap by just taking most expensive building with that cost for that resource
 dynamically calculate income amount cap by just iterating through all upgrade effects and applying them if > 0
+
+review offspring parent selection (i feel like if there is 1 subject that found a small improvement over the others it takes forever for others to replicate it)
+	- increase IgnoreRatio to 20% -> 30%
+	- rework parent selection logic (in Species.cs):
+		- add 5% chance to just pick best subject
+		- for other 95%: pick 3 random subjects of candidate pool and pick best of those
+	- add 5% chance for asexual child (just genome.Copy() of singular parent with instant forced mutation)
+
+prevent species hopping
+	- only assign species representative genome ONCE at species "birth". Use deep reference to the genome (with copy()) that creates the species so no reference to a subject exists.
+	- make speciation more sticky. Pass parent species to speciation function. If distance is still within threshold of parent, keep that species, regardless of distance to other species (don't even check others).
+
+
+UI CHANGES
+
+clicking on a square in grid ranking should show neural net in closable popupwindow (like play)
+
+
+
+UPGRADE CHANGES
+
+add additional upgrade generating gold
+
+make wood and stone feel less samey
+-> give resources clear identities
+	wood: main resource for buildings
+	food: often used for upgrades inside buildings
+	stone: used for higher tier buildings or upgrades
+	gold: goal resource, goal is to maximize this (but can also be used as upgrade cost or as a negative upgrade effect)
+	maybe one new additional resource with a clear identity?
+
+upgrade that makes end gold amount more varied
+
+add an upgrade that instantly gives you x of a resource
+
+add an upgrade that doesn't have any direct effects but gives access to other more powerful upgrades

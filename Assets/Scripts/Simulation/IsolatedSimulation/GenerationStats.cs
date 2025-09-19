@@ -24,6 +24,11 @@ public class GenerationStats
     /// </summary>
     public float Runtime { get; private set; }
 
+    /// <summary>
+    /// Species distribution in this generation.
+    /// </summary>
+    public List<SpeciesData> SpeciesData { get; private set; }
+
     private Dictionary<Subject, Task> Tasks;
     public List<Task> TaskRanking;
 
@@ -36,10 +41,19 @@ public class GenerationStats
     /// <summary>
     /// Create generation stats for a generation with a population that has evolved from a previous generation.
     /// </summary>
-    public GenerationStats(EvolutionInformation evoInfo)
+    public GenerationStats(EvolutionInformation evoInfo, List<Species> speciesData)
     {
         EvolutionInfo = evoInfo;
         IsComplete = false;
+
+        // Aggregate species data
+        SpeciesData = new List<SpeciesData>();
+        foreach (Species s in speciesData)
+        {
+            SpeciesData data = new SpeciesData(s.Id, s.Name, s.Color, s.Subjects.Count, s.GenerationsBelowEliminationThreshold);
+            SpeciesData.Add(data);
+        }
+        SpeciesData = SpeciesData.OrderByDescending(x => x.SubjectCount).ToList();
     }
 
     /// <summary>
@@ -55,6 +69,20 @@ public class GenerationStats
 
         BestPerformingTask = TaskRanking.First();
         MedianTask = GetPercentileTask(0.5f);
+
+        // Complete species data
+        foreach (SpeciesData data in SpeciesData)
+        {
+            List<Task> speciesTasks = tasks.Where(x => x.Key.Genome.Species.Id == data.Id).Select(x => x.Value).ToList();
+            float avgFitness = (float)speciesTasks.Average(x => x.GetFitnessValue());
+            float maxFitness = speciesTasks.Max(x => x.GetFitnessValue());
+
+            data.AverageFitness = avgFitness;
+            data.MaxFitness = maxFitness;
+        }
+        SpeciesData = SpeciesData.OrderByDescending(x => x.AverageFitness).ToList();
+        for (int i = 0; i < SpeciesData.Count; i++) SpeciesData[i].Rank = i + 1; 
+
 
         OnComplete();
 

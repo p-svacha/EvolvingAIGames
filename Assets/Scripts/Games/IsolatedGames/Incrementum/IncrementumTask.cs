@@ -11,6 +11,9 @@ namespace Incrementum
         public Dictionary<ResourceDef, int> Resources;
         public Dictionary<UpgradeDef, bool> AcquiredUpgrades;
 
+        private int LastPurchaseTick = -1;
+        private bool CanBuyThisTick() => LastPurchaseTick != TickNumber;
+
         /// <summary>
         /// Containing data storing the time each upgrade was acquired.
         /// </summary>
@@ -132,12 +135,14 @@ namespace Incrementum
         /// </summary>
         private UpgradeDef GetUpgradeToAcquire(float[] outputs)
         {
+            float doNothingValue = outputs.Last();
+
             List<UpgradeDef> upgrades = DefDatabase<UpgradeDef>.AllDefs;
             UpgradeDef toBuy = null;
             float toBuyValue = 0f;
-            for (int i = 0; i < outputs.Length; i++)
+            for (int i = 0; i < upgrades.Count; i++)
             {
-                if (outputs[i] > Incrementum.UPGRADE_ACQUIRE_THRESHOLD)
+                if (outputs[i] > doNothingValue) // Only consider upgrade if value is higher than "do nothing" value
                 {
                     UpgradeDef upgrade = upgrades[i];
                     if (CanAcquireUpgrade(upgrade))
@@ -186,12 +191,15 @@ namespace Incrementum
         /// </summary>
         private void AcquireUpgrade(UpgradeDef def)
         {
+            if (!CanBuyThisTick()) return;
+
             AcquiredUpgrades[def] = true;
             foreach(var r in def.Cost)
             {
                 Resources[r.Key] -= r.Value;
             }
 
+            LastPurchaseTick = TickNumber;
             History.Add(TickNumber, def);
         }
 
@@ -201,11 +209,14 @@ namespace Incrementum
         /// </summary>
         public bool TryAcquireUpgrade(UpgradeDef def)
         {
+            if (!CanBuyThisTick()) return false;
             if (!CanAcquireUpgrade(def)) return false;
 
             AcquiredUpgrades[def] = true;
             foreach (var r in def.Cost) Resources[r.Key] -= r.Value;
             History.Add(TickNumber, def);
+
+            LastPurchaseTick = TickNumber;
             return true;
         }
 
@@ -221,8 +232,11 @@ namespace Incrementum
             float acquiredPct = totalUpgrades > 0 ? (100f * acquiredCount) / totalUpgrades : 0f;
 
             var sb = new StringBuilder();
-            sb.AppendLine($"Subject: {Subject?.Name ?? "(unnamed)"}");
-            sb.AppendLine($"Ticks:   {TickNumber}/{Incrementum.NUM_TICKS}");
+
+            // General
+            sb.AppendLine($"<b>Subject: {Subject?.Name ?? "(unnamed)"}</b>");
+            sb.AppendLine($"Fitness: {Resources[ResourceDefOf.Gold]}");
+            sb.AppendLine($"Upgrades: {acquiredCount}/{totalUpgrades} ({acquiredPct:0.0}%)");
 
             // Final resources
             sb.AppendLine();
@@ -233,12 +247,6 @@ namespace Incrementum
             sb.AppendLine();
             sb.Append("Rates / tick:   ");
             sb.AppendLine(string.Join(", ", resources.Select(r => $"{r.Label}={GetResourceIncomePerTick(r)}")));
-
-            // Fitness (your current fitness is final Gold)
-            sb.AppendLine($"Fitness (Gold): {Resources[ResourceDefOf.Gold]}");
-
-            // Acquisition summary
-            sb.AppendLine($"Upgrades acquired: {acquiredCount}/{totalUpgrades} ({acquiredPct:0.0}%)");
 
             // Timeline
             sb.AppendLine();

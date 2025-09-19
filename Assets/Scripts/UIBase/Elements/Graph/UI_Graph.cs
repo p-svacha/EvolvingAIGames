@@ -11,6 +11,8 @@ using TMPro;
 /// </summary>
 public class UI_Graph : MonoBehaviour
 {
+    private bool IsInitialized = false;
+
     /// <summary>
     /// Absolute pixel width of the graph container.
     /// </summary>
@@ -55,7 +57,17 @@ public class UI_Graph : MonoBehaviour
     private float SourceYMax;
     private float TargetYMax;
 
+    private void Awake()
+    {
+        
+    }
+
     void Start()
+    {
+        Initialize();
+    }
+
+    private void Initialize()
     {
         GraphContainer = GetComponent<RectTransform>();
 
@@ -64,6 +76,8 @@ public class UI_Graph : MonoBehaviour
 
         ContainerCenterX = ContainerWidth / 2f;
         ContainerCenterY = ContainerHeight / 2f;
+
+        IsInitialized = true;
     }
 
     void Update()
@@ -145,6 +159,8 @@ public class UI_Graph : MonoBehaviour
     /// </summary>
     public void ClearGraph(bool stopAnimation = true)
     {
+        if (!IsInitialized) Initialize();
+
         foreach (Transform t in GraphContainer) Destroy(t.gameObject);
         Bars.Clear();
         BarLabels.Clear();
@@ -284,6 +300,163 @@ public class UI_Graph : MonoBehaviour
             testList.Add(new GraphDataPoint("P" + i, Random.Range(0, maxValue), new Color(Random.value, Random.value, Random.value)));
         }
         ShowBarGraph(testList, maxValue, step, spacing * 0.1f, Color.white, Color.grey);
+    }
+
+    #endregion
+
+    #region Stacked Bar Graph
+
+    public void ShowStackedBarGraph(
+    List<StackedBar> bars,
+    float yMax,
+    string title,
+    Color axisColor,
+    Color? gridColor = null,
+    int ySteps = 10)
+    {
+        ClearGraph();
+
+        if (bars == null || bars.Count == 0) return;
+
+        // Layout constants (mirrors line graph)
+        float paddingAbs = 10f;
+        float axisSizeAbs = 50f;
+        float axisThicknessAbs = 3f;
+        float axisTicksLength = 10f;
+        int titleSize = 20;
+        int axisFontSize = 16;
+
+        Color yStepColor = gridColor ?? new Color(0.2f, 0.2f, 0.2f);
+
+        // Compute yMax if not provided: use max stack sum with a bit of headroom
+        float maxStackSum = 0f;
+        foreach (var b in bars)
+            maxStackSum = Mathf.Max(maxStackSum, b.Segments?.Sum(s => Mathf.Max(0f, s.Amount)) ?? 0f);
+        if (yMax <= 0f) yMax = maxStackSum <= 0f ? 1f : maxStackSum * 1.05f;
+
+        // Derived layout
+        float circleSizeAbs = 16f; // keep space budget consistent with line graph
+        float graphStartXAbs = paddingAbs + axisSizeAbs + circleSizeAbs / 2f;
+        float graphStartYAbs = paddingAbs + axisSizeAbs + circleSizeAbs / 2f;
+
+        float graphWidthAbs = ContainerWidth - 2f * paddingAbs - axisSizeAbs - circleSizeAbs;
+        float graphHeightAbs = ContainerHeight - 2f * paddingAbs - axisSizeAbs - titleSize - circleSizeAbs;
+
+        int n = Mathf.Max(bars.Count, 1);
+        // No gaps between bars: each bar occupies a contiguous slice of the plot area.
+        float barWidthAbs = graphWidthAbs / n;
+
+        // Title
+        DrawText(title,
+            new Vector2(ContainerWidth / 2f, ContainerHeight - paddingAbs - titleSize / 2f),
+            new Vector2(ContainerWidth, titleSize),
+            axisColor, titleSize);
+
+        // X axis
+        float xAxisYPos = paddingAbs + axisSizeAbs - axisThicknessAbs / 2f;
+        DrawRectangle(new Vector2(ContainerCenterX, xAxisYPos),
+                      new Vector2(ContainerWidth - 2f * paddingAbs, axisThicknessAbs), axisColor);
+
+        // Y axis
+        float yAxisXPos = paddingAbs + axisSizeAbs - axisThicknessAbs / 2f;
+        DrawRectangle(new Vector2(yAxisXPos, ContainerCenterY),
+                      new Vector2(axisThicknessAbs, ContainerHeight - 2f * paddingAbs), axisColor);
+
+        // Y grid + labels
+        int steps = Mathf.Max(1, ySteps);
+        float yStepAbs = graphHeightAbs / steps;
+        float yValueStep = yMax / steps;
+        for (int i = 0; i < steps; i++)
+        {
+            float yPos = graphStartYAbs + (i + 1) * yStepAbs;
+
+            // grid line
+            DrawRectangle(new Vector2(graphStartXAbs + graphWidthAbs / 2f, yPos),
+                          new Vector2(graphWidthAbs, 2f), yStepColor, insertInBackground: true);
+
+            // label
+            float yValue = (i + 1) * yValueStep;
+            string format = (yMax <= 1f) ? "N2" : (yMax <= 100f ? "N1" : "N0");
+            DrawText(yValue.ToString(format),
+                     new Vector2(paddingAbs + axisSizeAbs / 2f, yPos),
+                     new Vector2(axisSizeAbs, yStepAbs),
+                     axisColor, axisFontSize);
+        }
+
+        // Bars
+        for (int i = 0; i < n; i++)
+        {
+            var bar = bars[i];
+            float leftX = graphStartXAbs + i * barWidthAbs;
+            float rightX = leftX + barWidthAbs;
+            float centerX = (leftX + rightX) * 0.5f;
+
+            // X tick
+            DrawRectangle(new Vector2(centerX, xAxisYPos),
+                          new Vector2(axisThicknessAbs, axisTicksLength), axisColor);
+
+            // X label
+            DrawText(bar.Label ?? "",
+                     new Vector2(centerX, paddingAbs + axisSizeAbs / 2f),
+                     new Vector2(barWidthAbs, axisSizeAbs),
+                     axisColor, axisFontSize);
+
+            // Stack segments: bottom → top, contiguous (no gaps)
+            float runningHeight = 0f;
+            if (bar.Segments != null && bar.Segments.Count > 0)
+            {
+                foreach (var seg in bar.Segments)
+                {
+                    float segVal = Mathf.Max(0f, seg.Amount);
+                    if (segVal <= 0f) continue;
+
+                    float segHeightAbs = (segVal / yMax) * graphHeightAbs;
+                    float centerY = graphStartYAbs + runningHeight + segHeightAbs * 0.5f;
+
+                    DrawRectangle(new Vector2(centerX, centerY),
+                                  new Vector2(barWidthAbs, segHeightAbs),
+                                  seg.Color);
+
+                    runningHeight += segHeightAbs;
+                }
+            }
+        }
+
+        // Top border
+        DrawRectangle(new Vector2(ContainerWidth / 2f, graphStartYAbs + graphHeightAbs),
+                      new Vector2(ContainerWidth - 2f * paddingAbs, axisThicknessAbs),
+                      axisColor);
+    }
+
+    public void ShowRandomStackedBarGraph(int bars = 10, int minSegments = 2, int maxSegments = 6)
+    {
+        bars = Mathf.Clamp(bars, 2, 40);
+        minSegments = Mathf.Max(1, minSegments);
+        maxSegments = Mathf.Max(minSegments, maxSegments);
+
+        var list = new List<StackedBar>();
+        float yMax = 0f;
+
+        for (int i = 0; i < bars; i++)
+        {
+            int segCount = Random.Range(minSegments, maxSegments + 1);
+            var segs = new List<StackedBarData>();
+            int total = 0;
+            for (int s = 0; s < segCount; s++)
+            {
+                // random positive portions
+                int amt = Random.Range(1, 20);
+                total += amt;
+                segs.Add(new StackedBarData($"S{s}", amt, new Color(Random.value, Random.value, Random.value, 1f)));
+            }
+            yMax = Mathf.Max(yMax, total);
+            list.Add(new StackedBar($"B{i}", segs));
+        }
+
+        // a bit of headroom
+        yMax *= 1.1f;
+
+        ShowStackedBarGraph(list, yMax, "Random Stacked Bars", axisColor: Color.white);
     }
 
     #endregion

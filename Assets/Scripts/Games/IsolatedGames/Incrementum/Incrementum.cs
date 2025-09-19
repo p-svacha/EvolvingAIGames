@@ -13,14 +13,12 @@ namespace Incrementum
         // Rules
         public static int NUM_TICKS = 500; // Each game will last this many ticks.
         public static int BASE_WOOD_INCOME = 1;
-        public static int BASE_STONE_INCOME = 1;
+        public static int BASE_STONE_INCOME = 0;
         public static int BASE_GOLD_INCOME = 0;
         public static int STARTING_WOOD_AMOUNT = 30;
-        public static int STARTING_STONE_AMOUNT = 20;
+        public static int STARTING_STONE_AMOUNT = 0;
 
-        public static float UPGRADE_ACQUIRE_THRESHOLD = 0.7f; // A neural net output higher than this represents a wish to acquire the upgrade
-
-        protected override int PopulationSize => 625;
+        public override int PopulationSize => 600;
 
         [Header("References")]
         public UI_Incrementum UI;
@@ -40,7 +38,7 @@ namespace Incrementum
             IncrementumTask dummyTask = new IncrementumTask(null);
             SubjectInputSize = dummyTask.GetInputs().Length;
             SubjectHiddenSizes = new int[1] { 16 };
-            SubjectOutputSize = UpgradeDefs.Defs.Count;
+            SubjectOutputSize = UpgradeDefs.Defs.Count + 1; // +1 for "WAIT" output
 
             // UI
             UI.Init(this);
@@ -64,9 +62,9 @@ namespace Incrementum
             }
         }
 
-        public override GenerationStats CreateGenerationStats(EvolutionInformation info)
+        public override GenerationStats CreateGenerationStats(EvolutionInformation info, List<Species> speciesData)
         {
-            return new IncrementumGenerationStats(info);
+            return new IncrementumGenerationStats(info, speciesData);
         }
 
         protected override void OnGenerationInitialized(EvolutionInformation info)

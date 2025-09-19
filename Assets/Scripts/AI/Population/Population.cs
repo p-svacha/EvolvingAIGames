@@ -24,26 +24,29 @@ public class Population {
 
     // Evolution Parameters
     public bool InitialGenomesAreFullyConnected = true; // If true, the initial genomes have connections from every input node to every output node
-    public int FixedSpeciesAmount = 4; // if this is positive, a fixed amount of species is used that will always have the same amount of subjects.
+    public int FixedSpeciesAmount = 0; // if this is positive, a fixed amount of species is used that will always have the same amount of subjects.
     public int FixedSpeciesSubjectSize; // How many subjects are in a species if fixed species amount is used.
     public bool IsUsingDynamicSpecies => FixedSpeciesAmount <= 0;
 
-    public float TakeOverBestRatio = 0.05f; // % of best subjects per species that are taken over to next generation
-    public float TakeOverRandomRatio = 0.01f; // % of random subjects per species that are taken over to next generation
+    public float TakeOverBestRatio = 0.03f; // % of best subjects per species that are taken over to next generation
+    public float TakeOverRandomRatio = 0.03f; // % of random subjects per species that are taken over to next generation
     public bool AreTakeOversImmuneToMutation = true; // If true, subjects that are taken over the next generation are immune to mutation
     // Rest will be newly generated as offsprings of good performing genomes from previous generation
 
     public float IgnoreRatio = 0.2f; // % of worst performing subjects within a species to ignore when chosing a random parent
 
-    public int RankNeededToSurvive = 4; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
-    public int GenerationsBelowRankAllowed = 5; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
+
+
+
+    // Species Parameters
+    public int RankNeededToSurvive = 3; // The rank needed for a species at least every {GenerationsWithoutImprovementPenalty} generations to not get eliminated
+    public int GenerationsBelowRankAllowed = 10; // Number of generations without reaching species rank {RankNeededToSurvive} allowed to not get eliminated
 
     public float AdoptionRate = 0f; // % chance that an offspring will automatically have the same species as its parents
 
-    /// Maximum difference (nodes and connections) allowed for a subject to be placed into a species.
-    /// This only gets used when InitialGenomesAreFullyConnected is false.
-    /// Should be higher when MultipleMutationsPerGenomeAllowed is set to true.
-    public float SpeciesCompatiblityThreshold = 320;
+    public float SpeciesCompatiblityThreshold = 1.70f; // Maximum difference (nodes and connections) allowed for a subject to be placed into a species. 1.0 should work regardless of network size to spawn some new species after a few generations
+
+    public bool UseBestPerformerAsSpeciesRepresentative = false; // If true, always the best performing genome of a species acts the representative. If false, a random one is picked. False is recommended.
 
 
     // Mutation parameters
@@ -199,6 +202,13 @@ public class Population {
         TopologyMutator.NodeId = nodeIdCounter;
         TopologyMutator.ConnectionId = connectionIdCounter;
 
+        InnovationIdTracker.Initialize(TopologyMutator.NodeId, TopologyMutator.ConnectionId);
+
+        // Seed innovations from one canonical genome (all are identical initially)
+        var g0 = Subjects[0].Genome;
+        foreach (var c in g0.Connections.Values)
+            InnovationIdTracker.RegisterExistingConnectionInnovation(c.FromNode.Id, c.ToNode.Id, c.Id);
+
         if (!startWithConnections) // Instantly evolve once if starting with no connections
         {
             EvolveGeneration();
@@ -246,28 +256,40 @@ public class Population {
         {
             if (s.Rank <= rankNeededToSurvive)
             {
-                s.GenerationsWithoutImprovement = 0;
+                s.GenerationsBelowEliminationThreshold = 0;
             }
-            else s.GenerationsWithoutImprovement++;
-            if (s.GenerationsWithoutImprovement > generationsWithoutImprovementPenalty)
+            else s.GenerationsBelowEliminationThreshold++;
+            if (s.GenerationsBelowEliminationThreshold > generationsWithoutImprovementPenalty)
             {
                 toRemove.Add(s);
                 Debug.Log("A SPECIES HAS BEEN REMOVED FOR NOT IMPROVING");
             }
         }
 
+        // Reset the counter for the winner's subject species.
+        Subject winner = Subjects.OrderByDescending(x => x.Genome.Fitness).First();
+        winner.Genome.Species.GenerationsBelowEliminationThreshold = 0;
+
+
         foreach (Species s in toRemove) Species.Remove(s);
         return toRemove.Count;
     }
 
     /// <summary>
-    /// Choses the best performing genome from each species as its representative
+    /// Choses the best performing or random genome from each species as its representative.
     /// </summary>
     public void CreateSpeciesRepresentatives()
     {
-        foreach (Species s in Species)
+        if (UseBestPerformerAsSpeciesRepresentative) // Pick best performer
         {
-            s.Representative = s.Subjects.OrderByDescending(x => x.Genome.AdjustedFitness).First().Genome;
+            foreach (Species s in Species)
+            {
+                s.Representative = s.Subjects.OrderByDescending(x => x.Genome.AdjustedFitness).First().Genome;
+            }
+        }
+        else // Pick random
+        {
+            foreach (var s in Species) s.Representative = s.Subjects.RandomElement().Genome;
         }
     }
 
@@ -556,5 +578,5 @@ public class Population {
         }
     }
 
-    private string GetStandardizedSubjectName(Subject s) => "S" + Generation + "/" + s.Genome.Species.Id + "/" + Subjects.IndexOf(s);
+    private string GetStandardizedSubjectName(Subject s) => $"{Generation}-{s.Genome.Species.Name}-{s.Genome.Species.Subjects.IndexOf(s)}";
 }

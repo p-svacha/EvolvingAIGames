@@ -43,89 +43,73 @@ public class TopologyMutator {
         }
     }
 
-    public NewConnectionMutation AddConnection(Genome genome, List<NewConnectionMutation> mutations)
+    /// <summary>
+    /// Adds a new connection by connecting two random unconnected nodes.
+    /// </summary>
+    public NewConnectionMutation AddConnection(Genome genome, List<NewConnectionMutation> _)
     {
-        List<Connection> candidateConnections = FindCandidateConnections(genome);
-        Connection newConnection = candidateConnections[Random.Next(candidateConnections.Count)];
+        var candidateConnections = FindCandidateConnections(genome);
+        var newConnection = candidateConnections[Random.Next(candidateConnections.Count)];
 
-        // Check if this exact mutation has already been done
-        int newConnectionId;
-        List<NewConnectionMutation> existingMutations = mutations.Where(x => 
-            (x.FromNodeId == newConnection.FromNode.Id && x.ToNodeId == newConnection.ToNode.Id) || 
-            (x.FromNodeId == newConnection.ToNode.Id && x.ToNodeId == newConnection.FromNode.Id)
-            ).ToList();
-        if (existingMutations.Count > 0)
-            newConnectionId = existingMutations[0].NewConnectionId;
-        else newConnectionId = ConnectionId++;
-
-        newConnection.Id = newConnectionId;
+        // use global innovation
+        int newId = InnovationIdTracker.GetOrCreateConnectionInnovation(newConnection.FromNode.Id, newConnection.ToNode.Id);
+        newConnection.Id = newId;
         newConnection.Weight = (float)(Random.NextDouble() * 2 - 1);
 
+        // attach...
         newConnection.FromNode.OutConnections.Add(newConnection);
         newConnection.ToNode.InConnections.Add(newConnection);
-
-        genome.Connections.Add(newConnectionId, newConnection);
-
+        genome.Connections.Add(newId, newConnection);
         genome.CalculateDepths();
 
-        return new NewConnectionMutation()
+        return new NewConnectionMutation
         {
             FromNodeId = newConnection.FromNode.Id,
             ToNodeId = newConnection.ToNode.Id,
-            NewConnectionId = newConnection.Id
+            NewConnectionId = newId
         };
     }
 
-    public NewNodeMutation AddNode(Genome genome, List<NewNodeMutation> mutations)
+    /// <summary>
+    /// Adds a new node by splitting a random existing connection.
+    /// </summary>
+    public NewNodeMutation AddNode(Genome genome, List<NewNodeMutation> _)
     {
-        List<Connection> candidateConnections = FindCandidateConnectionsForNewNode(genome);
-        Connection connectionToSplit = candidateConnections[Random.Next(candidateConnections.Count)];
-        connectionToSplit.Enabled = false;
+        var candidate = FindCandidateConnectionsForNewNode(genome);
+        var split = candidate[Random.Next(candidate.Count)];
+        split.Enabled = false;
 
-        // Check if this exact mutation has already been done this evolution cycle
-        int nodeId, toNewNodeId, fromNewNodeId;
-        List<NewNodeMutation> existingMutations = mutations.Where(x => x.SplittedConnectionId == connectionToSplit.Id).ToList();
-        if(existingMutations.Count > 0)
-        {
-            NewNodeMutation existingMutation = existingMutations[0];
-            nodeId = existingMutation.NewNodeId;
-            toNewNodeId = existingMutation.ToNewNodeConnectionId;
-            fromNewNodeId = existingMutation.FromNewNodeConnectionId;
-        }
-        else
-        {
-            nodeId = NodeId++;
-            toNewNodeId = ConnectionId++;
-            fromNewNodeId = ConnectionId++;
-        }
 
-        // Create new node
-        Node newNode = new Node(nodeId, NodeType.Hidden);
+        // Get the global innovation id for the connection being split,
+        // then get the split triple based on that (not on the per-genome split.Id)
+        int baseConnInnov = InnovationIdTracker.GetOrCreateConnectionInnovation(
+            split.FromNode.Id, split.ToNode.Id);
 
-        // Create new connections
-        Connection toNewNode = new Connection(toNewNodeId, connectionToSplit.FromNode, newNode);
-        connectionToSplit.FromNode.OutConnections.Add(toNewNode);
-        newNode.InConnections.Add(toNewNode);
-        toNewNode.Weight = 1;
+        var (nodeId, toNewId, fromNewId) = InnovationIdTracker.GetOrCreateSplitInnovation(split.Id);
 
-        Connection fromNewNode = new Connection(fromNewNodeId, newNode, connectionToSplit.ToNode);
-        newNode.OutConnections.Add(fromNewNode);
-        connectionToSplit.ToNode.InConnections.Add(fromNewNode);
-        fromNewNode.Weight = connectionToSplit.Weight;
+        var newNode = new Node(nodeId, NodeType.Hidden);
+
+        var toNew = new Connection(toNewId, split.FromNode, newNode) { Weight = 1f };
+        var fromNew = new Connection(fromNewId, newNode, split.ToNode) { Weight = split.Weight };
+
+        split.FromNode.OutConnections.Add(toNew);
+        newNode.InConnections.Add(toNew);
+        newNode.OutConnections.Add(fromNew);
+        split.ToNode.InConnections.Add(fromNew);
 
         genome.HiddenNodes.Add(newNode);
         genome.Nodes.Add(nodeId, newNode);
-        genome.Connections.Add(toNewNodeId, toNewNode);
-        genome.Connections.Add(fromNewNodeId, fromNewNode);
+        genome.Connections.Add(toNewId, toNew);
+        genome.Connections.Add(fromNewId, fromNew);
 
         genome.CalculateDepths();
 
-        return new NewNodeMutation()
+        return new NewNodeMutation
         {
-            SplittedConnectionId = connectionToSplit.Id,
-            NewNodeId = newNode.Id,
-            ToNewNodeConnectionId = toNewNode.Id,
-            FromNewNodeConnectionId = fromNewNode.Id
+            SplittedConnectionId = split.Id,
+            NewNodeId = nodeId,
+            ToNewNodeConnectionId = toNewId,
+            FromNewNodeConnectionId = fromNewId
         };
     }
 

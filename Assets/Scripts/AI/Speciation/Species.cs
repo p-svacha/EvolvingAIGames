@@ -8,11 +8,12 @@ public class Species {
     public System.Random Random;
 
     public int Id;
+    public string Name;
     public List<Subject> Subjects;
     public Genome Representative;
     public Color Color;
 
-    public int GenerationsWithoutImprovement;
+    public int GenerationsBelowEliminationThreshold;
 
     // Stats from last generation
     public float MaxFitness { get; set; }
@@ -24,14 +25,15 @@ public class Species {
     public float OffspringCount;
 
 
-    public Species(int id, Genome rep, Color color)
+    public Species(int id, string name, Genome rep, Color color)
     {
         Id = id;
+        Name = name;
         Random = new System.Random();
         Representative = rep;
         Color = color;
         Subjects = new List<Subject>();
-        GenerationsWithoutImprovement = 0;
+        GenerationsBelowEliminationThreshold = 0;
     }
 
     public void CalculateFitnessValues()
@@ -49,21 +51,26 @@ public class Species {
 
     public Subject GetProportionalRandomParent(float ignoreRatio)
     {
-        // Remove worst ignoreRatio % of candidates
-        int numCandidates = (int)(Size * (1f - ignoreRatio));
-        if (numCandidates == 0) numCandidates = 1;
-        List<Subject> candidates = Subjects.OrderByDescending(x => x.Genome.AdjustedFitness).Take(numCandidates).ToList();
-        int totalFitness = (int)(candidates.Sum(x => x.Genome.AdjustedFitness));
-        int rng = Random.Next(totalFitness);
-        //int rng = Random.Next((int)(Subjects.Sum(x => x.Genome.AdjustedFitness)));
-        float sum = Subjects.First().Genome.AdjustedFitness;
-        int index = 0;
-        while (rng > sum)
+        // Top X% by adjusted fitness
+        var sorted = Subjects.OrderByDescending(s => s.Genome.AdjustedFitness).ToList();
+        int count = Mathf.Max(1, Mathf.CeilToInt(sorted.Count * (1f - ignoreRatio)));
+        var candidates = sorted.Take(count).ToList();
+
+        double total = candidates.Sum(s => (double)s.Genome.AdjustedFitness);
+        if (total <= 0.0)
         {
-            index++;
-            sum += Subjects[index].Genome.AdjustedFitness;
+            // fallback uniform if everything is zero
+            return candidates[Random.Next(candidates.Count)];
         }
-        return Subjects[index];
+
+        double pick = Random.NextDouble() * total;
+        double cum = 0.0;
+        foreach (var s in candidates)
+        {
+            cum += s.Genome.AdjustedFitness;
+            if (pick <= cum) return s;
+        }
+        return candidates[candidates.Count - 1];
     }
 
     public int Size

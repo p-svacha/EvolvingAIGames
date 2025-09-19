@@ -14,6 +14,7 @@ namespace Incrementum
         [Header("Elements")]
         public TextMeshProUGUI SubjectNameText;
         public TextMeshProUGUI FitnessText;
+        public Image SpeciesColorKnob;
 
         public GameObject TaskHistory;
         public TextMeshProUGUI TaskHistoryText;
@@ -23,6 +24,7 @@ namespace Incrementum
             gameObject.SetActive(true);
 
             SubjectNameText.text = task.Subject.Name;
+            SpeciesColorKnob.color = task.Subject.Genome.Species.Color;
             FitnessText.text = task.GetFitnessValue().ToString();
             TaskHistoryText.text = task.GetHistoryLog();
 

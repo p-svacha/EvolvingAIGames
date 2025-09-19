@@ -12,7 +12,7 @@ namespace Incrementum
         /// </summary>
         public List<UpgradeStat> UpgradeStats;
 
-        public IncrementumGenerationStats(EvolutionInformation info) : base(info) { }
+        public IncrementumGenerationStats(EvolutionInformation info, List<Species> speciesData) : base(info, speciesData) { }
 
         protected override void OnComplete()
         {

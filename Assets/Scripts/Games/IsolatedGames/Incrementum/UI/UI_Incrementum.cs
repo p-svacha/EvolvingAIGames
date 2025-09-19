@@ -13,8 +13,12 @@ namespace Incrementum
         private int DisplayedGenerationIndex;
 
         [Header("Controls")]
+        public SpeciesScoreboard SpeciesScoreboard;
+        public UI_RankingGrid RankingGrid;
+
         public UI_GenerationStats GenerationStats;
         public UI_Graph FitnessGraph;
+        public UI_Graph SpeciesDistributionGraph;
         public UI_ToggleButton RunSingleGenerationButton;
         public UI_ToggleButton AutoRunToggle;
         public UI_ToggleButton PlayButton;
@@ -36,6 +40,7 @@ namespace Incrementum
 
             PlayPanel.Init();
 
+            RankingGrid.Init(simulation.PopulationSize);
             GenerationSelector.Init(this);
             RunSingleGenerationButton.SetOnClick(RunSingleGenerationButton_OnClick);
             PlayButton.SetOnClick(Play_OnClick);
@@ -78,6 +83,7 @@ namespace Incrementum
         public void OnGenerationInitialized()
         {
             GenerationSelector.SetMaxGenerationIndex(Simulation.Generation, selectNewMax: Simulation.Generation == 0);
+            RebuildSpeciesDistributionGraph();
         }
         public void OnGenerationStarted()
         {
@@ -110,7 +116,10 @@ namespace Incrementum
             DisplayedGenerationIndex = generationIndex;
 
             // Show info about this generation in various elements
-            GenerationStats.ShowStats((IncrementumGenerationStats)Simulation.GenerationHistory[DisplayedGenerationIndex]);
+            IncrementumGenerationStats stats = (IncrementumGenerationStats)Simulation.GenerationHistory[DisplayedGenerationIndex];
+            GenerationStats.ShowStats(stats);
+            SpeciesScoreboard.UpdateScoreboard(stats.SpeciesData);
+            RankingGrid.ShowGeneration(stats);
         }
 
         #region Fitness graph
@@ -186,6 +195,59 @@ namespace Incrementum
             float yMax = globalMax <= 0f ? 1f : globalMax * 1.10f;
 
             return (lines, yMax);
+        }
+
+        #endregion
+
+        #region Species Distribution graph
+
+        private void RebuildSpeciesDistributionGraph()
+        {
+            var (bars, yMax) = BuildSpeciesBars();
+            SpeciesDistributionGraph.ShowStackedBarGraph(
+                bars,
+                yMax,
+                "Species distribution (subjects per generation)",
+                axisColor: Color.white
+            );
+        }
+
+        private (List<StackedBar> bars, float yMax) BuildSpeciesBars()
+        {
+            var bars = new List<StackedBar>();
+            var gens = Simulation.GenerationHistory ?? new List<GenerationStats>();
+            if (gens.Count == 0) return (bars, 1f);
+
+            // Constant headroom: yMax = population size (fast + stable axes)
+            // If you ever change pop size mid-run, replace with per-gen sum max.
+            int populationSize = Simulation != null ? Simulation.GetComponent<Incrementum>().PopulationSize : 0;
+            float yMax = populationSize > 0 ? populationSize : gens.Max(g => g.SpeciesData?.Sum(sd => sd.SubjectCount) ?? 0);
+
+            for (int gi = 0; gi < gens.Count; gi++)
+            {
+                var gs = gens[gi];
+                var segments = new List<StackedBarData>();
+
+                if (gs?.SpeciesData != null && gs.SpeciesData.Count > 0)
+                {
+                    foreach (var sd in gs.SpeciesData.OrderBy(sd => sd.Id))
+                    {
+                        if (sd.SubjectCount <= 0) continue;
+                        segments.Add(new StackedBarData(
+                            segmentName: sd.Name ?? $"Species {sd.Id}",
+                            amount: sd.SubjectCount,
+                            color: sd.Color
+                        ));
+                    }
+                }
+
+                // X label: show generation number if present, else index
+                string label = (gs?.EvolutionInfo != null ? gs.GenerationNumber : gi).ToString();
+                bars.Add(new StackedBar(label, segments));
+            }
+
+            if (yMax <= 0f) yMax = 1f;
+            return (bars, yMax);
         }
 
         #endregion

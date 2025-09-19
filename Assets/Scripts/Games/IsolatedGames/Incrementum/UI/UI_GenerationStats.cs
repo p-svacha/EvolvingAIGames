@@ -13,7 +13,10 @@ namespace Incrementum
 
         [Header("Elements")]
         public TextMeshProUGUI TitleText;
+
         public TextMeshProUGUI RuntimeText;
+        public TextMeshProUGUI SpeciesText;
+
         public UI_IncrementumSubjectDisplay TopPerformer;
         public UI_IncrementumSubjectDisplay MedianPerformer;
 
@@ -23,6 +26,8 @@ namespace Incrementum
         {
             TitleText.text = $"Generation {stats.GenerationNumber} Stats";
             HelperFunctions.DestroyAllChildredImmediately(UpgradeStatContainer, skipElements: 1);
+
+            SpeciesText.text = stats.SpeciesData.Count.ToString();
 
             if (stats.IsComplete)
             {

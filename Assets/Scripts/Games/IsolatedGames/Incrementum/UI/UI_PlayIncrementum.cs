@@ -24,9 +24,8 @@ namespace Incrementum
         public TextMeshProUGUI AiHighscoreText;
         public TextMeshProUGUI PlayerHighscoreText;
 
-        // Optional: parent containers (if null, created at runtime)
-        public RectTransform NodesRoot;
-        public RectTransform LinesRoot;
+        // New: single root for the whole tree
+        public RectTransform TreeRoot;
 
         [Header("Run Settings")]
         public float TicksPerSecond = 10f;
@@ -42,6 +41,7 @@ namespace Incrementum
         private static int UPGRADE_SIZE_X = 240;
         private static int UPGRADE_SIZE_Y = 90;
 
+
         // --- lifecycle -------------------------------------------------------
 
         public void Init()
@@ -52,19 +52,12 @@ namespace Incrementum
             ResetButton.onClick.AddListener(ResetGame);
             CloseButton.onClick.AddListener(Close);
 
-            if (NodesRoot == null)
+            if (TreeRoot == null)
             {
-                var nodesGO = new GameObject("NodesRoot", typeof(RectTransform));
-                nodesGO.transform.SetParent(transform, false);
-                NodesRoot = nodesGO.GetComponent<RectTransform>();
-                CopyContainerSize(NodesRoot);
-            }
-            if (LinesRoot == null)
-            {
-                var linesGO = new GameObject("LinesRoot", typeof(RectTransform));
-                linesGO.transform.SetParent(transform, false);
-                LinesRoot = linesGO.GetComponent<RectTransform>();
-                CopyContainerSize(LinesRoot);
+                var rootGO = new GameObject("TreeRoot", typeof(RectTransform));
+                rootGO.transform.SetParent(transform, false);
+                TreeRoot = rootGO.GetComponent<RectTransform>();
+                CopyContainerSize(TreeRoot);
             }
 
             BuildTree();
@@ -73,7 +66,6 @@ namespace Incrementum
 
         private void Update()
         {
-            // Block pause toggling once the game is finished
             if (Input.GetKeyDown(PauseKey) && !Game.IsDone)
                 Paused = !Paused;
 
@@ -84,13 +76,10 @@ namespace Incrementum
                 while (TickAccum >= interval && !Paused)
                 {
                     TickAccum -= interval;
-                    // Stop immediately if this tick finished the game
                     if (StepOneTick())
                     {
-                        // Game is done
                         Paused = true;
 
-                        // Highscore
                         int finalScore = Game.GetFitnessValue();
                         if (finalScore > PlayerHighscore)
                         {
@@ -106,7 +95,6 @@ namespace Incrementum
                             }
                             PlayerHighscoreText.text = highscoreText;
                         }
-
                         break;
                     }
                 }
@@ -123,7 +111,6 @@ namespace Incrementum
                 EventSystem.current.SetSelectedGameObject(null);
         }
 
-
         public void Show()
         {
             gameObject.SetActive(true);
@@ -132,7 +119,6 @@ namespace Incrementum
             ResetGame();
             ClearUISelection();
         }
-
 
         public void Close()
         {
@@ -152,15 +138,13 @@ namespace Incrementum
             ClearUISelection();
         }
 
-        // called by cards
         public void OnUpgradeClicked(UI_IncrementumUpgrade card)
         {
-            if (Game.IsDone) return;   // block interactions after end
+            if (Game.IsDone) return;
 
             var def = card.Def;
             if (Game.AcquiredUpgrades[def]) return;
 
-            // Try instant buy first
             if (Game.CanAcquireUpgrade(def) && Game.TryAcquireUpgrade(def))
             {
                 card.SetState(UpgradeUIState.Acquired);
@@ -171,10 +155,8 @@ namespace Incrementum
                 return;
             }
 
-            // Only allow staging if requirements are met
             if (!RequirementsMet(def)) return;
 
-            // Toggle staging...
             if (staged == def)
             {
                 staged = null;
@@ -201,12 +183,10 @@ namespace Incrementum
 
         private bool StepOneTick()
         {
-            // Don’t step if already done (extra safety)
             if (Game.IsDone) return true;
 
             Game.PlayerAdvanceTickNoAI();
 
-            // auto-try staged purchase
             if (staged != null && Game.CanAcquireUpgrade(staged))
             {
                 if (Game.TryAcquireUpgrade(staged))
@@ -219,8 +199,7 @@ namespace Incrementum
 
             Game.CheckEnd();
             RefreshAllStates();
-
-            return Game.IsDone;  // tell caller to stop & lock pause
+            return Game.IsDone;
         }
 
         private void UpdateHud()
@@ -249,17 +228,11 @@ namespace Incrementum
                 var card = kv.Value;
 
                 if (Game.AcquiredUpgrades[def])
-                {
                     card.SetState(UpgradeUIState.Acquired);
-                }
                 else if (staged == def)
-                {
                     card.SetState(UpgradeUIState.Staged);
-                }
                 else
-                {
                     card.SetState(UpgradeUIState.Unacquired);
-                }
             }
         }
 
@@ -267,12 +240,12 @@ namespace Incrementum
 
         private void BuildTree()
         {
-            // clear previous
-            foreach (Transform t in NodesRoot) Destroy(t.gameObject);
-            foreach (Transform t in LinesRoot) Destroy(t.gameObject);
+            // clear previous (single root now)
+            foreach (Transform t in TreeRoot) Destroy(t.gameObject);
             uiByDef.Clear();
 
             var defs = DefDatabase<UpgradeDef>.AllDefs;
+
             // depth = longest path length from any root (no requirements)
             var depthCache = new Dictionary<UpgradeDef, int>();
             int Depth(UpgradeDef d)
@@ -284,7 +257,7 @@ namespace Incrementum
                 return dep;
             }
 
-            // compute depths and columns
+            // group by depth
             var byDepth = new Dictionary<int, List<UpgradeDef>>();
             foreach (var d in defs)
             {
@@ -294,65 +267,155 @@ namespace Incrementum
             }
             int maxDepth = byDepth.Keys.Count == 0 ? 0 : byDepth.Keys.Max();
 
-            // layout rects
-            var rt = (RectTransform)transform;
-            float W = rt.rect.width, H = rt.rect.height;
-            float paddingX = 40f, paddingY = 40f, colGap = 40f, rowGap = 20f;
+            // --- layout constants based on TREE ROOT, not 'transform' ---
+            var rootRT = TreeRoot; // << key change
+            float W = rootRT.rect.width, H = rootRT.rect.height;
 
+            float paddingX = 40f, paddingY = 40f, colGap = 40f, rowGap = 20f;
             float colWidth = (W - 2 * paddingX - colGap * maxDepth) / Mathf.Max(1, (maxDepth + 1));
             float cardW = Mathf.Min(UPGRADE_SIZE_X, colWidth);
             float cardH = UPGRADE_SIZE_Y;
+            float minClearance = cardH + rowGap;
 
-            // Instantiate cards column-by-column
-            var cardRectByDef = new Dictionary<UpgradeDef, RectTransform>();
+            // We'll compute positions first, then center the whole layout inside TreeRoot
+            var posByDef = new Dictionary<UpgradeDef, Vector2>();
+            var yByDef = new Dictionary<UpgradeDef, float>();
+
+            float[] EvenlySpacedY(int n)
+            {
+                float usableH = H - 2 * paddingY;
+                float totalHeight = n * cardH + Mathf.Max(0, n - 1) * rowGap;
+                float startY = paddingY + (usableH - totalHeight) * 0.5f + cardH * 0.5f;
+                var arr = new float[n];
+                for (int i = 0; i < n; i++) arr[i] = startY + i * (cardH + rowGap);
+                return arr;
+            }
+
+            float ReserveYNear(float targetY, List<float> takenYs)
+            {
+                float minY = paddingY + cardH * 0.5f;
+                float maxY = H - paddingY - cardH * 0.5f;
+                targetY = Mathf.Clamp(targetY, minY, maxY);
+
+                bool Ok(float y) => takenYs.All(other => Mathf.Abs(other - y) >= minClearance);
+
+                if (Ok(targetY)) return targetY;
+
+                float step = minClearance * 0.5f;
+                for (int k = 1; k < 200; k++)
+                {
+                    float up = Mathf.Clamp(targetY + k * step, minY, maxY);
+                    if (Ok(up)) return up;
+                    float down = Mathf.Clamp(targetY - k * step, minY, maxY);
+                    if (Ok(down)) return down;
+                }
+                return targetY;
+            }
 
             for (int col = 0; col <= maxDepth; col++)
             {
                 if (!byDepth.ContainsKey(col)) continue;
                 var colDefs = byDepth[col].OrderBy(d => d.DefName).ToList();
-
                 float colX = paddingX + col * (colWidth + colGap) + colWidth * 0.5f;
 
-                // vertical positions, evenly spaced
-                int n = colDefs.Count;
-                float usableH = H - 2 * paddingY;
-                float totalHeight = n * cardH + Mathf.Max(0, n - 1) * rowGap;
-                float startY = paddingY + (usableH - totalHeight) * 0.5f + cardH * 0.5f;
+                var takenYs = new List<float>();
 
-                for (int i = 0; i < n; i++)
+                if (col == 0)
                 {
-                    var def = colDefs[i];
-                    var go = Instantiate(UpgradePrefab, NodesRoot);
-                    var cardRT = (RectTransform)go.transform;
-                    cardRT.sizeDelta = new Vector2(cardW, cardH);
-                    cardRT.anchorMin = cardRT.anchorMax = new Vector2(0f, 0f);
-                    cardRT.anchoredPosition = new Vector2(colX, startY + i * (cardH + rowGap));
+                    var ys = EvenlySpacedY(colDefs.Count);
+                    for (int i = 0; i < colDefs.Count; i++)
+                        Place(colDefs[i], colX, ys[i]);
+                }
+                else
+                {
+                    var singles = new List<UpgradeDef>();
+                    var multis = new List<UpgradeDef>();
+                    foreach (var d in colDefs)
+                    {
+                        var reqs = GetRequirements(d);
+                        if (reqs.Count == 1 && yByDef.ContainsKey(reqs[0])) singles.Add(d);
+                        else multis.Add(d);
+                    }
 
-                    go.Init(this, def);
-                    uiByDef[def] = go;
-                    cardRectByDef[def] = cardRT;
+                    foreach (var d in singles)
+                    {
+                        var p = GetRequirements(d)[0];
+                        float y = ReserveYNear(yByDef[p], takenYs);
+                        Place(d, colX, y);
+                    }
+
+                    if (multis.Count > 0)
+                    {
+                        var seeds = EvenlySpacedY(multis.Count);
+                        for (int i = 0; i < multis.Count; i++)
+                        {
+                            float y = ReserveYNear(seeds[i], takenYs);
+                            Place(multis[i], colX, y);
+                        }
+                    }
+                }
+
+                void Place(UpgradeDef def, float x, float y)
+                {
+                    posByDef[def] = new Vector2(x, y);
+                    yByDef[def] = y;
+                    takenYs.Add(y);
                 }
             }
 
-            // draw prerequisite lines
+            if (posByDef.Count == 0) return;
+
+            // --- compute bounds of the content (include card extents) ---
+            float minX = float.PositiveInfinity, minY = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity, maxY = float.NegativeInfinity;
+
+            foreach (var kv in posByDef)
+            {
+                var p = kv.Value;
+                minX = Mathf.Min(minX, p.x - cardW * 0.5f);
+                maxX = Mathf.Max(maxX, p.x + cardW * 0.5f);
+                minY = Mathf.Min(minY, p.y - cardH * 0.5f);
+                maxY = Mathf.Max(maxY, p.y + cardH * 0.5f);
+            }
+
+            Vector2 contentCenter = new Vector2((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
+            Vector2 treeCenter = new Vector2(W * 0.5f, H * 0.5f);
+            Vector2 offset = treeCenter - contentCenter;
+
+            // --- instantiate cards at (pos + offset) under TreeRoot ---
+            var cardRectByDef = new Dictionary<UpgradeDef, RectTransform>();
+            foreach (var def in defs)
+            {
+                var go = Instantiate(UpgradePrefab, TreeRoot);
+                var cardRT = (RectTransform)go.transform;
+                cardRT.sizeDelta = new Vector2(cardW, cardH);
+                cardRT.anchorMin = cardRT.anchorMax = new Vector2(0f, 0f);
+                cardRT.pivot = new Vector2(0.5f, 0.5f);
+                cardRT.anchoredPosition = posByDef[def] + offset;
+
+                go.Init(this, def);
+                uiByDef[def] = go;
+                cardRectByDef[def] = cardRT;
+            }
+
+            // draw prerequisite lines (under TreeRoot)
             foreach (var def in defs)
             {
                 var fromRT = cardRectByDef[def];
                 foreach (var req in GetRequirements(def))
                 {
-                    var toRT = cardRectByDef[req];
+                    if (!cardRectByDef.TryGetValue(req, out var toRT)) continue;
                     DrawConnection(toRT.anchoredPosition, fromRT.anchoredPosition, new Color(1f, 1f, 1f, 0.15f), 3f);
                 }
             }
         }
 
+
         private List<UpgradeDef> GetRequirements(UpgradeDef def)
         {
-            // Prefer resolved references if available
             if (def.Requirements != null && def.Requirements.Count > 0)
                 return def.Requirements;
 
-            // Fallback to names if present
             if (def.RequirementDefNames != null && def.RequirementDefNames.Count > 0)
             {
                 var all = DefDatabase<UpgradeDef>.AllDefs.ToDictionary(d => d.DefName);
@@ -366,9 +429,8 @@ namespace Incrementum
 
         private void DrawConnection(Vector2 from, Vector2 to, Color color, float thickness)
         {
-            // simple line via Image (like your graph helper)
             var go = new GameObject("ReqLine", typeof(Image));
-            go.transform.SetParent(LinesRoot, false);
+            go.transform.SetParent(TreeRoot, false);
             var img = go.GetComponent<Image>();
             img.color = color;
 

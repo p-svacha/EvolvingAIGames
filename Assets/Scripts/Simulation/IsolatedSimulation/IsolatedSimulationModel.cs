@@ -27,7 +27,7 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     /// <summary>
     /// Total amount of subjects.
     /// </summary>
-    protected abstract int PopulationSize { get; }
+    public abstract int PopulationSize { get; }
 
     /// <summary>
     /// Dictionary containing the task for each subject in the current generation.
@@ -66,7 +66,7 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     /// <summary>
     /// Function to create a generation stats object of the correct subtype.
     /// </summary>
-    public abstract GenerationStats CreateGenerationStats(EvolutionInformation info);
+    public abstract GenerationStats CreateGenerationStats(EvolutionInformation info, List<Species> speciesData);
 
     #endregion
 
@@ -108,7 +108,7 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
         EvolutionInformation info = Population.EvolveGeneration();
 
         // Initialize generation stats
-        GenerationHistory.Add(CreateGenerationStats(info));
+        GenerationHistory.Add(CreateGenerationStats(info, Population.Species));
 
         // Create a task for each subject in this generation's population
         CurrentTasks = new Dictionary<Subject, Task>();
@@ -155,7 +155,7 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
         Population = new Population(PopulationSize, SubjectInputSize, SubjectHiddenSizes, SubjectOutputSize, GetFitnessValueFor);
 
         // Initialize generation stats
-        GenerationHistory.Add(CreateGenerationStats(null));
+        GenerationHistory.Add(CreateGenerationStats(null, Population.Species));
 
         // Create a task for each subject in this generation's population
         CurrentTasks = new Dictionary<Subject, Task>();
