@@ -11,5 +11,6 @@ namespace Incrementum
         public static ResourceDef Wood;
         public static ResourceDef Stone;
         public static ResourceDef Food;
+        public static ResourceDef Iron;
     }
 }

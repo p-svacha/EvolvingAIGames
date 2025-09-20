@@ -97,7 +97,7 @@ public class PlaygroundUI : MonoBehaviour
     {
         Parent1Genome.AdjustedFitness = 2;
         Parent2Genome.AdjustedFitness = 1;
-        ChildGV.VisualizeGenome(CrossoverAlgorithm.Crossover(Parent1Genome, Parent2Genome), false, true);
+        ChildGV.VisualizeGenome(CrossoverAlgorithm.Crossover(null, Parent1Genome, Parent2Genome), false, true);
     }
 
     private void TopologyMutationToBoth_OnClick()
@@ -168,7 +168,10 @@ public class PlaygroundUI : MonoBehaviour
     {
         if (g != null)
         {
-            TopologyMutator.MutateTopology(g, null, NewNodeMutations, NewConnectionMutations);
+            MutationInformation info = new MutationInformation();
+            info.ConnectionReenableChancePerTopologyMutation = 0.01f;
+
+            TopologyMutator.MutateTopology(g, info, NewNodeMutations, NewConnectionMutations);
             gv.VisualizeGenome(g, false, true);
         }
     }

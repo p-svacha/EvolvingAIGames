@@ -39,7 +39,7 @@ namespace Incrementum
         private UpgradeDef staged;
 
         private static int UPGRADE_SIZE_X = 240;
-        private static int UPGRADE_SIZE_Y = 90;
+        private static int UPGRADE_SIZE_Y = 60;
 
 
         // --- lifecycle -------------------------------------------------------
@@ -271,7 +271,7 @@ namespace Incrementum
             var rootRT = TreeRoot; // << key change
             float W = rootRT.rect.width, H = rootRT.rect.height;
 
-            float paddingX = 40f, paddingY = 40f, colGap = 40f, rowGap = 20f;
+            float paddingX = 40f, paddingY = 40f, colGap = 40f, rowGap = 10f;
             float colWidth = (W - 2 * paddingX - colGap * maxDepth) / Mathf.Max(1, (maxDepth + 1));
             float cardW = Mathf.Min(UPGRADE_SIZE_X, colWidth);
             float cardH = UPGRADE_SIZE_Y;

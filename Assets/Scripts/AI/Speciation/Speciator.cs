@@ -32,14 +32,24 @@ public class Speciator {
         float highestCompatibilityDistance = float.MinValue; // Just for debugging - the highest distance that any genome was from any existing species.
 
         int numNewSpecies = 0;
-        foreach (Subject Subject in subjects)
+        foreach (Subject subject in subjects)
         {
+            // If subject is still within compatibility distance of previous species and if that species is still alive, just keep that one (to prevent species hopping)
+            Species previousSpecies = subject.Genome.Species;
+            if (previousSpecies != null && existingSpecies.Contains(previousSpecies))
+            {
+                float dist = CompatibilityDistance(subject.Genome, previousSpecies.Representative);
+                if (dist > highestCompatibilityDistance) highestCompatibilityDistance = dist;
+                if (dist <= CompatibilityThreshold) continue;
+            }
+
+            // Subject is no longer close to previous species, so search for another fitting (or create a new one)
             bool speciesFound = false;
             float lowestDistance = float.MaxValue;
             Species matchingSpecies = null;
             foreach (Species species in existingSpecies)
             {
-                float compatibilityDistance = CompatibilityDistance(Subject.Genome, species.Representative);
+                float compatibilityDistance = CompatibilityDistance(subject.Genome, species.Representative);
                 if (compatibilityDistance <= CompatibilityThreshold && compatibilityDistance < lowestDistance)
                 {
                     lowestDistance = compatibilityDistance;
@@ -51,14 +61,14 @@ public class Speciator {
             // Debug.Log($"Lowest distance to another species: {lowestDistance}");
             if (!speciesFound)
             {
-                Species newSpecies = CreateNewSpecies(Subject.Genome, existingSpecies);
+                Species newSpecies = CreateNewSpecies(subject.Genome, existingSpecies);
                 newSpecies.Color.a = 1;
-                Subject.Genome.Species = newSpecies;
+                subject.Genome.Species = newSpecies;
                 existingSpecies.Add(newSpecies);
                 numNewSpecies++;
             }
             else
-                Subject.Genome.Species = matchingSpecies;
+                subject.Genome.Species = matchingSpecies;
         }
 
         Debug.Log($"The biggest distance any genome was from an existing species was {highestCompatibilityDistance}");

@@ -194,6 +194,9 @@ public abstract class IsolatedSimulationModel : MonoBehaviour
     {
         if (SimulationPhase != IsolatedSimulationPhase.Running) return;
 
+        // Calculate all subject and species stats in population
+        Population.GetFitness();
+
         // Complete generation info, calculating all generation stats
         float runtime = (int)((DateTime.Now - CurrentGenerationStartTime).TotalSeconds);
         GenerationHistory.Last().SetComplete(runtime, CurrentTasks);

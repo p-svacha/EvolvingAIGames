@@ -20,7 +20,7 @@ public class SpeciesScoreboard : UIElement
             new Tuple<string, float>("Subjects", 0.18f),
             new Tuple<string, float>("# Under Limit", 0.15f),
             new Tuple<string, float>("Max Fitness", 0.2f),
-            new Tuple<string, float>("Avg Fitness", 0.2f),
+            new Tuple<string, float>("Rating (avg fitness of top 30%)", 0.2f),
         };
     }
 
@@ -63,7 +63,7 @@ public class SpeciesScoreboard : UIElement
                     case 2: text = species[i].Size + ""; break;
                     case 3: text = species[i].GenerationsBelowEliminationThreshold + ""; break;
                     case 4: text = species[i].MaxFitness.ToString("0.00") + ""; break;
-                    case 5: text = species[i].AverageFitness.ToString("0.00") + ""; break;
+                    case 5: text = species[i].SpeciesRating.ToString("0.00") + ""; break;
                 }
                 float xStart = Columns.Where(x => Columns.IndexOf(x) < j).Sum(x => x.Item2);
                 AddText(text, fontSize, fontColor, FontStyle.Normal, xStart, 0, xStart + Columns[j].Item2, 1, panel);
@@ -109,7 +109,7 @@ public class SpeciesScoreboard : UIElement
                     case 2: text = species[i].SubjectCount + ""; break;
                     case 3: text = species[i].GenerationsBelowEliminationThreshold + ""; break;
                     case 4: text = species[i].MaxFitness.ToString("0.00") + ""; break;
-                    case 5: text = species[i].AverageFitness.ToString("0.00") + ""; break;
+                    case 5: text = species[i].SpeciesRating.ToString("0.00") + ""; break;
                 }
                 float xStart = Columns.Where(x => Columns.IndexOf(x) < j).Sum(x => x.Item2);
                 AddText(text, fontSize, fontColor, FontStyle.Normal, xStart, 0, xStart + Columns[j].Item2, 1, panel);

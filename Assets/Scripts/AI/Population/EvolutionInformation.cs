@@ -43,7 +43,7 @@ public class EvolutionInformation
     public int GensAllowedBelowLimit;
     public bool MutationImmunityForTakeOvers;
 
-    public EvolutionInformation(int generation, int evolutionTime, bool mutationImmunityForTakeOvers, MutationInformation mutationInfo, int numBestSubjectsTakenOver, int numRandomSubjectsTakenOver, int numOffsprings, int numSubjectsCheckedForAdoption, int numImmuneToMutationSubjects, int numPreviousSpecies, int numEliminatedSpecies, int numEmptySpecies, int numNewSpecies, int numSpecies, float compThreshhold, float maxFitness, float averageFitness, int limit, int gensBelowLimit)
+    public EvolutionInformation(int generation, int evolutionTime, bool mutationImmunityForTakeOvers, MutationInformation mutationInfo, int numBestSubjectsTakenOver, int numRandomSubjectsTakenOver, int numOffsprings, int numImmuneToMutationSubjects, int numPreviousSpecies, int numEliminatedSpecies, int numEmptySpecies, int numNewSpecies, int numSpecies, float compThreshhold, float maxFitness, float averageFitness, int limit, int gensBelowLimit)
     {
         Generation = generation;
         EvolutionTime = evolutionTime;
@@ -52,7 +52,6 @@ public class EvolutionInformation
         NumBestSubjectsTakenOver = numBestSubjectsTakenOver;
         NumRandomSubjectsTakenOver = numRandomSubjectsTakenOver;
         NumOffsprings = numOffsprings;
-        NumSubjectsCheckedForAdoption = numSubjectsCheckedForAdoption;
         NumImmuneToMutationSubjects = numImmuneToMutationSubjects;
         NumPreviousSpecies = numPreviousSpecies;
         NumEliminatedSpecies = numEliminatedSpecies;
@@ -73,7 +72,7 @@ public class EvolutionInformation
             "\nSubjects: " + NumSubjects + " (" + NumOffsprings + " Offsprings, " + NumBestSubjectsTakenOver + " Best, " + NumRandomSubjectsTakenOver + " Randoms)" +
             "\nSpecies: " + NumSpecies + " (" + NumPreviousSpecies + " Previous, " + NumNewSpecies + " New, " + NumEliminatedSpecies + " Eliminated, " + NumEmptySpecies + " Empty), Compatibility Threshhold: " + CompatibilityThreshhold +
             "\nMaxFitness: " + (int)MaxFitness + ", Average Fitness: " + (int)AverageFitness +
-            "\n\nSubjects checked for adoption: " + NumSubjectsCheckedForAdoption + ", Subjects immune to mutations: " + NumImmuneToMutationSubjects +
+            "\n\nSubjects immune to mutations: " + NumImmuneToMutationSubjects +
             "\nRank Limit: " + RankLimit + ", Generations below rank limit before extincion: " + GensAllowedBelowLimit +
             "\n" + MutationInfo.ToString() + "\n";
     }

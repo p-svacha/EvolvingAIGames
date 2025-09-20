@@ -1050,8 +1050,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 13
+  m_fontSizeBase: 13
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1948,7 +1948,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Width: 0
   Height: 0
-  MaxDisplayedSpecies: 16
+  MaxDisplayedSpecies: 10
 --- !u!1 &807971886
 GameObject:
   m_ObjectHideFlags: 0
@@ -3186,7 +3186,9 @@ MonoBehaviour:
   m_text: '<b>AI Highscore: 1950</b>
 
     Lumber Yard I (15) --> Quarry I (20) -->
-    Town Hall I (70)'
+    Town Hall I (70)
+
+    -->nfdfdfd'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3213,8 +3215,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 13
+  m_fontSizeBase: 13
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3846,8 +3848,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -59.99997}
-  m_SizeDelta: {x: 0, y: -120}
+  m_AnchoredPosition: {x: 0, y: 3.1629944}
+  m_SizeDelta: {x: 0, y: -163.32}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1541857505
 GameObject:
@@ -4203,8 +4205,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe7d5f3e7834155478e5fa3878f12b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Width: 0
-  Height: 0
   RowPrefab: {fileID: 459771896273556163, guid: 04ccf1466cb11ac4cba743633aa68e63,
     type: 3}
   ElementPrefab: {fileID: 9113288807330457335, guid: 60fbeb896c9b9e94495ee82f5586e3e4,

@@ -12,10 +12,11 @@ public class SpeciesData
     public Color Color { get; private set; }
     public int SubjectCount { get; private set; }
 
-    public int Rank;
-    public int GenerationsBelowEliminationThreshold;
-    public float MaxFitness;
-    public float AverageFitness;
+    public int Rank { get; set; }
+    public int GenerationsBelowEliminationThreshold { get; set; }
+    public float MaxFitness { get; set; }
+    public float AverageFitness { get; set; }
+    public float SpeciesRating { get; set; }
 
     public SpeciesData(int id, string name, Color color, int subjectCount, int elim)
     {

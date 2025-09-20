@@ -18,6 +18,12 @@ public class Species {
     // Stats from last generation
     public float MaxFitness { get; set; }
     public float AverageFitness { get; set; }
+
+    /// <summary>
+    /// Rating that is used for species ranking, tracking species progress, calculation of elimination criteria, and calculation of how many offspring each species can have.
+    /// <br/>Species rating is the average of top 30% performers in a species.
+    /// </summary>
+    public float SpeciesRating { get; set; }
     public int Rank { get; set; }
 
     // Offspring calculation
@@ -30,23 +36,85 @@ public class Species {
         Id = id;
         Name = name;
         Random = new System.Random();
-        Representative = rep;
+        Representative = rep.Copy();
         Color = color;
         Subjects = new List<Subject>();
         GenerationsBelowEliminationThreshold = 0;
     }
 
-    public void CalculateFitnessValues()
+    public void CalculateFitnessValues(float speciesRatingPortion)
     {
         AverageFitness = Subjects.Select(x => x.Genome).Sum(x => x.AdjustedFitness);
         MaxFitness = Subjects.Select(x => x.Genome).Max(x => x.Fitness);
+
+        // Rating
+        List<float> fitnesses = Subjects.Select(s => s.Genome.Fitness).OrderByDescending(f => f).ToList();
+        int k = Mathf.Max(1, Mathf.CeilToInt(fitnesses.Count * speciesRatingPortion));
+        float sumTop = 0f;
+        for (int i = 0; i < k; i++) sumTop += fitnesses[i];
+        SpeciesRating = sumTop / k;
     }
 
-    public Genome CreateOffspring(float ignoreRatio)
+    /// <summary>
+    /// Creates a new child genome in this species. The parent selection is skewed towards better performing ones.
+    /// </summary>
+    public Genome CreateOffspring(MutateAlgorithm mutator, float ignoreRatio, int parentSelectionPoolSize, float chanceToPickTopPerformerAsParent, float asexualReproductionChance, float connectionReenableChancePerTopologyMutation)
     {
-        Subject parent1 = GetProportionalRandomParent(ignoreRatio);
-        Subject parent2 = GetProportionalRandomParent(ignoreRatio);
-        return CrossoverAlgorithm.Crossover(parent1.Genome, parent2.Genome);
+        // Build pool of eligible parent candidates
+        List<Subject> parentCandidates = Subjects.OrderByDescending(s => s.Genome.AdjustedFitness).ToList();
+        int numWorstToIgnore = (int)Mathf.Ceil(parentCandidates.Count * ignoreRatio);
+        parentCandidates = parentCandidates.Take(Mathf.Max(1, parentCandidates.Count - numWorstToIgnore)).ToList();
+
+        // Check for asexual reproduction
+        if (parentCandidates.Count == 1 || Random.NextDouble() < asexualReproductionChance)
+        {
+            // Create exact copy
+            Subject singularParent = SelectRandomParent(parentCandidates, parentSelectionPoolSize, chanceToPickTopPerformerAsParent);
+            Genome childGenome = singularParent.Genome.Copy();
+            childGenome.Species = singularParent.Genome.Species;
+
+            mutator.ForceMutation(childGenome, connectionReenableChancePerTopologyMutation);
+            return childGenome;
+        }
+
+        // Sexual reproduction (default)
+        Subject parent1 = SelectRandomParent(parentCandidates, parentSelectionPoolSize, chanceToPickTopPerformerAsParent);
+        Subject parent2;
+        if (parentCandidates.Count > 1)
+        {
+            // Build a candidate list without parent1
+            List<Subject> parent2Candidates = parentCandidates.Where(s => s != parent1).ToList();
+            parent2 = SelectRandomParent(parent2Candidates, parentSelectionPoolSize, chanceToPickTopPerformerAsParent);
+        }
+        else
+        {
+            parent2 = parent1; // Degenerate case; will behave like asexual crossover
+        }
+        
+        // Perform crossover
+        return CrossoverAlgorithm.Crossover(this, parent1.Genome, parent2.Genome);
+    }
+
+    /// <summary>
+    /// Selects a parent from a given pool of candidates. Candidate list is expected to be sorted already by fitness.
+    /// There is a % chance (chanceToPickTopPerformerAsParent) that the best performing candidate will be chosen.
+    /// Else the best from a number (parentSelectionPoolSize) of fully-randomly selected one is chosen.
+    /// </summary>
+    private Subject SelectRandomParent(List<Subject> candidates, int parentSelectionPoolSize, float chanceToPickTopPerformerAsParent)
+    {
+        if (candidates == null || candidates.Count == 0) throw new System.Exception("No parent candidates.");
+
+        // Chance to simply pick to performers.
+        if (Random.NextDouble() < chanceToPickTopPerformerAsParent)
+        {
+            return candidates[0];
+        }
+        else // Pick best performing out of x randomly selected ones
+        {
+            int realPoolSize = Mathf.Clamp(parentSelectionPoolSize, 1, candidates.Count);
+            List<Subject> randomPool = candidates.RandomElements(realPoolSize);
+            return randomPool.OrderByDescending(s => s.Genome.AdjustedFitness).First();
+        }
     }
 
     public Subject GetProportionalRandomParent(float ignoreRatio)

@@ -9,7 +9,7 @@ public class CrossoverAlgorithm {
     public static System.Random Random = new System.Random();
     public static int GenomeId = 0;
 
-    public static Genome Crossover(Genome parent1, Genome parent2)
+    public static Genome Crossover(Species species, Genome parent1, Genome parent2)
     {
         // Find fitter parent
         Genome fitParent, unfitParent;
@@ -71,6 +71,8 @@ public class CrossoverAlgorithm {
         {
             Debug.Log("A circluar node structure has occured while making a child. " + e.Message);
         }
+
+        newGenome.Species = species;
         return newGenome;
     }
 }

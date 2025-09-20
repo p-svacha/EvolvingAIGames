@@ -45,6 +45,7 @@ public class MutateAlgorithm {
     public MutationInformation MutatePopulation(Population pop, float mutationScaleFactor, bool multipleMutationsPerGenomeAllowed, float reductionFactor)
     {
         MutationInformation info = new MutationInformation();
+        info.ConnectionReenableChancePerTopologyMutation = pop.ConnectionReenableChancePerTopologyMutation;
 
         WeightMutatedGenomes.Clear();
         TopologyMutatedGenomes.Clear();
@@ -84,13 +85,23 @@ public class MutateAlgorithm {
             weightMutationChancePerGenome = 0;
         }
 
-        double rng = Random.NextDouble();
-
         int numMutations = 0;
 
-        while (rng <= ((topologyMutationChancePerGenome + weightMutationChancePerGenome) * (Math.Pow(1 - reducationFactor, numMutations))))
+        // Apply mutations until this breaks
+        while (true)
         {
-            if(rng <= topologyMutationChancePerGenome)
+            // Check if we should apply (another) mutation
+            double applyMutationRng = Random.NextDouble();
+            double threshold = (topologyMutationChancePerGenome + weightMutationChancePerGenome) * Math.Pow(1 - reducationFactor, numMutations);
+            if (applyMutationRng > threshold) break;
+
+            // Check what kind of mutation we should apply
+            double typeRng = Random.NextDouble();
+            double totalProb = topologyMutationChancePerGenome + weightMutationChancePerGenome;
+            if (totalProb <= 0f) break;
+
+            // Apply mutation
+            if (typeRng <= (topologyMutationChancePerGenome / totalProb))
             {
                 TopologyMutatedGenomes.Add(g);
                 TopologyMutator.MutateTopology(g, info, NewNodeMutations, NewConnectionMutations);
@@ -101,7 +112,32 @@ public class MutateAlgorithm {
                 WeightMutator.MutateWeight(g, info);
             }
             numMutations++;
-            rng = multipleMutationsPerGenomeAllowed ? Random.NextDouble() : 1; // Allows for multiple mutations per genome
+
+            if (!multipleMutationsPerGenomeAllowed) break;
+        }
+    }
+
+    /// <summary>
+    /// Applies a weight or topology mutaton to a genome.
+    /// </summary>
+    public void ForceMutation(Genome g, float connectionReenableChancePerTopologyMutation)
+    {
+        float topologyMutationChance = 0.5f;
+
+        // If the genome has no connections, it can only mutate topology
+        if (g.EnabledConnections.Count() == 0)
+        {
+            topologyMutationChance = 1f;
+        }
+
+        // Force a mutation
+        if (Random.NextDouble() < topologyMutationChance)
+        {
+            TopologyMutator.MutateTopology(g, connectionReenableChancePerTopologyMutation);
+        }
+        else
+        {
+            WeightMutator.MutateWeight(g, null);
         }
     }
 }

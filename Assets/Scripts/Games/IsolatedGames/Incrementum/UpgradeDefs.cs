@@ -91,6 +91,43 @@ namespace Incrementum
                 }
             },
 
+            // --------------- Iron (Quarry branch) ---------------
+            new UpgradeDef()
+            {
+                DefName = "IronMineSmall",
+                Label = "Small Iron Mine",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 80 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "QuarrySmall",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Iron, 1 },
+                }
+            },
+            new UpgradeDef()
+            {
+                DefName = "IronMineBig",
+                Label = "Big Iron Mine",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 160 },
+                    { ResourceDefOf.Stone, 80 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "IronMineSmall",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Iron, 2 },
+                }
+            },
+
             // --------------- Workshop ---------------
             new UpgradeDef()
             {
@@ -117,6 +154,7 @@ namespace Incrementum
                 Cost = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Gold, 100 },
+                    { ResourceDefOf.Iron, 40 },
                 },
                 RequirementDefNames = new List<string>()
                 {
@@ -157,6 +195,24 @@ namespace Incrementum
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Gold, 1 },
+                }
+            },
+            new UpgradeDef()
+            {
+                DefName = "TaxCollectors",
+                Label = "Tax Collectors",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Food, 160 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "TownHallSmall",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold, 2 },
+                    { ResourceDefOf.Food, -1 },
                 }
             },
             new UpgradeDef()
@@ -257,6 +313,27 @@ namespace Incrementum
                     { ResourceDefOf.Wood,   1 },
                     { ResourceDefOf.Stone,  1 },
                     { ResourceDefOf.Food,   1 },
+                }
+            },
+
+            // --------------- Bank ---------------
+            new UpgradeDef()
+            {
+                DefName = "Bank",
+                Label   = "Bank",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 180 },
+                    { ResourceDefOf.Stone, 150 },
+                    { ResourceDefOf.Iron, 120 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "TownHallMedium",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold, 3 },
                 }
             },
 

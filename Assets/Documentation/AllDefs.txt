@@ -7,6 +7,7 @@
             {
                 DefName = "Gold",
                 Label = "gold",
+                Description = "Target resource that the goal is to maximize. Can also be used as upgrade cost or as a negative upgrade effect",
                 BaseIncomePerTick = 0,
                 ApproxAmountCap = 3000,
                 ApproxIncomeCap = 10,
@@ -16,6 +17,7 @@
             {
                 DefName = "Wood",
                 Label = "wood",
+                Description = "Main resource for buildings.",
                 BaseIncomePerTick = Incrementum.BASE_WOOD_INCOME,
                 ApproxAmountCap = 1000,
                 ApproxIncomeCap = 8,
@@ -25,6 +27,7 @@
             {
                 DefName = "Stone",
                 Label = "stone",
+                Description = "Used for upgrading buildings or building more powerful buildings",
                 BaseIncomePerTick = Incrementum.BASE_STONE_INCOME,
                 ApproxAmountCap = 1000,
                 ApproxIncomeCap = 8,
@@ -34,9 +37,20 @@
             {
                 DefName = "Food",
                 Label = "food",
+                Description = "Used for some buildings but mostly for upgrades within buildings",
                 BaseIncomePerTick = 0,
                 ApproxAmountCap = 1000,
                 ApproxIncomeCap = 8,
+            },
+
+            new ResourceDef()
+            {
+                DefName = "Iron",
+                Label = "iron",
+                Description = "Mined ore used to unlock advanced buildings and craft better tools.",
+                BaseIncomePerTick = 0,
+                ApproxAmountCap = 600,
+                ApproxIncomeCap = 6,
             },
         };
 
@@ -126,6 +140,43 @@
                 }
             },
 
+            // --------------- Iron (Quarry branch) ---------------
+            new UpgradeDef()
+            {
+                DefName = "IronMineSmall",
+                Label = "Small Iron Mine",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 80 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "QuarrySmall",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Iron, 1 },
+                }
+            },
+            new UpgradeDef()
+            {
+                DefName = "IronMineBig",
+                Label = "Big Iron Mine",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 160 },
+                    { ResourceDefOf.Stone, 80 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "IronMineSmall",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Iron, 2 },
+                }
+            },
+
             // --------------- Workshop ---------------
             new UpgradeDef()
             {
@@ -152,6 +203,7 @@
                 Cost = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Gold, 100 },
+                    { ResourceDefOf.Iron, 40 },
                 },
                 RequirementDefNames = new List<string>()
                 {
@@ -192,6 +244,24 @@
                 ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
                 {
                     { ResourceDefOf.Gold, 1 },
+                }
+            },
+            new UpgradeDef()
+            {
+                DefName = "TaxCollectors",
+                Label = "Tax Collectors",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Food, 160 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "TownHallSmall",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold, 2 },
+                    { ResourceDefOf.Food, -1 },
                 }
             },
             new UpgradeDef()
@@ -292,6 +362,27 @@
                     { ResourceDefOf.Wood,   1 },
                     { ResourceDefOf.Stone,  1 },
                     { ResourceDefOf.Food,   1 },
+                }
+            },
+
+            // --------------- Bank ---------------
+            new UpgradeDef()
+            {
+                DefName = "Bank",
+                Label   = "Bank",
+                Cost = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Wood, 180 },
+                    { ResourceDefOf.Stone, 150 },
+                    { ResourceDefOf.Iron, 120 },
+                },
+                RequirementDefNames = new List<string>()
+                {
+                    "TownHallMedium",
+                },
+                ResourceGenerationModifiers = new Dictionary<ResourceDef, int>()
+                {
+                    { ResourceDefOf.Gold, 3 },
                 }
             },
 

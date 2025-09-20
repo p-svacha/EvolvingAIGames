@@ -8,7 +8,7 @@ public class Connection {
     public Node FromNode; //source node, where the connection comes from
     public Node ToNode; //target node, where the connection goes to
     public float Weight; // [-1, 1]
-    public bool Enabled;
+    public bool Enabled { get; set; }
 
     // UI
     public GameObject VisualConnection;

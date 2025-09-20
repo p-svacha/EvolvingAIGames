@@ -73,14 +73,13 @@ public class GenerationStats
         // Complete species data
         foreach (SpeciesData data in SpeciesData)
         {
-            List<Task> speciesTasks = tasks.Where(x => x.Key.Genome.Species.Id == data.Id).Select(x => x.Value).ToList();
-            float avgFitness = (float)speciesTasks.Average(x => x.GetFitnessValue());
-            float maxFitness = speciesTasks.Max(x => x.GetFitnessValue());
+            Species species = tasks.Where(x => x.Key.Genome.Species.Id == data.Id).Select(x => x.Key.Genome.Species).First();
 
-            data.AverageFitness = avgFitness;
-            data.MaxFitness = maxFitness;
+            data.AverageFitness = species.AverageFitness;
+            data.MaxFitness = species.MaxFitness;
+            data.SpeciesRating = species.SpeciesRating;
         }
-        SpeciesData = SpeciesData.OrderByDescending(x => x.AverageFitness).ToList();
+        SpeciesData = SpeciesData.OrderByDescending(x => x.SpeciesRating).ToList();
         for (int i = 0; i < SpeciesData.Count; i++) SpeciesData[i].Rank = i + 1; 
 
 
